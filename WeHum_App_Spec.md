@@ -1,6 +1,6 @@
 # WeHum — Mobile App Build Spec (Flutter · GetX · Node.js REST API · Socket.IO)
 
-> Single source of truth for building the WeHum iOS/Android app. Bundle id `com.wehum.app` (staging `com.wehum.app.staging`, dev `com.wehum.app.dev`).
+> Single source of truth for building the WeHum iOS/Android app. Bundle id `app.wehum.meditation` (staging `app.wehum.meditation.staging`, dev `app.wehum.meditation.dev`).
 > **Backend:** Node.js + PostgreSQL + Redis + Socket.IO, specified in `../backend/WeHum_Backend_Spec.md`. **No Firebase database, auth or functions.** FCM is used **only** as push transport.
 > **Design reference:** `app/design/`, which holds a screenshot and the exact HTML source for each of the 74 screens (§0.1). Screen numbers in this file are the file-name prefixes.
 > **Contracts the app builds against:**
