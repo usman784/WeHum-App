@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Explore archive</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1000px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="DailyMessage.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Explore archive</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 4px 20px 24px 20px">
+<label style="display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 16px; border-radius: 14px; background: #17191B; border: 1px solid #2A2D30; color: #A0A4A8">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<input type="search" aria-label="Search past messages" placeholder="Search by word or date" style="flex-grow: 1; background: transparent; border: none; outline: none; color: #F2F2F2; font-family: inherit; font-size: 15px">
+</label>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="5"><button type="button" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+</div>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8; padding-top: 6px">OCTOBER 2026</span>
+<sc-for list="{{ oct }}" as="m" hint-placeholder-count="4">
+<a href="DailyMessage.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #23262A; text-decoration: none; color: #F2F2F2">
+<span style="width: 52px; height: 52px; border-radius: 14px; background: #17191B; border: 1px solid #23262A; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0"><span style="font-size: 18px; font-weight: 700">{{ m.day }}</span><span style="font-size: 10px; color: #A0A4A8">{{ m.dow }}</span></span>
+<span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">{{ m.title }}</span><span style="font-size: 12px; color: #A0A4A8">{{ m.meta }}</span></span>
+</a>
+</sc-for>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8; padding-top: 10px">SEPTEMBER 2026</span>
+<sc-for list="{{ sep }}" as="m" hint-placeholder-count="3">
+<a href="DailyMessage.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #23262A; text-decoration: none; color: #F2F2F2">
+<span style="width: 52px; height: 52px; border-radius: 14px; background: #17191B; border: 1px solid #23262A; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0"><span style="font-size: 18px; font-weight: 700">{{ m.day }}</span><span style="font-size: 10px; color: #A0A4A8">{{ m.dow }}</span></span>
+<span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">{{ m.title }}</span><span style="font-size: 12px; color: #A0A4A8">{{ m.meta }}</span></span>
+</a>
+</sc-for>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { theme: 'All' }; }
+  renderVals() {
+    var self = this;
+    var sel = this.state.theme;
+    var themes = ['All', 'Attention', 'Work', 'Rest', 'Pacing'].map(function (t) {
+      var on = sel === t;
+      return { label: t, pick: function () { self.setState({ theme: t }); }, style: 'min-height:40px;padding:0 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;' + (on ? 'background:#FF7A45;color:#2A0E02;border:1px solid #FF7A45;' : 'background:#17191B;color:#F2F2F2;border:1px solid #2A2D30;') };
+    });
+    var keep = function (list) { return list.filter(function (m) { return sel === 'All' || m.theme === sel; }).map(function (m) { return { day: m.day, dow: m.dow, title: m.title, meta: m.kind + ' · ' + m.theme }; }); };
+    var oct = keep([
+      { day: '5', dow: 'MON', title: 'Releasing Cognitive Friction Before Work', kind: 'Audio', theme: 'Work' },
+      { day: '4', dow: 'SUN', title: 'The Pause Before Replying', kind: 'Text', theme: 'Attention' },
+      { day: '3', dow: 'SAT', title: 'End-of-Week Grounding', kind: 'Video', theme: 'Rest' },
+      { day: '2', dow: 'FRI', title: 'Dissolving Defensiveness', kind: 'Audio', theme: 'Attention' }
+    ]);
+    var sep = keep([
+      { day: '30', dow: 'WED', title: 'The Single Deep Exhale', kind: 'Audio', theme: 'Pacing' },
+      { day: '29', dow: 'TUE', title: 'Quiet Power: Settling the Inner Rush', kind: 'Text', theme: 'Work' },
+      { day: '28', dow: 'MON', title: 'Steadiness Under Modern Work Urgency', kind: 'Video', theme: 'Work' }
+    ]);
+    return { themes: themes, oct: oct, sep: sep };
+  }
+}
+</script>
+</body>
+</html>

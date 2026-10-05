@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Your progress</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1120px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="You.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Your progress</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+
+<main style="display: flex; flex-direction: column; gap: 16px; padding: 8px 20px 28px 20px">
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: flex-end; gap: 12px">
+<span style="font-size: 56px; font-weight: 700; line-height: 1; color: #FF9B70; letter-spacing: -1.5px">5</span>
+<span style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 6px"><span style="font-size: 17px; font-weight: 700">days meditated this week</span><span style="font-size: 13px; color: #A0A4A8">105 minutes so far</span></span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; text-align: center; font-size: 12px; color: #A0A4A8">
+<sc-for list="{{ week }}" as="d" hint-placeholder-count="7"><span style="display: flex; flex-direction: column; align-items: center; gap: 6px"><span style="{{ d.style }}">{{ d.mark }}</span>{{ d.day }}</span></sc-for>
+</div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: #A0A4A8">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 999px; background: #FF7A45"></span>Meditated</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 999px; background: #23262A"></span>Coming up</span>
+</div>
+</section>
+
+
+
+<div role="tablist" aria-label="Period" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #17191B; border: 1px solid #23262A">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+</div>
+
+<section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="background: #17191B; border: 1px solid #23262A; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #A0A4A8">MINUTES</span><span style="font-size: 28px; font-weight: 700">{{ p.min }}</span></div>
+<div style="background: #17191B; border: 1px solid #23262A; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #A0A4A8">MEDITATIONS</span><span style="font-size: 28px; font-weight: 700">{{ p.sits }}</span></div>
+<div style="background: #17191B; border: 1px solid #23262A; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #A0A4A8">TOGETHER</span><span style="font-size: 28px; font-weight: 700">{{ p.group }}</span></div>
+<div style="background: #17191B; border: 1px solid #23262A; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #A0A4A8">AVERAGE</span><span style="font-size: 28px; font-weight: 700">{{ p.avg }}</span></div>
+</section>
+
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 14px; font-weight: 600">{{ p.chartTitle }}</span>
+<div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 6px; height: 110px">
+<sc-for list="{{ p.bars }}" as="b" hint-placeholder-count="7"><span style="{{ b }}"></span></sc-for>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 11px; color: #6E7378">{{ p.axis }}</div>
+</section>
+
+<a href="Challenges.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; background: #17191B; border: 1px solid #23262A; text-decoration: none; color: #F2F2F2">
+<span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 14px; font-weight: 600">Challenges</span><span style="font-size: 12px; color: #A0A4A8">Coming soon</span></span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A4A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+<span style="font-size: 12px; line-height: 1.5; color: #6E7378; text-align: center">Your progress works offline and sync when you’re back.</span>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { period: 'week' }; }
+  renderVals() {
+    var self = this, per = this.state.period;
+    var circle = 'width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;font-size:13px;font-weight:700;';
+    var sat = circle + 'background:#FF7A45;color:#2A0E02;', none = circle + 'background:#23262A;color:#6E7378;', today = circle + 'background:#FF7A45;color:#2A0E02;border:2px solid #FFB99A;';
+    var pattern = [sat, sat, none, sat, today, none, none];
+    var marks = ['✓', '✓', '', '✓', '✓', '', ''];
+    var week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(function (d, i) { return { day: d, style: pattern[i], mark: marks[i] }; });
+    var bar = function (h, on) { return 'flex:1;border-radius:6px 6px 2px 2px;height:' + h + '%;background:' + (on ? '#FF7A45' : '#3A2A22') + ';'; };
+    var data = {
+      week: { min: '105', sits: '7', group: '4', avg: '15 min', chartTitle: 'Minutes this week', bars: [bar(60), bar(45), bar(8), bar(70), bar(95, true), bar(4), bar(4)], axis: 'Mon · Tue · Wed · Thu · Fri · Sat · Sun' },
+      month: { min: '412', sits: '29', group: '17', avg: '14 min', chartTitle: 'Minutes in October, by week', bars: [bar(70), bar(85), bar(60), bar(40, true)], axis: 'Week 1 · Week 2 · Week 3 · Week 4' },
+      year: { min: '820', sits: '64', group: '48', avg: '13 min', chartTitle: 'Minutes in 2026, by month', bars: [bar(10), bar(30), bar(62), bar(90, true)], axis: 'Jul · Aug · Sep · Oct' },
+      life: { min: '820', sits: '64', group: '48', avg: '13 min', chartTitle: 'Since you started · July 2026', bars: [bar(10), bar(30), bar(62), bar(90, true)], axis: 'Jul · Aug · Sep · Oct' }
+    };
+    var tabs = [['week', 'Week'], ['month', 'Month'], ['year', 'Year'], ['life', 'Lifetime']].map(function (t) {
+      var on = per === t[0];
+      return { label: t[1], on: on, pick: function () { self.setState({ period: t[0] }); }, style: 'min-height:40px;border-radius:10px;border:none;font-family:inherit;font-size:13px;cursor:pointer;' + (on ? 'background:#FF7A45;color:#2A0E02;font-weight:700;' : 'background:transparent;color:#A0A4A8;font-weight:600;') };
+    });
+    return { week: week, tabs: tabs, p: data[per] };
+  }
+}
+</script>
+</body>
+</html>

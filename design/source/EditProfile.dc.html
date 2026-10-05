@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edit profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="You.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Edit profile</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<form style="display: flex; flex-direction: column; gap: 18px; padding: 12px 24px 0 24px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+<span style="width: 104px; height: 104px; border-radius: 999px; background: #123C3A; color: #4ADE80; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700">MV</span>
+<button type="button" style="min-height: 44px; padding: 0 12px; border: none; background: transparent; color: #FF9B70; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Change photo</button>
+</div>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #C9CCCF">First name
+<input type="text" value="Marcus" style="height: 52px; padding: 0 16px; border-radius: 14px; background: #17191B; border: 1px solid #2A2D30; color: #F2F2F2; font-family: inherit; font-size: 16px">
+<span style="font-weight: 400; color: #A0A4A8">Shown with your dedications and gratitude posts.</span>
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #C9CCCF">Email
+<input type="email" value="marcus@marcus.vance@gmail.com" readonly style="height: 52px; padding: 0 16px; border-radius: 14px; background: #0F1112; border: 1px solid #23262A; color: #A0A4A8; font-family: inherit; font-size: 16px">
+<span style="font-weight: 400; color: #A0A4A8">Signed in with Apple. Never shown to other people.</span>
+</label>
+</form>
+<div style="margin-top: auto; padding: 0 24px 40px 24px">
+<a href="You.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Save</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

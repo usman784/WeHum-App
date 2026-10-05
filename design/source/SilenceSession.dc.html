@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Silence Room meditating</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #070809; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="SessionComplete.dc.html" style="min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; font-size: 13px; font-weight: 700; text-decoration: none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>End</a>
+<span style="flex-grow: 1"></span>
+<span style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 999px; background: #17191B; font-size: 12px; font-weight: 700; letter-spacing: 0.6px"><span style="width: 8px; height: 8px; border-radius: 999px; background: #4ADE80"></span>SILENCE ROOM · 15 MIN</span>
+</header>
+<main style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 0 24px">
+<svg width="300" height="300" viewBox="0 0 240 240" aria-hidden="true">
+<circle cx="120" cy="120" r="100" fill="none" stroke="#1E2124" stroke-width="4"></circle>
+<circle cx="120" cy="120" r="100" fill="none" stroke="#FF7A45" stroke-width="4" stroke-dasharray="264 364" stroke-linecap="round" transform="rotate(-90 120 120)"></circle>
+<circle cx="120" cy="20" r="5" fill="#4ADE80"></circle><circle cx="30" cy="150" r="4" fill="#FFB99A"></circle><circle cx="206" cy="170" r="4" fill="#4ADE80"></circle><circle cx="210" cy="78" r="3" fill="#9FE3D6"></circle>
+<text x="120" y="130" text-anchor="middle" font-size="46" font-weight="700" fill="#F2F2F2" font-family="Inter, sans-serif">08:40</text>
+<text x="120" y="156" text-anchor="middle" font-size="13" fill="#A0A4A8" font-family="Inter, sans-serif">{{ status }}</text>
+</svg>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600"><span style="width: 8px; height: 8px; border-radius: 999px; background: #4ADE80"></span>86 meditated here today</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+<span style="font-size: 12px; color: #C9CCCF; background: #17191B; border-radius: 999px; padding: 6px 12px">London</span><span style="font-size: 12px; color: #C9CCCF; background: #17191B; border-radius: 999px; padding: 6px 12px">Berlin</span><span style="font-size: 12px; color: #C9CCCF; background: #17191B; border-radius: 999px; padding: 6px 12px">Toronto</span><span style="font-size: 12px; color: #C9CCCF; background: #17191B; border-radius: 999px; padding: 6px 12px">Sydney</span><span style="font-size: 12px; color: #C9CCCF; background: #17191B; border-radius: 999px; padding: 6px 12px">Lahore</span>
+</div>
+</main>
+<div style="padding: 0 24px 40px 24px; display: flex; flex-direction: column; gap: 10px; align-items: center">
+<button type="button" onClick="{{ toggle }}" style="align-self: stretch; min-height: 54px; border-radius: 999px; border: none; background: #FF7A45; color: #2A0E02; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{ btn }}</button>
+<span style="font-size: 12px; color: #A0A4A8">The screen dims after a few seconds. Tap to wake it.</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { paused: false }; }
+  renderVals() {
+    var self = this, p = this.state.paused;
+    return { btn: p ? 'Resume' : 'Pause', status: p ? 'paused' : 'remaining', toggle: function () { self.setState({ paused: !p }); } };
+  }
+}
+</script>
+</body>
+</html>

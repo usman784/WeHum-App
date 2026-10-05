@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Membership plans</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1060px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; padding: 52px 20px 8px 20px">
+<span style="flex-grow: 1"></span>
+<a href="TodayFree.dc.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</header>
+<main style="display: flex; flex-direction: column; gap: 18px; padding: 0 20px 24px 20px">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 4px">
+<svg width="52" height="52" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="11" fill="none" stroke="#FF7A45" stroke-width="3.5" stroke-dasharray="52 18" stroke-linecap="round"></circle><circle cx="15" cy="15" r="6" fill="#4ADE80"></circle><circle cx="15" cy="15" r="2.4" fill="#0B0D0E"></circle></svg>
+<h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px">WeHum membership</h1>
+</div>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ perks }}" as="p" hint-placeholder-count="8"><li style="display: flex; align-items: center; gap: 12px; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg>{{ p }}</li></sc-for>
+</ul>
+<div role="radiogroup" aria-label="Plan" style="display: flex; flex-direction: column; gap: 10px">
+<button type="button" role="radio" aria-checked="{{ annual }}" onClick="{{ pickAnnual }}" style="{{ annualStyle }}">
+<sc-if value="{{ launch }}" hint-placeholder-val="{{ true }}"><span style="align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 4px 8px; background: rgba(255,122,69,0.18); color: #FF9B70">FOUNDING 1,000 · $59/YEAR · 588 SPOTS LEFT</span></sc-if>
+<span style="display: flex; align-items: baseline; gap: 8px; width: 100%"><span style="font-size: 17px; font-weight: 700; flex-grow: 1; text-align: left">Annual</span><span style="font-size: 20px; font-weight: 700">{{ annualPrice }}</span><span style="font-size: 13px; color: #A0A4A8">/year</span></span>
+<span style="font-size: 13px; line-height: 1.45; color: #A0A4A8; text-align: left">{{ annualNote }}</span>
+</button>
+<button type="button" role="radio" aria-checked="{{ monthly }}" onClick="{{ pickMonthly }}" style="{{ monthlyStyle }}">
+<span style="display: flex; align-items: baseline; gap: 8px; width: 100%"><span style="font-size: 17px; font-weight: 700; flex-grow: 1; text-align: left">Monthly</span><span style="font-size: 20px; font-weight: 700">$9.99</span><span style="font-size: 13px; color: #A0A4A8">/month</span></span>
+<span style="font-size: 13px; line-height: 1.45; color: #A0A4A8; text-align: left">7 days free, then $9.99/month. Cancel anytime.</span>
+</button>
+</div>
+<a href="WelcomeMember.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">{{ cta }}</a>
+<span style="font-size: 13px; color: #A0A4A8; text-align: center">{{ fine }}</span>
+<div style="display: flex; justify-content: center; gap: 18px; font-size: 13px">
+<a href="RestoreSheet.dc.html" style="min-height: 44px; display: flex; align-items: center; color: #C9CCCF; text-decoration: none">Restore purchase</a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; color: #C9CCCF; text-decoration: none">Terms of Use (EULA)</a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; color: #C9CCCF; text-decoration: none">Privacy</a>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"offer":{"editor":"enum","options":["launch","regular"],"default":"launch"},"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { plan: 'annual' }; }
+  renderVals() {
+    var self = this, a = this.state.plan === 'annual';
+    var launch = (this.props.offer ?? 'launch') === 'launch';
+    var price = launch ? '$59' : '$79';
+    var card = function (on) { return 'display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:20px;font-family:inherit;color:#F2F2F2;cursor:pointer;' + (on ? 'background:rgba(255,122,69,0.08);border:1.5px solid #FF7A45;' : 'background:#17191B;border:1px solid #2A2D30;'); };
+    return {
+      perks: ['Extended meditation library', 'Meditation of the Day in 10, 30 or 45 min', 'Group meditations', 'A daily message from Raphael', 'Customizable meditations', 'SoS sessions for hard times', 'The Silence Room', 'Offline downloads'],
+      launch: launch, annualPrice: price,
+      annualNote: launch ? '7 days free, then $59/year. Founding price for the first 1,000 members; after that $79/year.' : '7 days free, then $79/year.',
+      annual: a, monthly: !a,
+      annualStyle: card(a), monthlyStyle: card(!a),
+      pickAnnual: function () { self.setState({ plan: 'annual' }); },
+      pickMonthly: function () { self.setState({ plan: 'monthly' }); },
+      cta: 'Start 7-day free trial',
+      fine: a ? 'Renews automatically each year. Cancel anytime before the trial ends; we remind you on day 5.' : 'Then $9.99/month. Renews automatically each month. Cancel anytime before the trial ends; we remind you on day 5.'
+    };
+  }
+}
+</script>
+</body>
+</html>

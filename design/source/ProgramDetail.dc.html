@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Program detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="Programs.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Program</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<main style="display: flex; flex-direction: column; gap: 16px; padding: 4px 20px 24px 20px">
+<div style="height: 180px; border-radius: 20px; background: #3A1D12 url('img/dawn.jpg') center/cover"></div>
+<div style="display: flex; gap: 8px"><span style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 4px 10px; background: rgba(255,122,69,0.14); color: #FF9B70">PREMIUM</span><span style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 4px 10px; background: #23262A; color: #C9CCCF">7 DAYS</span></div>
+<h2 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.4px">7-Day Autonomic Reset</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #A0A4A8">A step-by-step practice to calm the nervous system. 12 to 20 minutes every morning, before your day gets busy.</p>
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline"><span style="font-size: 16px; font-weight: 700; flex-grow: 1">Day 4 of 7</span><span style="font-size: 13px; color: #A0A4A8">3 meditations left</span></div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px"><span style="height: 6px; border-radius: 999px; background: #4ADE80"></span><span style="height: 6px; border-radius: 999px; background: #4ADE80"></span><span style="height: 6px; border-radius: 999px; background: #4ADE80"></span><span style="height: 6px; border-radius: 999px; background: #FF7A45"></span><span style="height: 6px; border-radius: 999px; background: #2A2D30"></span><span style="height: 6px; border-radius: 999px; background: #2A2D30"></span><span style="height: 6px; border-radius: 999px; background: #2A2D30"></span></div>
+</section>
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+<div style="{{ d.row }}">
+<span style="{{ d.badge }}">{{ d.n }}</span>
+<span style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">{{ d.title }}</span><span style="font-size: 13px; color: #A0A4A8">{{ d.meta }}</span></span>
+</div>
+</sc-for>
+</div>
+<a href="Player.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="#2A0E02" aria-hidden="true"><path d="M7 5l12 7-12 7z"></path></svg>Start day 4</a>
+<a href="TeacherBio.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: #17191B; border: 1px solid #23262A; text-decoration: none; color: #F2F2F2"><span style="width: 40px; height: 40px; border-radius: 999px; background: #24272A; color: #C9CCCF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">RR</span><span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 14px; font-weight: 600">Led by Raphael Reiter</span><span style="font-size: 12px; color: #A0A4A8">See bio</span></span></a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var data = [
+      ['The Grounding Exhale', '10 min · done', 'done'],
+      ['Cadence 4 in, 6 out', '12 min · done', 'done'],
+      ['Softening the Body', '14 min · done', 'done'],
+      ['Steady Under Pressure', '15 min · today', 'today'],
+      ['Vagus Nerve Reset', '15 min · opens tomorrow at 07:00', 'locked'],
+      ['Open Awareness &amp; Silence', '18 min', 'locked'],
+      ['Integration', '20 min · last day', 'locked']
+    ];
+    var days = data.map(function (d, i) {
+      var b = d[2] === 'done' ? 'background:#123C3A;color:#4ADE80;' : (d[2] === 'today' ? 'background:#FF7A45;color:#2A0E02;' : 'background:#23262A;color:#A0A4A8;');
+      return {
+        n: String(i + 1), title: d[0].replace('&amp;', '&'), meta: d[1],
+        badge: 'width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;' + b,
+        row: 'display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #23262A;' + (d[2] === 'locked' ? 'opacity:0.6;' : '')
+      };
+    });
+    return { days: days };
+  }
+}
+</script>
+</body>
+</html>

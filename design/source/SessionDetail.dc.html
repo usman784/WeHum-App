@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1020px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="Discipline.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<span style="flex-grow: 1"></span>
+</header>
+<main style="display: flex; flex-direction: column; gap: 16px; padding: 4px 20px 24px 20px">
+<div style="height: 260px; border-radius: 24px; background: #123C3A url('img/ocean.jpg') center/cover"></div>
+<div style="display: flex; gap: 8px"><span style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 4px 10px; background: rgba(255,122,69,0.14); color: #FF9B70">PREMIUM</span><span style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 4px 10px; background: #23262A; color: #C9CCCF">AUDIO</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.4px">Steady Under Pressure</h1>
+<span style="font-size: 14px; color: #A0A4A8">Raphael · Breathing · 10, 30 or 45 min</span>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #D9DBDD">Stay steady when stress shows up. A grounded practice to settle your body and attention before a demanding day.</p>
+<div style="display: flex; gap: 10px">
+<a href="Player.dc.html" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="#2A0E02" aria-hidden="true"><path d="M7 5l12 7-12 7z"></path></svg>Play</a>
+<button type="button" aria-label="{{ dlLabel }}" onClick="{{ toggleDl }}" style="{{ dlStyle }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg></button>
+</div>
+<span style="font-size: 13px; color: #A0A4A8">{{ dlNote }}</span>
+<span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; font-size: 13px; font-weight: 600"><span style="width: 8px; height: 8px; border-radius: 999px; background: #4ADE80"></span>1,280 people meditated this today</span>
+<a href="Dedications.dc.html" style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: #F2F2F2">
+<div style="display: flex; align-items: center"><span style="font-size: 16px; font-weight: 700; flex-grow: 1">Dedications · 128</span><span style="font-size: 14px; font-weight: 600; color: #FF9B70">See all</span></div>
+<span style="font-size: 14px; line-height: 1.5; color: #D9DBDD">“For my team before a hard week.” <span style="color: #A0A4A8">· Aiko, Japan</span></span>
+<span style="font-size: 14px; line-height: 1.5; color: #D9DBDD">“For my mother.” <span style="color: #A0A4A8">· Lukas, Germany</span></span>
+</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1020}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dl: false }; }
+  renderVals() {
+    var self = this, on = this.state.dl;
+    return {
+      dlLabel: on ? 'Remove download' : 'Download',
+      dlNote: on ? 'Downloaded · plays without internet' : 'Download to listen offline',
+      toggleDl: function () { self.setState({ dl: !on }); },
+      dlStyle: 'width:54px;height:54px;border-radius:999px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;' + (on ? 'background:#123C3A;color:#4ADE80;border:1px solid #2F6B66;' : 'background:#1E2124;color:#F2F2F2;border:1px solid #2A2D30;')
+    };
+  }
+}
+</script>
+</body>
+</html>

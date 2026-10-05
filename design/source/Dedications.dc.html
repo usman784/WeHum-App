@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session dedications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1060px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="Player.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Dedications</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<main style="display: flex; flex-direction: column; gap: 12px; padding: 4px 20px 24px 20px">
+<span style="font-size: 14px; color: #A0A4A8">Steady Under Pressure · 128 dedications since 2026</span>
+<div style="{{ listStyle }}">
+<sc-for list="{{ posts }}" as="p" hint-placeholder-count="5">
+<article style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="width: 36px; height: 36px; border-radius: 999px; background: #23262A; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700">{{ p.initial }}</span>
+<span style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 14px; font-weight: 600">{{ p.name }}</span><span style="font-size: 12px; color: #A0A4A8">{{ p.meta }}</span></span>
+<a href="ReportSheet.dc.html" aria-label="Report this dedication" style="width: 44px; height: 44px; border-radius: 999px; color: #A0A4A8; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></a>
+</div>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #E6E7E8">“{{ p.text }}”</p>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #A0A4A8"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF9B70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.7-7 10-7 10z"></path></svg>Holding this · {{ p.count }}</span>
+</article>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; background: #0F1112; border: 1px dashed #3A3E42">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A4A8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>
+<span style="font-size: 13px; line-height: 1.5; color: #A0A4A8">{{ composeNote }}</span>
+</div>
+</main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"viewer":{"editor":"enum","options":["member","free"],"default":"member"},"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var free = (this.props.viewer ?? 'member') === 'free';
+    var posts = [
+      ['Aiko', 'Japan · 2h', 'For my team before a hard week.', '34'],
+      ['Lukas', 'Germany · 5h', 'For my mother.', '61'],
+      ['Elena', 'United Kingdom · yesterday', 'For everyone who couldn’t sleep last night.', '88'],
+      ['Sam', 'Canada · 3 days ago', 'For myself. I’m learning to slow down.', '42'],
+      ['Priya', 'United States · last year', 'For my brother before his exam.', '19']
+    ].map(function (p) { return { name: p[0], initial: p[0].charAt(0), meta: p[1], text: p[2], count: p[3] }; });
+    return {
+      posts: posts,
+      composeNote: free ? 'Anyone can read dedications. Writing one is part of membership, and opens after you finish a meditation.' : 'You can write a dedication when you finish this session. Up to 3 a day.',
+      listStyle: 'display:flex;flex-direction:column;gap:12px;'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Write a dedication</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #050607; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div aria-hidden="true" style="padding: 100px 55px 0 55px; opacity: 0.25"><div style="height: 240px; border-radius: 28px; background: #123C3A url('img/ocean.jpg') center/cover"></div></div>
+<section aria-label="Write your dedication" style="margin-top: auto; background: #17191B; border-top: 1px solid #2A2D30; border-radius: 28px 28px 0 0; padding: 12px 20px 36px 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="align-self: center; width: 40px; height: 5px; border-radius: 999px; background: #3A3E42"></div>
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #FF9B70">DEDICATE YOUR MEDITATION</span>
+<h1 style="margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25">Who or what do you dedicate this meditation to?</h1>
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="position: absolute; left: -9999px">Dedication</span>
+<textarea rows="3" maxlength="200" onChange="{{ setText }}" placeholder="e.g. To everyone starting a hard week" style="padding: 14px; border-radius: 16px; background: #0F1112; border: 1px solid #2A2D30; color: #F2F2F2; font-family: inherit; font-size: 16px; line-height: 1.5; resize: none" value="{{ text }}"></textarea>
+<span style="align-self: flex-end; font-size: 12px; color: #A0A4A8">{{ count }} / 200</span>
+</label>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{ ideas }}" as="i" hint-placeholder-count="3"><button type="button" onClick="{{ i.pick }}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; background: #0F1112; border: 1px solid #2A2D30; color: #F2F2F2; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">{{ i.label }}</button></sc-for>
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: #A0A4A8">Shown with your first name and country under this session. Text only, no links. 2 of 3 dedications left today.</span>
+<a href="{{ postHref }}" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Post dedication</a>
+<a href="Player.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 44px; color: #A0A4A8; font-size: 15px; font-weight: 600; text-decoration: none">Not now</a>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"account":{"editor":"enum","options":["signed-in","guest"],"default":"signed-in"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { text: '' }; }
+  renderVals() {
+    var self = this;
+    var ideas = ['Someone I love', 'Myself', 'Everyone having a hard day'].map(function (t) {
+      return { label: t, pick: function () { self.setState({ text: 'For ' + t.charAt(0).toLowerCase() + t.slice(1) + '.' }); } };
+    });
+    return {
+      postHref: (this.props.account ?? 'signed-in') === 'guest' ? 'AccountGate.dc.html' : 'Dedications.dc.html',
+      text: this.state.text, count: this.state.text.length, ideas: ideas,
+      setText: function (e) { self.setState({ text: e.target.value }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

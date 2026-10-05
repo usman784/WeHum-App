@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Advanced builder</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1120px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="BuildYourOwn.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Advanced builder</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 4px 20px 200px 20px">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #C9CCCF">Name
+<input type="text" value="Sunday OM meditation" style="height: 48px; padding: 0 14px; border-radius: 14px; background: #17191B; border: 1px solid #2A2D30; color: #F2F2F2; font-family: inherit; font-size: 15px"></label>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8; padding-top: 4px">BLOCKS · DRAG TO REORDER</span>
+<sc-for list="{{ blocks }}" as="b" hint-placeholder-count="5">
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: #17191B; border: 1px solid #23262A">
+<span aria-hidden="true" style="color: #6E7378; font-size: 16px; cursor: grab">⋮⋮</span>
+<span style="{{ b.tag }}"></span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">{{ b.name }}</span><span style="font-size: 12px; color: #A0A4A8">{{ b.meta }}</span></span>
+<sc-if value="{{ b.loops }}" hint-placeholder-val="{{ false }}">
+<span style="display: flex; align-items: center; gap: 4px; border-radius: 999px; background: #0F1112; border: 1px solid #2A2D30; padding: 2px">
+<button type="button" aria-label="Fewer loops" onClick="{{ b.less }}" style="width: 32px; height: 32px; border-radius: 999px; border: none; background: transparent; color: #F2F2F2; font-family: inherit; font-size: 16px; cursor: pointer">−</button>
+<span style="min-width: 28px; text-align: center; font-size: 14px; font-weight: 700">×{{ b.count }}</span>
+<button type="button" aria-label="More loops" onClick="{{ b.more }}" style="width: 32px; height: 32px; border-radius: 999px; border: none; background: transparent; color: #F2F2F2; font-family: inherit; font-size: 16px; cursor: pointer">+</button>
+</span>
+</sc-if>
+</div>
+</sc-for>
+<button type="button" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; border-radius: 16px; border: 1px dashed #3A3E42; background: transparent; color: #F2F2F2; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add block · voice, OM, humming, mantra, silence</button>
+
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 18px; background: #17191B; border: 1px solid #23262A">
+<span style="font-size: 14px; font-weight: 600">Share this recipe</span>
+<div style="display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 6px 0 14px; border-radius: 12px; background: #0F1112; border: 1px solid #2A2D30">
+<span style="flex-grow: 1; font-size: 13px; color: #C9CCCF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">wehum.app/r/sunday-om-7KQ2</span>
+<button type="button" style="height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #23262A; color: #F2F2F2; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Copy</button>
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: #A0A4A8">Anyone with the app can open it and play the same blocks. The link holds only the recipe, never your name.</span>
+</section>
+</main>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 20px 30px 20px; background: #0F1112; border-top: 1px solid #23262A; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 14px; font-weight: 600">{{ summary }}</span>
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px">
+<a href="MySits.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 999px; background: #1E2124; border: 1px solid #2A2D30; color: #F2F2F2; font-size: 14px; font-weight: 600; text-decoration: none">Save</a>
+<a href="Player.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Build it</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { om: 3, mantra: 2 }; }
+  renderVals() {
+    var self = this, s = this.state;
+    var tag = function (c) { return 'width:10px;height:36px;border-radius:999px;flex-shrink:0;background:' + c + ';'; };
+    var step = function (k, d) { return function () { var o = {}; o[k] = Math.max(1, Math.min(21, s[k] + d)); self.setState(o); }; };
+    var blocks = [
+      { name: 'Arrival', meta: 'Opening · Raphael · 2 min', tag: tag('#FF9B70'), loops: false },
+      { name: 'OM', meta: 'Loop · 40 s each', tag: tag('#CDB6E6'), loops: true, count: s.om, less: step('om', -1), more: step('om', 1) },
+      { name: 'Guided focus', meta: 'Core · Raphael · 8 min', tag: tag('#9FE3D6'), loops: false },
+      { name: 'Lokah samastah mantra', meta: 'Loop · 1 min each', tag: tag('#CDB6E6'), loops: true, count: s.mantra, less: step('mantra', -1), more: step('mantra', 1) },
+      { name: 'Silence', meta: 'Fills to your length', tag: tag('#4ADE80'), loops: false },
+      { name: 'Three bells', meta: 'Closing · 20 s', tag: tag('#FFB99A'), loops: false }
+    ];
+    var total = 2 + Math.round(s.om * 40 / 60) + 8 + s.mantra + 5;
+    return { blocks: blocks, summary: total + ' min · 6 blocks · OM ×' + s.om + ' · mantra ×' + s.mantra };
+  }
+}
+</script>
+</body>
+</html>

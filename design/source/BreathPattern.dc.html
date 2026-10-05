@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Breath pattern designer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1000px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="Breathwork.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Pattern designer</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<main style="display: flex; flex-direction: column; gap: 16px; padding: 4px 20px 28px 20px">
+<div aria-hidden="true" style="display: flex; gap: 4px; height: 56px; border-radius: 16px; overflow: hidden">
+<sc-for list="{{ timeline }}" as="t" hint-placeholder-count="4"><span style="{{ t.style }}">{{ t.label }}</span></sc-for>
+</div>
+<span style="font-size: 14px; color: #A0A4A8; text-align: center">{{ summary }}</span>
+
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 6px 16px">
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+<div style="display: flex; align-items: center; gap: 12px; min-height: 60px; border-bottom: 1px solid #23262A">
+<span style="{{ r.dot }}"></span>
+<span style="font-size: 15px; font-weight: 600; flex-grow: 1">{{ r.label }}</span>
+<span style="display: flex; align-items: center; gap: 4px; border-radius: 999px; background: #0F1112; border: 1px solid #2A2D30; padding: 2px">
+<button type="button" aria-label="Less" onClick="{{ r.less }}" style="width: 36px; height: 36px; border-radius: 999px; border: none; background: transparent; color: #F2F2F2; font-family: inherit; font-size: 18px; cursor: pointer">−</button>
+<span style="min-width: 44px; text-align: center; font-size: 15px; font-weight: 700">{{ r.value }}</span>
+<button type="button" aria-label="More" onClick="{{ r.more }}" style="width: 36px; height: 36px; border-radius: 999px; border: none; background: transparent; color: #F2F2F2; font-family: inherit; font-size: 18px; cursor: pointer">+</button>
+</span>
+</div>
+</sc-for>
+</section>
+
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #C9CCCF">Name
+<input type="text" value="My evening calm" style="height: 48px; padding: 0 14px; border-radius: 14px; background: #17191B; border: 1px solid #2A2D30; color: #F2F2F2; font-family: inherit; font-size: 15px"></label>
+<a href="Player.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Start breathing</a>
+<span style="font-size: 12px; line-height: 1.5; color: #6E7378; text-align: center">Stop if you feel dizzy. Not for use while driving or in water.</span>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { inh: 4, h1: 7, exh: 8, h2: 0, rounds: 6 }; }
+  renderVals() {
+    var self = this, s = this.state;
+    var step = function (k, d, min, max) { return function () { var o = {}; o[k] = Math.max(min, Math.min(max, s[k] + d)); self.setState(o); }; };
+    var dot = function (c) { return 'width:12px;height:12px;border-radius:999px;flex-shrink:0;background:' + c + ';'; };
+    var rows = [
+      ['inh', 'Breathe in', '#9FE3D6', 1, 12, 's'], ['h1', 'Hold', '#FFB99A', 0, 20, 's'], ['exh', 'Breathe out', '#FF7A45', 1, 16, 's'], ['h2', 'Hold empty', '#CDB6E6', 0, 20, 's'], ['rounds', 'Rounds', '#4ADE80', 1, 30, '']
+    ].map(function (r) { return { label: r[1], value: s[r[0]] + r[5], dot: dot(r[2]), less: step(r[0], -1, r[3], r[4]), more: step(r[0], 1, r[3], r[4]) }; });
+    var seg = function (v, c, l) { return { label: v ? l : '', style: 'flex:' + Math.max(v, 0.001) + ';display:' + (v ? 'flex' : 'none') + ';align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0B0D0E;background:' + c + ';' }; };
+    var cycle = s.inh + s.h1 + s.exh + s.h2;
+    var total = cycle * s.rounds;
+    return {
+      rows: rows,
+      timeline: [seg(s.inh, '#9FE3D6', 'In ' + s.inh), seg(s.h1, '#FFB99A', 'Hold ' + s.h1), seg(s.exh, '#FF7A45', 'Out ' + s.exh), seg(s.h2, '#CDB6E6', 'Hold ' + s.h2)],
+      summary: cycle + ' s per breath · ' + s.rounds + ' rounds · ' + Math.floor(total / 60) + ' min ' + (total % 60) + ' s'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Setup · Your name</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 60px 24px 0 24px">
+<div style="display: flex; gap: 6px" aria-label="Step 1 of 4"><span style="flex-grow: 1; height: 4px; border-radius: 999px; background: #FF7A45"></span><span style="flex-grow: 1; height: 4px; border-radius: 999px; background: #2A2D30"></span><span style="flex-grow: 1; height: 4px; border-radius: 999px; background: #2A2D30"></span><span style="flex-grow: 1; height: 4px; border-radius: 999px; background: #2A2D30"></span></div>
+<div style="display: flex; align-items: center"><span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8; flex-grow: 1">STEP 1 OF 3</span><a href="SitTime.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600; color: #A0A4A8; text-decoration: none">Skip</a></div>
+<h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px">What should we call you?</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A0A4A8">Your first name, for your welcome message. No account needed.</p>
+</div>
+<form style="display: flex; flex-direction: column; gap: 10px; padding: 28px 24px 0 24px">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #C9CCCF">First name
+<input type="text" value="{{ name }}" onChange="{{ setName }}" placeholder="e.g. Marcus" autocomplete="given-name" style="height: 56px; padding: 0 16px; border-radius: 14px; background: #17191B; border: 1.5px solid #FF7A45; color: #F2F2F2; font-family: inherit; font-size: 18px">
+</label>
+<span style="font-size: 13px; color: #A0A4A8">{{ hint }}</span>
+</form>
+<div style="margin: 32px 24px 0 24px; background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8">PREVIEW</span>
+<span style="font-size: 22px; font-weight: 700">{{ greeting }}</span>
+</div>
+<div style="margin-top: auto; padding: 0 24px 40px 24px">
+<a href="SitTime.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Continue</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { name: 'Marcus' }; }
+  renderVals() {
+    var self = this, n = this.state.name.trim();
+    return {
+      name: this.state.name,
+      setName: function (e) { self.setState({ name: e.target.value }); },
+      greeting: n ? 'Good morning, ' + n : 'Good morning',
+      hint: 'You can change it later in You › Edit profile.'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Intro 5 · How do you want to start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 960px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 52px 20px 8px 20px">
+<a href="Reminder.dc.html" aria-label="Previous" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<a href="Login.dc.html" style="min-height: 44px; display: flex; align-items: center; padding: 0 4px; font-size: 15px; font-weight: 600; color: #A0A4A8; text-decoration: none">Log in</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px; padding: 8px 20px 0 20px">
+<h1 style="margin: 0; padding: 0 4px; font-size: 28px; font-weight: 700; line-height: 1.15; letter-spacing: -0.5px">How do you want to start?</h1>
+
+<section style="background: rgba(255,122,69,0.08); border: 1.5px solid #FF7A45; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<sc-if value="{{ launch }}" hint-placeholder-val="{{ true }}">
+<span style="align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 5px 10px; background: rgba(255,122,69,0.18); color: #FF9B70">FOUNDING 1,000 · $59/YEAR · 588 SPOTS LEFT</span>
+</sc-if>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #D9DBDD">Everything in WeHum: the extended meditation library, Meditation of the Day, group meditations, a daily message from Raphael, customizable meditations, SoS sessions for hard times and the Silence Room.</p>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 18px; font-weight: 700">7 days free, then {{ annualPrice }}/year.</span>
+<span style="font-size: 13px; line-height: 1.45; color: #A0A4A8">Renews automatically. Cancel anytime before the trial ends.</span>
+</div>
+<a href="StoreSheet.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Start 7-day free trial</a>
+</section>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<a href="StoreSheet.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 999px; background: #1E2124; border: 1px solid #2A2D30; color: #F2F2F2; font-size: 15px; font-weight: 600; text-decoration: none">Monthly · 7 days free, then $9.99/month</a>
+<span style="font-size: 13px; color: #A0A4A8; text-align: center">Full access. Renews monthly, cancel anytime before the trial ends.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 4px; align-items: center">
+<a href="TodayFree.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600; color: #F2F2F2; text-decoration: underline; text-underline-offset: 4px">Continue for free</a>
+<span style="font-size: 13px; line-height: 1.45; color: #A0A4A8; text-align: center; padding: 0 12px">Access Raphael’s existing online library of guided meditations.</span>
+</div>
+<span style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: #9FE3D6; text-align: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg>No account needed. Save your progress later.</span>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding: 0 24px 32px 24px">
+<div aria-label="Slide 5 of 5" style="display: flex; justify-content: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 999px; background: #2A2D30"></span><span style="width: 8px; height: 8px; border-radius: 999px; background: #2A2D30"></span><span style="width: 8px; height: 8px; border-radius: 999px; background: #2A2D30"></span><span style="width: 8px; height: 8px; border-radius: 999px; background: #2A2D30"></span><span style="width: 24px; height: 8px; border-radius: 999px; background: #FF7A45"></span></div>
+<div style="display: flex; justify-content: center; gap: 18px; font-size: 13px">
+<a href="RestoreSheet.dc.html" style="min-height: 44px; display: flex; align-items: center; color: #C9CCCF; text-decoration: none">Restore purchase</a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; color: #C9CCCF; text-decoration: none">Terms of Use</a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; color: #C9CCCF; text-decoration: none">Privacy</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"offer":{"editor":"enum","options":["launch","regular"],"default":"launch"},"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var launch = (this.props.offer ?? 'launch') === 'launch';
+    return { launch: launch, annualPrice: launch ? '$59' : '$79' };
+  }
+}
+</script>
+</body>
+</html>

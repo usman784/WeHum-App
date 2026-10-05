@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restore purchase</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #050607; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div role="tablist" aria-label="Restore result" style="display: flex; gap: 6px; padding: 56px 20px 0 20px">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+</div>
+<section role="status" aria-label="Restore purchase" style="margin-top: auto; background: #17191B; border-top: 1px solid #2A2D30; border-radius: 28px 28px 0 0; padding: 12px 20px 36px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+<div style="width: 40px; height: 5px; border-radius: 999px; background: #3A3E42"></div>
+<sc-if value="{{ isChecking }}" hint-placeholder-val="{{ true }}">
+<svg width="72" height="72" viewBox="0 0 88 88" aria-hidden="true"><circle cx="44" cy="44" r="36" fill="none" stroke="#23262A" stroke-width="6"></circle><circle cx="44" cy="44" r="36" fill="none" stroke="#FF7A45" stroke-width="6" stroke-dasharray="70 157" stroke-linecap="round" transform="rotate(-90 44 44)"></circle></svg>
+<h1 style="margin: 0; font-size: 22px; font-weight: 700">Checking your purchases…</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A0A4A8">Looking for a WeHum membership on this store account.</p>
+</sc-if>
+<sc-if value="{{ isRestored }}" hint-placeholder-val="{{ false }}">
+<span style="width: 72px; height: 72px; border-radius: 999px; background: #123C3A; color: #4ADE80; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg></span>
+<h1 style="margin: 0; font-size: 22px; font-weight: 700">Membership restored</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A0A4A8">Annual plan, active until Oct 12, 2027. Everything is unlocked again.</p>
+<a href="Today.dc.html" style="align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Go to Today</a>
+</sc-if>
+<sc-if value="{{ isNone }}" hint-placeholder-val="{{ false }}">
+<span style="width: 72px; height: 72px; border-radius: 999px; background: #1E2124; color: #C9CCCF; display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg></span>
+<h1 style="margin: 0; font-size: 22px; font-weight: 700">No membership found</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A0A4A8">We couldn’t find a WeHum purchase on this Apple ID. If you subscribed on another account, sign in to that store account and try again.</p>
+<a href="Membership.dc.html" style="align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">See membership options</a>
+<a href="Login.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600; text-decoration: none">Log in to your WeHum account</a>
+</sc-if>
+<a href="Intro5.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600; color: #A0A4A8; text-decoration: none">Close</a>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { s: 'restored' }; }
+  renderVals() {
+    var self = this, s = this.state.s;
+    var tabs = [['checking', 'Checking'], ['restored', 'Found'], ['none', 'Not found']].map(function (t) {
+      var on = s === t[0];
+      return { label: t[1], on: on, pick: function () { self.setState({ s: t[0] }); }, style: 'min-height:36px;padding:0 12px;border-radius:999px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;' + (on ? 'background:#FF7A45;color:#2A0E02;border:1px solid #FF7A45;' : 'background:#17191B;color:#C9CCCF;border:1px solid #2A2D30;') };
+    });
+    return { tabs: tabs, isChecking: s === 'checking', isRestored: s === 'restored', isNone: s === 'none' };
+  }
+}
+</script>
+</body>
+</html>

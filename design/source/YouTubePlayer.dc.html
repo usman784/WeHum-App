@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Free meditation player</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="Library.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">{{ title }}</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<div style="height: 220px; background: #2A1F33 url('img/lake.jpg') center/cover; display: flex; align-items: center; justify-content: center"><span style="width: 68px; height: 48px; border-radius: 14px; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M8 5l11 7-11 7z"></path></svg></span></div>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 24px 20px">
+<sc-if value="{{ free }}" hint-placeholder-val="{{ true }}"><span style="align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; border-radius: 999px; padding: 4px 10px; background: rgba(74,222,128,0.12); color: #4ADE80">FREE FOR YOU</span></sc-if>
+<h2 style="margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25">Guided Meditation for Unconditional Love &amp; Healing</h2>
+<span style="font-size: 14px; color: #A0A4A8">Raphael · 40 min</span>
+<sc-if value="{{ free }}" hint-placeholder-val="{{ true }}">
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #D9DBDD">Members get the extended meditation library, the Meditation of the Day in 10, 30 or 45 min, group meditations, the Silence Room and offline downloads.</p>
+<a href="Membership.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 50px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 15px; font-weight: 700; text-decoration: none">Try 7 days free</a>
+</section>
+</sc-if>
+<sc-if value="{{ free }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1px dashed #3A3E42; color: #A0A4A8"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span style="font-size: 13px; line-height: 1.4">Dedications are for members</span></div></sc-if>
+<h3 style="margin: 6px 0 0 0; font-size: 17px; font-weight: 700">More free meditations</h3>
+<a href="YouTubePlayer.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 8px 0; border-bottom: 1px solid #23262A; text-decoration: none; color: #F2F2F2"><span style="width: 96px; height: 56px; border-radius: 10px; background: #1E2A3A url('img/clouds.jpg') center/cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true" style="opacity: 0.9"><path d="M8 5l11 7-11 7z"></path></svg></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; font-weight: 600">Sound as a Gateway to Transcendence</span><span style="font-size: 12px; color: #A0A4A8">40 min</span></span></a>
+<a href="YouTubePlayer.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 8px 0; text-decoration: none; color: #F2F2F2"><span style="width: 96px; height: 56px; border-radius: 10px; background: #3A1D12 url('img/dawn.jpg') center/cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true" style="opacity: 0.9"><path d="M8 5l11 7-11 7z"></path></svg></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; font-weight: 600">What If Inner Peace Is Built?</span><span style="font-size: 12px; color: #A0A4A8">40 min</span></span></a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"viewer":{"editor":"enum","options":["free","member"],"default":"free"},"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { var free = (this.props.viewer ?? 'free') === 'free'; return { free: free, title: free ? 'Free for you' : 'Raphael’s online library' }; }
+}
+</script>
+</body>
+</html>

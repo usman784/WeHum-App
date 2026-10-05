@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Search</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 960px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 10px; padding: 52px 20px 12px 20px">
+<a href="Library.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<label style="flex-grow: 1; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 14px; background: #17191B; border: 1.5px solid #FF7A45; color: #A0A4A8">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<input type="search" aria-label="Search" value="sleep" style="flex-grow: 1; min-width: 0; background: transparent; border: none; outline: none; color: #F2F2F2; font-family: inherit; font-size: 16px">
+</label>
+</header>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 4px 20px 24px 20px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8">LENGTH</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{ lens }}" as="l" hint-placeholder-count="4"><button type="button" onClick="{{ l.pick }}" style="{{ l.style }}">{{ l.label }}</button></sc-for></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8">TYPE</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{ types }}" as="t" hint-placeholder-count="4"><button type="button" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for></div>
+</div>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8; padding-top: 8px">MEDITATIONS · 4</span>
+<div style="display: flex; flex-direction: column">
+<a href="SessionDetail.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #23262A; text-decoration: none; color: #F2F2F2"><span style="width: 56px; height: 56px; border-radius: 12px; background: #2A1F33 url('img/forest.jpg') center/cover; flex-shrink: 0"></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 600">Deep Delta Sleep Descent</span><span style="font-size: 13px; color: #A0A4A8">Sleep · 45 min · Premium</span></span></a>
+<a href="SessionDetail.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #23262A; text-decoration: none; color: #F2F2F2"><span style="width: 56px; height: 56px; border-radius: 12px; background: #1E2A3A url('img/night.jpg') center/cover; flex-shrink: 0"></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 600">Heavy Body, Slow Descent</span><span style="font-size: 13px; color: #A0A4A8">SoS · 8 min · Premium</span></span></a>
+<a href="YouTubePlayer.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #23262A; text-decoration: none; color: #F2F2F2"><span style="width: 56px; height: 56px; border-radius: 12px; background: #3A1D12 url('img/aurora.jpg') center/cover; flex-shrink: 0"></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 600">Sleep Meditation for Busy Minds</span><span style="font-size: 13px; color: #A0A4A8">Raphael’s online library · 30 min</span></span></a>
+<a href="SessionDetail.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 10px 0; text-decoration: none; color: #F2F2F2"><span style="width: 56px; height: 56px; border-radius: 12px; background: #123C3A url('img/dunes.jpg') center/cover; flex-shrink: 0"></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 600">Before Sleep Body Scan</span><span style="font-size: 13px; color: #A0A4A8">Body Scan · 20 min · Premium</span></span></a>
+</div>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8; padding-top: 8px">DAILY MESSAGES · 1</span>
+<a href="DailyMessage.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 10px 0; text-decoration: none; color: #F2F2F2"><span style="width: 56px; height: 56px; border-radius: 12px; background: #17191B; border: 1px solid #23262A; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0"><span style="font-size: 17px; font-weight: 700">14</span><span style="font-size: 10px; color: #A0A4A8">SEP</span></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 600">Why Sleep Starts in the Morning</span><span style="font-size: 13px; color: #A0A4A8">Text · Rest</span></span></a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { len: 'Any', type: 'All' }; }
+  renderVals() {
+    var self = this;
+    var st = function (on) { return 'min-height:40px;padding:0 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;' + (on ? 'background:#FF7A45;color:#2A0E02;border:1px solid #FF7A45;' : 'background:#17191B;color:#F2F2F2;border:1px solid #2A2D30;'); };
+    var lens = ['Any', 'Under 10 min', '10–20 min', '20+ min'].map(function (x) { return { label: x, style: st(self.state.len === x), pick: function () { self.setState({ len: x }); } }; });
+    var types = ['All', 'Audio', 'Video', 'Free'].map(function (x) { return { label: x, style: st(self.state.type === x), pick: function () { self.setState({ type: x }); } }; });
+    return { lens: lens, types: types };
+  }
+}
+</script>
+</body>
+</html>

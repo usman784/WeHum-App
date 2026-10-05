@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Update required</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<main style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 0 32px; text-align: center">
+<svg width="88" height="88" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="11" fill="none" stroke="#FF7A45" stroke-width="3.5" stroke-dasharray="52 18" stroke-linecap="round"></circle><circle cx="15" cy="15" r="6" fill="#4ADE80"></circle><circle cx="15" cy="15" r="2.4" fill="#0B0D0E"></circle></svg>
+<h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.4px">Time for an update</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #A0A4A8">This version of WeHum is no longer supported. Update to keep your progress, meditations and downloads in sync.</p>
+</main>
+<div style="padding: 0 24px 40px 24px; display: flex; flex-direction: column; gap: 10px">
+<a href="#" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Update WeHum</a>
+<span style="font-size: 12px; color: #A0A4A8; text-align: center">Version 1.0 · the admin panel sets the minimum version</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

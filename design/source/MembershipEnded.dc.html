@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Membership ended</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<main style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 0 24px">
+<span style="width: 80px; height: 80px; border-radius: 999px; background: #1E2124; color: #C9CCCF; display: flex; align-items: center; justify-content: center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.4px">Your membership has ended</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #A0A4A8">Thank you for meditating with us. Your progress, minutes and saved meditations are kept.</p>
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; font-weight: 700; letter-spacing: 1px; color: #4ADE80">STILL FREE FOR YOU</span>
+<span style="font-size: 15px">Free meditations from Raphael’s online library</span>
+<span style="font-size: 13px; font-weight: 700; letter-spacing: 1px; color: #A0A4A8; padding-top: 6px">NOW LOCKED</span>
+<span style="font-size: 15px; color: #A0A4A8">Meditation of the Day, extended library, group meditations, the Silence Room, daily message, downloads</span>
+</section>
+</main>
+<div style="padding: 0 24px 40px 24px; display: flex; flex-direction: column; gap: 10px">
+<a href="Membership.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 16px; font-weight: 700; text-decoration: none">Rejoin WeHum</a>
+<a href="TodayFree.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 999px; background: #1E2124; border: 1px solid #2A2D30; color: #F2F2F2; font-size: 15px; font-weight: 600; text-decoration: none">Continue free</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

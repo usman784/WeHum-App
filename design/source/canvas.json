@@ -1,0 +1,816 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "01 · Splash",
+      "is_interactive": true
+    },
+    "Intro1.dc.html": {
+      "x": 470,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "02 · Intro 1 · Welcome",
+      "is_interactive": true
+    },
+    "Intro2.dc.html": {
+      "x": 940,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "03 · Intro 2 · Never alone",
+      "is_interactive": true
+    },
+    "Intro3.dc.html": {
+      "x": 1410,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "04 · Intro 3 · Every day",
+      "is_interactive": true
+    },
+    "Intro4.dc.html": {
+      "x": 1880,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "05 · Intro 4 · Training, not therapy",
+      "is_interactive": true
+    },
+    "NameStep.dc.html": {
+      "x": 2350,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "06 · Setup 1 · Your name",
+      "is_interactive": true
+    },
+    "SitTime.dc.html": {
+      "x": 2820,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "07 · Setup 2 · Meditation reminder",
+      "is_interactive": true
+    },
+    "Reminder.dc.html": {
+      "x": 3290,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "08 · Setup 3 · Reminder",
+      "is_interactive": true
+    },
+    "Intro5.dc.html": {
+      "x": 3760,
+      "y": 300,
+      "w": 390,
+      "h": 960,
+      "title": "09 · How do you want to start",
+      "is_interactive": true
+    },
+    "StoreSheet.dc.html": {
+      "x": 0,
+      "y": 1796,
+      "w": 390,
+      "h": 844,
+      "title": "10 · App Store sheet (no login)",
+      "is_interactive": true
+    },
+    "PurchaseStatus.dc.html": {
+      "x": 470,
+      "y": 1796,
+      "w": 390,
+      "h": 844,
+      "title": "11 · Purchase states",
+      "is_interactive": true
+    },
+    "WelcomeMember.dc.html": {
+      "x": 940,
+      "y": 1796,
+      "w": 390,
+      "h": 844,
+      "title": "12 · Trial started",
+      "is_interactive": true
+    },
+    "CreateAccount.dc.html": {
+      "x": 1410,
+      "y": 1796,
+      "w": 390,
+      "h": 900,
+      "title": "13 · Save your progress (optional)",
+      "is_interactive": true
+    },
+    "Membership.dc.html": {
+      "x": 1880,
+      "y": 1796,
+      "w": 390,
+      "h": 1060,
+      "title": "14 · Membership paywall",
+      "is_interactive": true
+    },
+    "RestoreSheet.dc.html": {
+      "x": 2350,
+      "y": 1796,
+      "w": 390,
+      "h": 844,
+      "title": "15 · Restore purchase",
+      "is_interactive": true
+    },
+    "CreateAccountFree.dc.html": {
+      "x": 0,
+      "y": 3392,
+      "w": 390,
+      "h": 900,
+      "title": "16 · Save your progress (free user)",
+      "is_interactive": true
+    },
+    "EmailSignUp.dc.html": {
+      "x": 470,
+      "y": 3392,
+      "w": 390,
+      "h": 844,
+      "title": "17 · Sign up with email",
+      "is_interactive": true
+    },
+    "Login.dc.html": {
+      "x": 940,
+      "y": 3392,
+      "w": 390,
+      "h": 844,
+      "title": "18 · Log in",
+      "is_interactive": true
+    },
+    "ForgotPassword.dc.html": {
+      "x": 1410,
+      "y": 3392,
+      "w": 390,
+      "h": 844,
+      "title": "19 · Forgot password",
+      "is_interactive": true
+    },
+    "CheckEmail.dc.html": {
+      "x": 1880,
+      "y": 3392,
+      "w": 390,
+      "h": 844,
+      "title": "20 · Check your email",
+      "is_interactive": true
+    },
+    "AccountGate.dc.html": {
+      "x": 2350,
+      "y": 3392,
+      "w": 390,
+      "h": 844,
+      "title": "21 · Account needed to post",
+      "is_interactive": true
+    },
+    "Today.dc.html": {
+      "x": 0,
+      "y": 4828,
+      "w": 390,
+      "h": 1280,
+      "title": "22 · Today · Meditation of the Day",
+      "is_interactive": true
+    },
+    "MotdRoom.dc.html": {
+      "x": 470,
+      "y": 4828,
+      "w": 390,
+      "h": 960,
+      "title": "23 · Meditation of the Day room",
+      "is_interactive": true
+    },
+    "TodayFree.dc.html": {
+      "x": 940,
+      "y": 4828,
+      "w": 390,
+      "h": 1260,
+      "title": "24 · Today (free)",
+      "is_interactive": true
+    },
+    "GlobalPresence.dc.html": {
+      "x": 1410,
+      "y": 4828,
+      "w": 390,
+      "h": 1160,
+      "title": "25 · World map & World Vibration",
+      "is_interactive": true
+    },
+    "DailyMessage.dc.html": {
+      "x": 1880,
+      "y": 4828,
+      "w": 390,
+      "h": 1000,
+      "title": "26 · Daily message",
+      "is_interactive": true
+    },
+    "MessageArchive.dc.html": {
+      "x": 2350,
+      "y": 4828,
+      "w": 390,
+      "h": 1000,
+      "title": "27 · Past messages",
+      "is_interactive": true
+    },
+    "Notifications.dc.html": {
+      "x": 2820,
+      "y": 4828,
+      "w": 390,
+      "h": 960,
+      "title": "28 · Notifications",
+      "is_interactive": true
+    },
+    "PushPreview.dc.html": {
+      "x": 3290,
+      "y": 4828,
+      "w": 390,
+      "h": 844,
+      "title": "29 · Push notifications",
+      "is_interactive": true
+    },
+    "SOS.dc.html": {
+      "x": 3760,
+      "y": 4828,
+      "w": 390,
+      "h": 1260,
+      "title": "30 · SoS · How can I help?",
+      "is_interactive": true
+    },
+    "Library.dc.html": {
+      "x": 0,
+      "y": 6644,
+      "w": 390,
+      "h": 1880,
+      "title": "31 · Library",
+      "is_interactive": true
+    },
+    "Discipline.dc.html": {
+      "x": 470,
+      "y": 6644,
+      "w": 390,
+      "h": 1040,
+      "title": "32 · Theme page",
+      "is_interactive": true
+    },
+    "LibraryFilters.dc.html": {
+      "x": 940,
+      "y": 6644,
+      "w": 390,
+      "h": 900,
+      "title": "33 · Library filters",
+      "is_interactive": true
+    },
+    "Search.dc.html": {
+      "x": 1410,
+      "y": 6644,
+      "w": 390,
+      "h": 960,
+      "title": "34 · Search",
+      "is_interactive": true
+    },
+    "Programs.dc.html": {
+      "x": 1880,
+      "y": 6644,
+      "w": 390,
+      "h": 844,
+      "title": "35 · All programs",
+      "is_interactive": true
+    },
+    "ProgramDetail.dc.html": {
+      "x": 2350,
+      "y": 6644,
+      "w": 390,
+      "h": 1300,
+      "title": "36 · Program detail",
+      "is_interactive": true
+    },
+    "TeacherBio.dc.html": {
+      "x": 2820,
+      "y": 6644,
+      "w": 390,
+      "h": 1100,
+      "title": "37 · Teacher bio",
+      "is_interactive": true
+    },
+    "MySits.dc.html": {
+      "x": 3290,
+      "y": 6644,
+      "w": 390,
+      "h": 844,
+      "title": "38 · My Meditations",
+      "is_interactive": true
+    },
+    "BuildYourOwn.dc.html": {
+      "x": 3760,
+      "y": 6644,
+      "w": 390,
+      "h": 1240,
+      "title": "39 · Build your own",
+      "is_interactive": true
+    },
+    "BuildAdvanced.dc.html": {
+      "x": 4230,
+      "y": 6644,
+      "w": 390,
+      "h": 1120,
+      "title": "40 · Build your own · advanced",
+      "is_interactive": true
+    },
+    "SessionDetail.dc.html": {
+      "x": 0,
+      "y": 9060,
+      "w": 390,
+      "h": 1020,
+      "title": "41 · Session detail",
+      "is_interactive": true
+    },
+    "Player.dc.html": {
+      "x": 470,
+      "y": 9060,
+      "w": 390,
+      "h": 900,
+      "title": "42 · Player · presence ring",
+      "is_interactive": true
+    },
+    "VideoPlayer.dc.html": {
+      "x": 940,
+      "y": 9060,
+      "w": 390,
+      "h": 900,
+      "title": "43 · Video player",
+      "is_interactive": true
+    },
+    "YouTubePlayer.dc.html": {
+      "x": 1410,
+      "y": 9060,
+      "w": 390,
+      "h": 1100,
+      "title": "44 · Free YouTube player",
+      "is_interactive": true
+    },
+    "SessionComplete.dc.html": {
+      "x": 1880,
+      "y": 9060,
+      "w": 390,
+      "h": 900,
+      "title": "45 · Meditation complete · payoff",
+      "is_interactive": true
+    },
+    "ShareCard.dc.html": {
+      "x": 2350,
+      "y": 9060,
+      "w": 390,
+      "h": 1000,
+      "title": "46 · Share your sit",
+      "is_interactive": true
+    },
+    "DedicationSheet.dc.html": {
+      "x": 2820,
+      "y": 9060,
+      "w": 390,
+      "h": 844,
+      "title": "47 · Write a dedication",
+      "is_interactive": true
+    },
+    "Dedications.dc.html": {
+      "x": 3290,
+      "y": 9060,
+      "w": 390,
+      "h": 1060,
+      "title": "48 · Session dedications",
+      "is_interactive": true
+    },
+    "ReportSheet.dc.html": {
+      "x": 3760,
+      "y": 9060,
+      "w": 390,
+      "h": 844,
+      "title": "49 · Report a post",
+      "is_interactive": true
+    },
+    "SilenceSetup.dc.html": {
+      "x": 4230,
+      "y": 9060,
+      "w": 390,
+      "h": 1060,
+      "title": "50 · Silence Room setup",
+      "is_interactive": true
+    },
+    "SilenceSession.dc.html": {
+      "x": 4700,
+      "y": 9060,
+      "w": 390,
+      "h": 844,
+      "title": "51 · Silence Room meditating",
+      "is_interactive": true
+    },
+    "Together.dc.html": {
+      "x": 0,
+      "y": 10696,
+      "w": 390,
+      "h": 1260,
+      "title": "52 · Together · group meditation",
+      "is_interactive": true
+    },
+    "GroupLobby.dc.html": {
+      "x": 470,
+      "y": 10696,
+      "w": 390,
+      "h": 1240,
+      "title": "53 · Group meditation lobby",
+      "is_interactive": true
+    },
+    "You.dc.html": {
+      "x": 0,
+      "y": 12492,
+      "w": 390,
+      "h": 1760,
+      "title": "54 · You",
+      "is_interactive": true
+    },
+    "Stats.dc.html": {
+      "x": 470,
+      "y": 12492,
+      "w": 390,
+      "h": 1120,
+      "title": "55 · Your progress",
+      "is_interactive": true
+    },
+    "EditProfile.dc.html": {
+      "x": 940,
+      "y": 12492,
+      "w": 390,
+      "h": 844,
+      "title": "56 · Edit profile",
+      "is_interactive": true
+    },
+    "Reminders.dc.html": {
+      "x": 1410,
+      "y": 12492,
+      "w": 390,
+      "h": 1000,
+      "title": "57 · Reminders & sounds",
+      "is_interactive": true
+    },
+    "Downloads.dc.html": {
+      "x": 1880,
+      "y": 12492,
+      "w": 390,
+      "h": 900,
+      "title": "58 · Downloads",
+      "is_interactive": true
+    },
+    "Privacy.dc.html": {
+      "x": 2350,
+      "y": 12492,
+      "w": 390,
+      "h": 1400,
+      "title": "59 · Privacy & data",
+      "is_interactive": true
+    },
+    "Help.dc.html": {
+      "x": 2820,
+      "y": 12492,
+      "w": 390,
+      "h": 900,
+      "title": "60 · Help & about",
+      "is_interactive": true
+    },
+    "ManageMembership.dc.html": {
+      "x": 0,
+      "y": 14788,
+      "w": 390,
+      "h": 1120,
+      "title": "61 · Manage membership",
+      "is_interactive": true
+    },
+    "TrialEnding.dc.html": {
+      "x": 470,
+      "y": 14788,
+      "w": 390,
+      "h": 844,
+      "title": "62 · Trial ends in 2 days",
+      "is_interactive": true
+    },
+    "BillingIssue.dc.html": {
+      "x": 940,
+      "y": 14788,
+      "w": 390,
+      "h": 844,
+      "title": "63 · Payment problem",
+      "is_interactive": true
+    },
+    "MembershipEnded.dc.html": {
+      "x": 1410,
+      "y": 14788,
+      "w": 390,
+      "h": 844,
+      "title": "64 · Membership ended",
+      "is_interactive": true
+    },
+    "Offline.dc.html": {
+      "x": 0,
+      "y": 16444,
+      "w": 390,
+      "h": 1180,
+      "title": "65 · Offline",
+      "is_interactive": true
+    },
+    "EmptyState.dc.html": {
+      "x": 470,
+      "y": 16444,
+      "w": 390,
+      "h": 844,
+      "title": "66 · Empty state",
+      "is_interactive": true
+    },
+    "ErrorState.dc.html": {
+      "x": 940,
+      "y": 16444,
+      "w": 390,
+      "h": 844,
+      "title": "67 · Error state",
+      "is_interactive": true
+    },
+    "UpdateRequired.dc.html": {
+      "x": 1410,
+      "y": 16444,
+      "w": 390,
+      "h": 844,
+      "title": "68 · Update required",
+      "is_interactive": true
+    },
+    "Challenges.dc.html": {
+      "x": 0,
+      "y": 18160,
+      "w": 390,
+      "h": 1100,
+      "title": "69 · Challenges (coming soon)",
+      "is_interactive": true
+    },
+    "Gratitude.dc.html": {
+      "x": 470,
+      "y": 18160,
+      "w": 390,
+      "h": 1060,
+      "title": "70 · Gratitude feed (coming soon)",
+      "is_interactive": true
+    },
+    "Breathwork.dc.html": {
+      "x": 940,
+      "y": 18160,
+      "w": 390,
+      "h": 1080,
+      "title": "71 · Breathwork (coming soon)",
+      "is_interactive": true
+    },
+    "BreathPattern.dc.html": {
+      "x": 1410,
+      "y": 18160,
+      "w": 390,
+      "h": 1000,
+      "title": "72 · Breath pattern designer (coming soon)",
+      "is_interactive": true
+    },
+    "Milestones.dc.html": {
+      "x": 1880,
+      "y": 18160,
+      "w": 390,
+      "h": 1000,
+      "title": "73 · Milestones (coming soon)",
+      "is_interactive": true
+    },
+    "Intent.dc.html": {
+      "x": 2350,
+      "y": 18160,
+      "w": 390,
+      "h": 844,
+      "title": "74 · Intent (skipped for now)",
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-05T06:30:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "policy": {
+      "fill": "blue",
+      "text": "App Store & Google Play rules\n\n• The app works without an account (guest).\n• Buying needs no WeHum login: the store sheet opens straight away.\n• An account is optional, offered after buying (“Save your progress”) and only required to post dedications.\n• Paywall shows price, period, trial terms, auto-renew, Terms (EULA), Privacy and Restore.\n• Account deletion is inside the app.",
+      "w": 540,
+      "x": -640,
+      "y": 1100
+    },
+    "proto": {
+      "fill": "teal",
+      "text": "Prototype: press Play on 01 · Splash.\n\nMember: Intro → Name → Meditation reminder → Reminder → How to start → App Store sheet → Trial started → Save your progress (or Not now) → Today.\n\nFree: How to start → Continue for free → Today (free) → Membership.\n\nTweaks: Room busy / quiet, program started / none, daily message on / off, motion.",
+      "w": 540,
+      "x": -640,
+      "y": 1900
+    },
+    "scope": {
+      "fill": "orange",
+      "text": "V1 scope (Raphael’s notes, Oct 5)\n\nIn V1: intro + 3 setup steps, Today with the Meditation of the Day in 10 / 30 / 45 min, group meditation = the Meditation of the Day started together, Silence Room (members), programs, themes, SoS (How can I help?), Build your own, dedications, progress (no streaks, no grace days), membership $59 Founding 1,000 / $79 / $9.99 with 7-day trial.\n\nFree users: Raphael’s online library (“Free for you”), with the premium Meditation of the Day shown on top.\n\nComing soon (row 11): challenges, gratitude feed, breathwork, milestones. Intent step skipped for now. No previews.",
+      "w": 540,
+      "x": -640,
+      "y": 300
+    },
+    "sitsNote": {
+      "fill": "green",
+      "text": "Group meditation: for now it is simply the Meditation of the Day starting for everyone at the same moment. No separate morning/evening schedule.",
+      "w": 440,
+      "x": 960,
+      "y": 10696
+    },
+    "row1": {
+      "x": 0,
+      "y": 0,
+      "text": "1 · First launch: intro & setup (no account)",
+      "kind": "title1",
+      "maxW": 4620,
+      "w": 240
+    },
+    "row2": {
+      "x": 0,
+      "y": 1496,
+      "text": "2 · Membership: buy, preview, restore",
+      "kind": "title1",
+      "maxW": 3210,
+      "w": 240
+    },
+    "row3": {
+      "x": 0,
+      "y": 3092,
+      "text": "3 · Optional account & log in",
+      "kind": "title1",
+      "maxW": 2740,
+      "w": 240
+    },
+    "row4": {
+      "x": 0,
+      "y": 4528,
+      "text": "4 · Today, Meditation of the Day, SoS",
+      "kind": "title1",
+      "maxW": 4150,
+      "w": 240
+    },
+    "row5": {
+      "x": 0,
+      "y": 6384,
+      "text": "5 · Library, challenges & Build your own",
+      "kind": "title1",
+      "maxW": 5090,
+      "w": 240
+    },
+    "row6": {
+      "x": 0,
+      "y": 8800,
+      "text": "6 · Sitting, payoff, dedications & Silence Room",
+      "kind": "title1",
+      "maxW": 5090,
+      "w": 240
+    },
+    "row7": {
+      "x": 0,
+      "y": 10436,
+      "text": "7 · Together & global sits",
+      "kind": "title1",
+      "maxW": 860,
+      "w": 240
+    },
+    "row8": {
+      "x": 0,
+      "y": 12332,
+      "text": "8 · You, stats & settings",
+      "kind": "title1",
+      "maxW": 3210,
+      "w": 240
+    },
+    "row9": {
+      "x": 0,
+      "y": 14628,
+      "text": "9 · Membership states",
+      "kind": "title1",
+      "maxW": 1800,
+      "w": 240
+    },
+    "row10": {
+      "x": 0,
+      "y": 16284,
+      "text": "10 · System states",
+      "kind": "title1",
+      "maxW": 1800,
+      "w": 240
+    },
+    "row11": {
+      "x": 0,
+      "y": 18000,
+      "text": "11 · Later (backlog) · not in V1",
+      "kind": "title1",
+      "maxW": 1800,
+      "w": 240
+    },
+    "honest": {
+      "x": -640,
+      "y": 4828,
+      "w": 540,
+      "fill": "green",
+      "text": "Empty-room rule\n\nBelow ~10 people at once, every live pill switches from “sitting now” to “sat today”. We never fake or round up numbers. Use the Room tweak (busy / quiet) on Today, Meditation room, Player and World map to see both."
+    },
+    "a11y": {
+      "x": -640,
+      "y": 9060,
+      "w": 540,
+      "fill": "blue",
+      "text": "Accessibility pass\n\nEvery screen must work at 200% text with nothing clipped, with VoiceOver / TalkBack labels on all buttons. The breathing ring is decorative (hidden from screen readers). With Reduce Motion on it stays still: see the Motion tweak on the Player."
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Intro1.dc.html",
+    "Intro2.dc.html",
+    "Intro3.dc.html",
+    "Intro4.dc.html",
+    "NameStep.dc.html",
+    "SitTime.dc.html",
+    "Reminder.dc.html",
+    "Intro5.dc.html",
+    "StoreSheet.dc.html",
+    "PurchaseStatus.dc.html",
+    "WelcomeMember.dc.html",
+    "CreateAccount.dc.html",
+    "Membership.dc.html",
+    "RestoreSheet.dc.html",
+    "CreateAccountFree.dc.html",
+    "EmailSignUp.dc.html",
+    "Login.dc.html",
+    "ForgotPassword.dc.html",
+    "CheckEmail.dc.html",
+    "AccountGate.dc.html",
+    "Today.dc.html",
+    "MotdRoom.dc.html",
+    "TodayFree.dc.html",
+    "GlobalPresence.dc.html",
+    "DailyMessage.dc.html",
+    "MessageArchive.dc.html",
+    "Notifications.dc.html",
+    "PushPreview.dc.html",
+    "SOS.dc.html",
+    "Library.dc.html",
+    "Discipline.dc.html",
+    "LibraryFilters.dc.html",
+    "Search.dc.html",
+    "Programs.dc.html",
+    "ProgramDetail.dc.html",
+    "TeacherBio.dc.html",
+    "MySits.dc.html",
+    "BuildYourOwn.dc.html",
+    "BuildAdvanced.dc.html",
+    "SessionDetail.dc.html",
+    "Player.dc.html",
+    "VideoPlayer.dc.html",
+    "YouTubePlayer.dc.html",
+    "SessionComplete.dc.html",
+    "ShareCard.dc.html",
+    "DedicationSheet.dc.html",
+    "Dedications.dc.html",
+    "ReportSheet.dc.html",
+    "SilenceSetup.dc.html",
+    "SilenceSession.dc.html",
+    "Together.dc.html",
+    "GroupLobby.dc.html",
+    "You.dc.html",
+    "Stats.dc.html",
+    "EditProfile.dc.html",
+    "Reminders.dc.html",
+    "Downloads.dc.html",
+    "Privacy.dc.html",
+    "Help.dc.html",
+    "ManageMembership.dc.html",
+    "TrialEnding.dc.html",
+    "BillingIssue.dc.html",
+    "MembershipEnded.dc.html",
+    "Offline.dc.html",
+    "EmptyState.dc.html",
+    "ErrorState.dc.html",
+    "UpdateRequired.dc.html",
+    "Challenges.dc.html",
+    "Gratitude.dc.html",
+    "Breathwork.dc.html",
+    "BreathPattern.dc.html",
+    "Milestones.dc.html",
+    "Intent.dc.html"
+  ],
+  "pages": [],
+  "title": "WeHum App"
+}

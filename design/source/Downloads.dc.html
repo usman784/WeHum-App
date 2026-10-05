@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Downloads</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="You.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Downloads</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 4px 20px 24px 20px">
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline"><span style="font-size: 20px; font-weight: 700; flex-grow: 1">{{ used }} MB</span><span style="font-size: 13px; color: #A0A4A8">on this phone</span></div>
+<div style="height: 6px; border-radius: 999px; background: #2A2D30"><div style="{{ bar }}"></div></div>
+<span style="font-size: 13px; color: #A0A4A8">Downloaded sessions play without internet.</span>
+<button type="button" onClick="{{ clearAll }}" style="align-self: flex-start; min-height: 44px; padding: 0 4px; border: none; background: transparent; color: #FF9B70; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Clear all downloads</button>
+</section>
+<sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 12px; text-align: center"><span style="font-size: 17px; font-weight: 600">No downloads yet</span><a href="Library.dc.html" style="font-size: 15px; font-weight: 600; text-decoration: none">Browse the library</a></div>
+</sc-if>
+<sc-for list="{{ items }}" as="i" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #23262A">
+<a href="Player.dc.html" style="display: flex; align-items: center; gap: 14px; flex-grow: 1; min-width: 0; text-decoration: none; color: #F2F2F2"><span style="{{ i.thumb }}"></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 600">{{ i.title }}</span><span style="font-size: 13px; color: #A0A4A8">{{ i.meta }}</span></span></a>
+<button type="button" aria-label="Remove download" onClick="{{ i.remove }}" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #2A2D30; background: #17191B; color: #A0A4A8; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</sc-for>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { gone: {} }; }
+  renderVals() {
+    var self = this;
+    var tones = ['ocean', 'lake', 'dawn', 'night'];
+    var data = [
+      ['a', 'Steady Under Pressure', 'Breathing · 30 min', 32],
+      ['b', 'Deep Delta Sleep Descent', 'Sleep · 45 min', 84],
+      ['c', 'Reset Your Nervous System', 'Short Resets · 12 min', 38],
+      ['d', 'Panic', 'SoS · 4 min', 22]
+    ];
+    var left = data.filter(function (d) { return !self.state.gone[d[0]]; });
+    var used = left.reduce(function (n, d) { return n + d[3]; }, 0);
+    var items = left.map(function (d, i) {
+      return {
+        title: d[1], meta: d[2] + ' · ' + d[3] + ' MB',
+        thumb: 'width:56px;height:56px;border-radius:12px;flex-shrink:0;background:#17191B url(img/' + tones[i % 4] + '.jpg) center/cover;',
+        remove: function () { var g = Object.assign({}, self.state.gone); g[d[0]] = true; self.setState({ gone: g }); }
+      };
+    });
+    return { clearAll: function () { self.setState({ gone: { a: true, b: true, c: true, d: true } }); }, items: items, used: used, empty: items.length === 0, bar: 'height:6px;border-radius:999px;background:#FF7A45;width:' + Math.max(2, Math.round(used / 10)) + '%;' };
+  }
+}
+</script>
+</body>
+</html>

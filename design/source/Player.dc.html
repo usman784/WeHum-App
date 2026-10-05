@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audio player</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="SessionDetail.dc.html" aria-label="Close player" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a>
+<span style="flex-grow: 1; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #A0A4A8">NOW PLAYING</span>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<main style="display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 8px 24px 24px 24px">
+<div aria-hidden="true" style="position: relative; width: 320px; height: 320px">
+<div style="position: absolute; inset: 40px; border-radius: 999px; background: radial-gradient(circle, rgba(159,227,214,0.28) 0%, rgba(18,60,58,0.55) 55%, rgba(18,60,58,0) 72%)"></div>
+<div style="position: absolute; inset: 70px; border-radius: 999px; border: 1.5px solid rgba(159,227,214,0.55)"></div>
+<div style="position: absolute; inset: 100px; border-radius: 999px; background: radial-gradient(circle, rgba(255,185,154,0.35), rgba(255,122,69,0.08) 70%)"></div>
+<sc-for list="{{ dots }}" as="d" hint-placeholder-count="40"><span style="{{ d }}"></span></sc-for>
+<span style="position: absolute; left: 0; right: 0; top: 148px; text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 1px; color: #CFEDE6">{{ breath }}</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center">
+<h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.3px">Steady Under Pressure</h1>
+<span style="font-size: 14px; color: #A0A4A8">Raphael · Breathing</span>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #A0A4A8"><span style="{{ dotStyle }}"></span>{{ live }}</span>
+</div>
+<div style="width: 100%; display: flex; flex-direction: column; gap: 8px">
+<div style="height: 6px; border-radius: 999px; background: #2A2D30; position: relative"><div style="width: 42%; height: 6px; border-radius: 999px; background: #FF7A45"></div><span style="position: absolute; left: 42%; top: -5px; width: 16px; height: 16px; margin-left: -8px; border-radius: 999px; background: #FFB99A"></span></div>
+<div style="display: flex; font-size: 13px; color: #A0A4A8"><span style="flex-grow: 1">04:12</span><span>10:00</span></div>
+</div>
+<div style="display: flex; align-items: center; gap: 28px">
+<button type="button" aria-label="Back 15 seconds" style="width: 56px; height: 56px; border-radius: 999px; border: 1px solid #2A2D30; background: #17191B; color: #F2F2F2; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 700">−15</button>
+<button type="button" aria-label="{{ playLabel }}" onClick="{{ toggle }}" style="width: 84px; height: 84px; border-radius: 999px; border: none; background: #FF7A45; color: #2A0E02; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<sc-if value="{{ playing }}" hint-placeholder-val="{{ true }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg></sc-if>
+<sc-if value="{{ paused }}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5l12 7-12 7z"></path></svg></sc-if>
+</button>
+<button type="button" aria-label="Forward 15 seconds" style="width: 56px; height: 56px; border-radius: 999px; border: 1px solid #2A2D30; background: #17191B; color: #F2F2F2; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 700">+15</button>
+</div>
+<a href="SessionComplete.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #A0A4A8; text-decoration: none">End meditation</a>
+<span style="font-size: 12px; line-height: 1.5; color: #6E7378; text-align: center">Each dot is someone meditating with you. Dedications open when your meditation ends.</span>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"room":{"editor":"enum","options":["busy","quiet"],"default":"busy"},"motion":{"editor":"enum","options":["breathing","reduce-motion"],"default":"breathing"},"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { playing: true }; }
+  renderVals() {
+    var self = this, p = this.state.playing;
+    var busy = (this.props.room ?? 'busy') === 'busy';
+    var calm = (this.props.motion ?? 'breathing') === 'reduce-motion';
+    var colors = ['#9FE3D6', '#FFB99A', '#4ADE80', '#F2F2F2'];
+    var clusters = busy ? [[20, 7], [75, 5], [140, 8], [200, 6], [255, 7], [315, 6]] : [[60, 2], [230, 2]];
+    var dots = [];
+    clusters.forEach(function (c, ci) {
+      for (var k = 0; k < c[1]; k++) {
+        var ang = (c[0] + (k - c[1] / 2) * 4.5) * Math.PI / 180;
+        var r = 132 + ((k * 37 + ci * 11) % 22) - 8;
+        var size = 3 + ((k * 7 + ci) % 4);
+        var x = 160 + r * Math.cos(ang) - size / 2, y = 160 + r * Math.sin(ang) - size / 2;
+        dots.push('position:absolute;left:' + x.toFixed(1) + 'px;top:' + y.toFixed(1) + 'px;width:' + size + 'px;height:' + size + 'px;border-radius:999px;background:' + colors[(k + ci) % 4] + ';opacity:' + (0.35 + ((k * 13) % 6) / 10) + ';');
+      }
+    });
+    return {
+      dots: dots, playing: p, paused: !p, playLabel: p ? 'Pause' : 'Play', toggle: function () { self.setState({ playing: !p }); },
+      breath: calm ? '' : 'BREATHE IN',
+      live: busy ? 'Meditating with 412 people · 37 countries' : '1,280 people meditated this today',
+      dotStyle: 'width:6px;height:6px;border-radius:999px;background:' + (busy ? '#4ADE80' : '#A0A4A8') + ';'
+    };
+  }
+}
+</script>
+</body>
+</html>

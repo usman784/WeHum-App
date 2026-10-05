@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gratitude feed</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0E}
+a{color:#FF9B70}a:hover{color:#FFB99A}
+</style>
+</helmet>
+<div style="width: 390px; height: 1060px; box-sizing: border-box; background: #0B0D0E; color: #F2F2F2; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="display: flex; align-items: center; gap: 12px; padding: 52px 20px 12px 20px">
+<a href="Together.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #17191B; border: 1px solid #23262A; color: #F2F2F2; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 style="margin: 0; flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600">Gratitude feed (coming soon)</h1>
+<span style="width: 44px; flex-shrink: 0"></span>
+</header>
+<div style="margin: 0 20px 8px 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: 1px; border-radius: 999px; padding: 4px 10px; background: #23262A; color: #C9CCCF">COMING SOON</span>
+<div role="tablist" aria-label="Feeds" style="display: flex; gap: 8px; overflow: hidden">
+<span role="tab" aria-selected="true" style="flex-shrink: 0; min-height: 36px; padding: 0 14px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 13px; font-weight: 700; display: flex; align-items: center">Gratitude</span>
+<span role="tab" aria-selected="false" style="flex-shrink: 0; min-height: 36px; padding: 0 14px; border-radius: 999px; background: #17191B; border: 1px solid #2A2D30; color: #C9CCCF; font-size: 13px; font-weight: 600; display: flex; align-items: center">Affirmations</span>
+<span role="tab" aria-selected="false" style="flex-shrink: 0; min-height: 36px; padding: 0 14px; border-radius: 999px; background: #17191B; border: 1px solid #2A2D30; color: #C9CCCF; font-size: 13px; font-weight: 600; display: flex; align-items: center">Sending love</span>
+<span role="tab" aria-selected="false" style="flex-shrink: 0; min-height: 36px; padding: 0 14px; border-radius: 999px; background: #17191B; border: 1px solid #2A2D30; color: #C9CCCF; font-size: 13px; font-weight: 600; display: flex; align-items: center">Support</span>
+</div>
+</div>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 4px 20px 24px 20px">
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A0A4A8">One thing you’re grateful for today. Shared with everyone in WeHum.</p>
+<sc-if value="{{ isMember }}" hint-placeholder-val="{{ true }}">
+<section style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+<label style="display: flex; flex-direction: column"><span style="position: absolute; left: -9999px">What are you grateful for?</span>
+<textarea rows="2" maxlength="200" placeholder="Today I’m grateful for…" style="padding: 12px; border-radius: 14px; background: #0F1112; border: 1px solid #2A2D30; color: #F2F2F2; font-family: inherit; font-size: 15px; line-height: 1.5; resize: none"></textarea></label>
+<button type="button" style="align-self: flex-end; min-height: 44px; padding: 0 20px; border-radius: 999px; border: none; background: #FF7A45; color: #2A0E02; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Share</button>
+</section>
+</sc-if>
+<div style="{{ listStyle }}">
+<sc-for list="{{ posts }}" as="p" hint-placeholder-count="6">
+<article style="background: #17191B; border: 1px solid #23262A; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #E6E7E8">“{{ p.text }}”</p>
+<div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 12px; color: #A0A4A8; flex-grow: 1">{{ p.meta }}</span><a href="ReportSheet.dc.html" aria-label="Report this post" style="width: 44px; height: 32px; color: #A0A4A8; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></a></div>
+</article>
+</sc-for>
+</div>
+</main>
+<sc-if value="{{ isFree }}" hint-placeholder-val="{{ false }}">
+<section style="position: absolute; left: 20px; right: 20px; top: 260px; background: #17191B; border: 1px solid #2A2D30; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+<span style="width: 56px; height: 56px; border-radius: 999px; background: #23262A; color: #FF9B70; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Gratitude is part of membership</h2>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #A0A4A8">Read and share what people around the world are grateful for.</p>
+<a href="Membership.dc.html" style="align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 999px; background: #FF7A45; color: #2A0E02; font-size: 15px; font-weight: 700; text-decoration: none">See membership options</a>
+</section>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"viewer":{"editor":"enum","options":["member","free"],"default":"member"},"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var free = (this.props.viewer ?? 'member') === 'free';
+    var posts = [
+      ['The first cold morning and a warm cup of tea.', 'Hannah · Austria · 1h'],
+      ['My daughter laughing at breakfast.', 'David · Canada · 3h'],
+      ['Ten quiet minutes before the kids woke up.', 'Elena · United Kingdom · 4h'],
+      ['A friend who called just to check in.', 'Aiko · Japan · 6h'],
+      ['Finishing a hard week without losing my temper.', 'Lukas · Germany · 9h'],
+      ['Rain on the window while I meditated.', 'Priya · United States · yesterday']
+    ].map(function (p) { return { text: p[0], meta: p[1] }; });
+    return {
+      posts: posts, isFree: free, isMember: !free,
+      listStyle: 'display:flex;flex-direction:column;gap:12px;' + (free ? 'filter:blur(5px);opacity:0.6;pointer-events:none;' : '')
+    };
+  }
+}
+</script>
+</body>
+</html>
