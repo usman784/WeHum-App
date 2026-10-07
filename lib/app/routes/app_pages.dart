@@ -47,9 +47,9 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.logIn, page: () => const LoginPage()),
     GetPage(name: AppRoutes.forgotPassword, page: () => const ForgotPasswordPage()),
     GetPage(name: AppRoutes.checkYourEmail, page: () => const CheckEmailPage()),
-    GetPage(name: AppRoutes.todayMember, page: () => const TodayPage()),
+    GetPage(name: AppRoutes.todayMember, page: () => const TodayForPlan()),
     GetPage(name: AppRoutes.motdRoom, page: () => const MotdRoomPage()),
-    GetPage(name: AppRoutes.todayFree, page: () => const TodayFreePage()),
+    GetPage(name: AppRoutes.todayFree, page: () => const TodayForPlan()),
     GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const WorldPage()),
     GetPage(name: AppRoutes.exploreArchive, page: () => const MembersOnly(title: 'Explore archive', child: ArchivePage())),
     GetPage(name: AppRoutes.dailyMessage, page: () => const DailyMessagePage()),
@@ -110,4 +110,12 @@ class MembersOnly extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Obx(() => Get.find<AccessService>().isMember ? child : AppScaffold(title: title, body: const MembersOnlyState()));
+}
+
+/// Both Today routes show the screen that fits the plan right now, and switch live when the membership changes
+/// (purchase, restore, expiry, `entitlement:changed` from the socket): members get 22, everyone else 24.
+class TodayForPlan extends StatelessWidget {
+  const TodayForPlan({super.key});
+  @override
+  Widget build(BuildContext context) => Obx(() => Get.find<AccessService>().isMember ? const TodayPage() : const TodayFreePage());
 }

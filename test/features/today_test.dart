@@ -126,6 +126,24 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('Today follows the plan live: entitlement:changed from the socket turns the free Today into the member Today, and back', (t) async {
+    final e = await openToday(t, member: false);
+    await e.socket.connect();
+    e.socketServer.serverConnects();
+    await afterPush(t);
+    expect(find.byKey(const Key('try-free')), findsOneWidget);
+    expect(find.byKey(const Key('meditate-now')), findsNothing);
+    e.socketServer.serverPushes('entitlement:changed', {'active': true, 'productId': 'wehum_annual_founding', 'periodType': 'trial', 'expiresAt': '2026-11-06T20:32:13.157Z', 'billingIssue': false});
+    await settle(t);
+    expect(find.byKey(const Key('meditate-now')), findsOneWidget); // no restart, no navigation by the person
+    expect(find.byKey(const Key('try-free')), findsNothing);
+    e.socketServer.serverPushes('entitlement:changed', {'active': false, 'productId': null, 'periodType': null, 'expiresAt': null, 'billingIssue': false});
+    await settle(t);
+    expect(find.byKey(const Key('try-free')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('24 free Today: locked MOTD with Try 7 days free, Free for you, locked Silence Room', (t) async {
     final e = await openToday(t, member: false);
     expect(find.byKey(const Key('locked-motd')), findsOneWidget);
