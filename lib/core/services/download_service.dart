@@ -55,7 +55,7 @@ class DownloadService extends GetxService implements LocalMedia {
   Future<DownloadService> init() async {
     await _reload();
     _sub = _db.watchDownloads().listen((l) => items.assignAll(l));
-    await _root.create(recursive: true);
+    if (!_root.existsSync()) _root.createSync(recursive: true); // sync: cheap, and startup never waits on disk
     await purgeIfNotMember();
     return this;
   }

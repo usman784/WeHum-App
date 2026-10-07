@@ -138,7 +138,7 @@ void main() {
       await Get.find<CatalogService>().load();
       const recipe = Recipe(id: '', name: 'Mine', lengthMin: 10, openingId: 'b-open', soundId: 'b-rain', bells: RecipeBells());
       final ctrl = PlayerController(
-        PlayerArgs(kind: 'custom', title: 'Mine', recipe: recipe, durationSec: 600, lengthMin: 10),
+        const PlayerArgs(kind: 'custom', title: 'Mine', recipe: recipe, durationSec: 600, lengthMin: 10),
         engine: e.engine, media: Get.find(), presence: Get.find(), sync: Get.find(), analytics: Get.find(), catalog: () => Get.find<CatalogService>().catalog.value);
       ctrl.onInit();
       await Future<void>.delayed(const Duration(milliseconds: 20));
