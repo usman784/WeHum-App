@@ -220,7 +220,7 @@ class LobbyPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Center(child: Text('until it starts', style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
                 const SizedBox(height: 8),
-                Text('Doors open 1 minute before. Today’s Meditation of the Day starts by itself, for everyone at the same moment.', textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                Text('${ctrl.doorsLine}Today’s Meditation of the Day starts by itself, for everyone at the same moment.', key: const Key('lobby-doors'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 16),
                 AppCard(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

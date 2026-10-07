@@ -114,7 +114,7 @@ class PlayerController extends GetxController {
         id: recorder.id, title: args.title, subtitle: args.subtitle, artUri: args.coverUrl, duration: duration.value, canSeek: !(args.live || args.recipe != null),
         callbacks: MediaCallbacks(play: play, pause: pause, seekBy: skip, stop: endEarly));
       phase.value = PlayerPhase.ready;
-      await play();
+      unawaited(play()); // never wait for playback itself: a real engine's play() can last as long as the track
       // presence: you are counted live; the ack carries the "together" numbers (not for non-catalog free items)
       await _presence.start(meditationId: recorder.id, sessionId: args.sessionId, kind: args.kind, lengthMin: args.lengthMin, mode: args.mode);
     } on ApiException catch (e) {

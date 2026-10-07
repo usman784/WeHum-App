@@ -168,7 +168,7 @@ class PlayerPage extends StatelessWidget {
               child: Column(children: [
                 const Align(alignment: Alignment.centerRight, child: SosPill()),
                 const Spacer(),
-                PresenceRing(people: people > 0 ? people : 8, size: 280),
+                PresenceRing(people: people, size: 280), // one dot per person the server reports, never a made-up crowd
                 const Spacer(),
                 const Overline('Now playing'),
                 const SizedBox(height: 8),

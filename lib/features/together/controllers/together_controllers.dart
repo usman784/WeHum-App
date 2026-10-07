@@ -158,6 +158,14 @@ class LobbyController extends GetxController {
 
   String get date => group.value?.date ?? localDate();
 
+  /// "The lobby opens 15 minutes before." from the server's group config (never a fixed number in the app).
+  String get doorsLine {
+    final g = group.value;
+    if (g == null) return '';
+    final min = g.startsAt.difference(g.lobbyOpensAt).inMinutes;
+    return min <= 0 ? '' : 'The lobby opens $min ${min == 1 ? 'minute' : 'minutes'} before. ';
+  }
+
   @override
   void onReady() {
     super.onReady();

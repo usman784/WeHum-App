@@ -131,6 +131,20 @@ void main() {
     expect(SessionRecorder(kind: 'x', now: () => now).build(completed: true), isNull);
   });
 
+  test('presence starts even when the engine\'s play() lasts as long as the track (real players do that)', () async {
+    final r = Rig(motd(mode: 'solo', kind: 'motd'));
+    await r.connect();
+    r.transport.acks['presence:start'] = (_) => {'ok': true, 'data': {'together': {'people': 1, 'countries': 1}}};
+    r.engine.playLastsAsLongAsTheTrack = true;
+    r.ctrl.onInit();
+    await r.flush();
+    await r.flush();
+    await r.flush();
+    expect(r.ctrl.phase.value, PlayerPhase.playing);
+    expect(r.transport.sentData('presence:start'), hasLength(1)); // not 30 minutes later, when the track ends
+    expect(r.ctrl.together, (people: 1, countries: 1));
+  });
+
   test('opens the signed URL, starts presence over the socket with the right mode, then counts', () async {
     final r = Rig(motd(mode: 'group', kind: 'group'));
     await r.connect();

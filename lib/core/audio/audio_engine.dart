@@ -50,6 +50,7 @@ abstract class AudioEngine {
 
   /// Loads the source (starting at [start]) and returns its duration.
   Future<Duration?> open(EngineSource src, {Duration start = Duration.zero});
+  /// Requests playback and returns at once (never waits for the track to finish).
   Future<void> play();
   Future<void> pause();
   Future<void> seek(Duration to);
@@ -124,7 +125,9 @@ class JustAudioEngine implements AudioEngine {
   @override
   Future<void> play() async {
     await (await AudioSession.instance).setActive(true);
-    await _player.play();
+    // just_audio's play() completes only when playback ends or pauses. Waiting for it would hold up everything
+    // that follows "start playing" (presence, the outbox…) for the whole meditation: request it and return.
+    unawaited(_player.play());
   }
 
   @override

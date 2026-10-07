@@ -44,10 +44,14 @@ class FakeAudioEngine implements AudioEngine {
     return total;
   }
 
+  /// Like just_audio: when true, play() does not complete while the track is playing.
+  bool playLastsAsLongAsTheTrack = false;
+
   @override
-  Future<void> play() async {
+  Future<void> play() {
     _isPlaying = true;
     _playing.add(true);
+    return playLastsAsLongAsTheTrack ? Completer<void>().future : Future<void>.value();
   }
 
   @override

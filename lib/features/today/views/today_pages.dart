@@ -95,7 +95,7 @@ class _MotdHero extends StatelessWidget {
         Text(m.title, style: AppText.heroTitle.copyWith(color: Colors.white)),
         Text('with ${m.teacher ?? 'Raphael'}', style: AppText.bodyLarge.copyWith(color: Colors.white70)),
         const SizedBox(height: 8),
-        Text('${groupNumber(ctrl.practiced)} people practiced this meditation today', key: const Key('practiced'), style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+        if (ctrl.practiced > 0) Text('${groupNumber(ctrl.practiced)} ${ctrl.practiced == 1 ? 'person' : 'people'} practiced this meditation today', key: const Key('practiced'), style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
         const SizedBox(height: 14),
         if (m.lengths.isNotEmpty) SegmentedControl<int>(options: m.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
         const SizedBox(height: 12),
