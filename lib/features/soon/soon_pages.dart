@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../../core/data/models/soon.dart';
@@ -250,9 +251,7 @@ class _BreathRunPageState extends State<BreathRunPage> {
     final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.gutterOnboarding),
-          child: Column(children: [
+        child: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(children: [
             Align(alignment: Alignment.centerRight, child: TextLink(s.done ? 'Close' : 'End', key: const Key('breath-end'), onPressed: () => Get.back<void>(), color: c.textSecondary)),
             const Spacer(),
             AnimatedContainer(
@@ -289,7 +288,7 @@ class MilestonesPage extends StatelessWidget {
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
                 Text('YOUR AWARDS · ${d.reached} OF ${d.total}', key: const Key('awards-title'), style: AppText.overline.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 8),
-                GridView.count(crossAxisCount: 3, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: .9, children: [
+                AdaptiveGrid(columns: 3, baseExtent: 118, children: [
                   for (final a in d.awards)
                     Opacity(
                       opacity: a.reached ? 1 : .45,
@@ -319,9 +318,7 @@ class IntentPage extends StatelessWidget {
     final ctrl = Get.put(IntentController());
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.gutterOnboarding),
-          child: Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Align(alignment: Alignment.centerRight, child: TextLink('Skip', onPressed: ctrl.skip, color: c.textSecondary)),
                 const SizedBox(height: 12),
                 Text('What brings you here?', style: AppText.heroTitle.copyWith(color: c.textPrimary)),

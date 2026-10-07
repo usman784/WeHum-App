@@ -22,11 +22,9 @@ class StartPage extends StatelessWidget {
       showBack: true, dots: 4, topRight: TextLink('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn), color: c.textSecondary),
       footer: Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        child: Wrap(alignment: WrapAlignment.center, spacing: 12, children: [
           TextLink('Restore purchase', onPressed: () => Get.toNamed(AppRoutes.restorePurchase), color: c.textSecondary),
-          const SizedBox(width: 12),
           TextLink('Terms of Use', onPressed: () => launchUrl(Uri.parse(AppLinks.terms)), color: c.textSecondary),
-          const SizedBox(width: 12),
           TextLink('Privacy', onPressed: () => launchUrl(Uri.parse(AppLinks.privacy)), color: c.textSecondary),
         ]),
       ),
@@ -73,7 +71,7 @@ class StartPage extends StatelessWidget {
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(Icons.check_rounded, size: 18, color: c.tealText),
               const SizedBox(width: 8),
-              Text('No account needed. Save your progress later.', style: AppText.bodySmall.copyWith(color: c.tealText)),
+              Flexible(child: Text('No account needed. Save your progress later.', style: AppText.bodySmall.copyWith(color: c.tealText))),
             ]),
             const SizedBox(height: 16),
           ]);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
@@ -52,7 +53,7 @@ class YouPage extends StatelessWidget {
               ]),
             ),
           if (guest) const SizedBox(height: 16),
-          GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.9, children: [
+          AdaptiveGrid(baseExtent: 92, children: [
             _Tile('${ctrl.daysThisWeek}', 'days this week'),
             _Tile('${ctrl.lifetime.value?.minutes ?? 0}', 'minutes'),
             _Tile('${ctrl.lifetime.value?.meditations ?? 0}', 'meditations'),
@@ -125,14 +126,14 @@ class ProgressPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 SegmentedControl<Period>(options: Period.values, value: ctrl.period.value, onChanged: ctrl.select, labelOf: (p) => switch (p) { Period.week => 'Week', Period.month => 'Month', Period.year => 'Year', Period.all => 'Lifetime' }),
                 const SizedBox(height: 16),
-                GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.9, children: [
+                AdaptiveGrid(baseExtent: 92, children: [
                   _Tile('${d.minutes}', 'MINUTES'), _Tile('${d.meditations}', 'MEDITATIONS'), _Tile('${d.together}', 'TOGETHER'), _Tile('${d.average}', 'AVERAGE'),
                 ]),
                 const SizedBox(height: 16),
                 Text(ctrl.chartTitle, style: AppText.navTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 8),
-                SizedBox(height: 140, child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  for (final b in d.bars) Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Container(margin: const EdgeInsets.symmetric(horizontal: 2), height: 6 + 100 * b.minutes / (d.bars.fold<int>(1, (m, x) => x.minutes > m ? x.minutes : m)), decoration: BoxDecoration(color: b.current ? c.ember : c.track, borderRadius: BorderRadius.circular(4))), const SizedBox(height: 4), Text(b.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.micro.copyWith(color: c.textTertiary))])),
+                SizedBox(height: 160, child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  for (final b in d.bars) Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Container(margin: const EdgeInsets.symmetric(horizontal: 2), height: 6 + 90 * b.minutes / (d.bars.fold<int>(1, (m, x) => x.minutes > m ? x.minutes : m)), decoration: BoxDecoration(color: b.current ? c.ember : c.track, borderRadius: BorderRadius.circular(4))), const SizedBox(height: 4), Text(b.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.micro.copyWith(color: c.textTertiary))])),
                 ])),
               ]);
             }),

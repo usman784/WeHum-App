@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,9 +29,7 @@ class UpdateRequiredPage extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(Gap.gutterOnboarding),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          child: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               Icon(Icons.system_update_alt_rounded, size: 64, color: c.ember),
               const SizedBox(height: 20),
               Text('Time for an update', textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
@@ -56,9 +55,7 @@ class MaintenancePage extends StatelessWidget {
     final c = context.colors;
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.gutterOnboarding),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        child: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Icon(Icons.build_circle_outlined, size: 64, color: c.textTertiary),
             const SizedBox(height: 20),
             Text('We’ll be right back', textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),

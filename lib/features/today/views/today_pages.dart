@@ -202,7 +202,7 @@ class TodayFreePage extends StatelessWidget {
                 key: const Key('locked-motd'), image: d!.motd!.cover?.url, height: 300, onTap: () => openPaywall('today_free'),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
                   const Align(alignment: Alignment.topRight, child: AppBadge(BadgeKind.premium)),
-                  const Spacer(),
+                  const SizedBox(height: 70),
                   const Overline('Meditation of the day'),
                   const SizedBox(height: 6),
                   Text(d.motd!.title, style: AppText.heroTitle.copyWith(color: Colors.white)),
@@ -223,7 +223,7 @@ class TodayFreePage extends StatelessWidget {
                   key: const Key('free-pick'), image: catalog?.session(pick.sessionId)?.cover?.url, height: 190,
                   onTap: () => Get.toNamed(AppRoutes.freePlayer, arguments: PlayerArgs(kind: 'free', title: pick.title, subtitle: 'Raphael', sessionId: pick.sessionId, youtubeId: pick.youtubeId, coverUrl: catalog?.session(pick.sessionId)?.cover?.url, durationSec: pick.durationSec)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
-                    const Spacer(),
+                    const SizedBox(height: 60),
                     const AppBadge(BadgeKind.freeForYou),
                     const SizedBox(height: 6),
                     Text(pick.title, style: AppText.title.copyWith(color: Colors.white)),

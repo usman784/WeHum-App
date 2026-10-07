@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../theme/app_colors.dart';
+import 'flex_scroll.dart';
 import '../theme/app_text.dart';
 import '../theme/tokens.dart';
 
@@ -38,12 +39,12 @@ class TabHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Padding(
+    return ClampedText(child: Padding(
       padding: const EdgeInsets.fromLTRB(Gap.gutter, 12, Gap.gutter, 8),
       child: Row(children: [
         Icon(Icons.track_changes_rounded, color: c.ember, size: 30),
         const SizedBox(width: 10),
-        Text('WeHum', style: AppText.title.copyWith(color: c.textPrimary)),
+        Flexible(child: Text('WeHum', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary))),
         const Spacer(),
         const SosPill(),
         const SizedBox(width: 8),
@@ -66,7 +67,7 @@ class TabHeader extends StatelessWidget {
           ),
         ),
       ]),
-    );
+    ));
   }
 }
 
@@ -82,7 +83,7 @@ class SubHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return SafeArea(
+    return ClampedText(child: SafeArea(
       bottom: false,
       child: SizedBox(
         height: Sizes.navBar + 8,
@@ -95,7 +96,7 @@ class SubHeader extends StatelessWidget implements PreferredSizeWidget {
           ]),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -141,7 +142,7 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Container(
+    return ClampedText(child: Container(
       decoration: BoxDecoration(color: c.bg, border: Border(top: BorderSide(color: c.border))),
       child: SafeArea(
         top: false,
@@ -165,6 +166,6 @@ class AppBottomNav extends StatelessWidget {
           ])),
         ),
       ),
-    );
+    ));
   }
 }

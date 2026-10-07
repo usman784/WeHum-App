@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../app/routes/app_routes.dart';
@@ -73,8 +74,8 @@ class SosPage extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text('Short sessions for hard moments. Pick one and Raphael’s voice starts right away.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 16),
-                GridView.count(
-                  crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.5,
+                AdaptiveGrid(
+                  baseExtent: 92,
                   children: [
                     for (final t in s.tiles)
                       AppCard(

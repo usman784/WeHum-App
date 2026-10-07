@@ -70,10 +70,11 @@ class HeroImageCard extends StatelessWidget {
       child: Stack(children: [
         Positioned.fill(child: ThumbImage(image, blurHash: blurHash)),
         const Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(gradient: AppColors.imageGradient))),
-        Padding(padding: const EdgeInsets.all(Gap.x20), child: child),
+        Padding(padding: const EdgeInsets.all(Gap.x20), child: ConstrainedBox(constraints: BoxConstraints(minHeight: ((height ?? 0) - 2 * Gap.x20).clamp(0.0, double.infinity)), child: child)),
       ]),
     );
-    final sized = height == null ? body : SizedBox(height: height, child: body);
+    // `height` is a minimum: at large text sizes the card grows with its content instead of overflowing
+    final sized = height == null ? body : ConstrainedBox(constraints: BoxConstraints(minHeight: height!), child: body);
     return onTap == null ? sized : GestureDetector(onTap: onTap, child: sized);
   }
 }
@@ -152,7 +153,7 @@ class AppBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(Radii.pill)),
-      child: Text(label ?? text, style: AppText.badge.copyWith(color: fg)),
+      child: Text(label ?? text, maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis, style: AppText.badge.copyWith(color: fg)),
     );
   }
 }

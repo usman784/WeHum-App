@@ -140,7 +140,7 @@ class ReminderPermissionPage extends StatelessWidget {
       footer: Padding(padding: const EdgeInsets.only(bottom: 12), child: TextLink('Not now', onPressed: ctrl.notNow, color: c.textSecondary)),
       child: Obx(() => ctrl.busy.value
           ? const Center(child: CircularProgressIndicator())
-          : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          : SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const SizedBox(height: 12),
               Text('We will invite you to meditate at ${ctrl.timeLabel}.', key: const Key('reminder-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
               const SizedBox(height: 10),
@@ -154,7 +154,7 @@ class ReminderPermissionPage extends StatelessWidget {
                   Text('Notifications may include alerts, sounds and icon badges.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textSecondary)),
                 ]),
               ),
-            ])),
+            ]))),
     );
   }
 }

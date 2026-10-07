@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
@@ -37,7 +38,7 @@ class SaveProgressPage extends StatelessWidget {
           const SizedBox(height: 16),
           const Center(child: LegalLine()),
           const SizedBox(height: 12),
-          Center(child: Row(mainAxisSize: MainAxisSize.min, children: [Text('Already have an account? ', style: AppText.bodySmall.copyWith(color: c.textSecondary)), TextLink('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn))])),
+          Center(child: Wrap(alignment: WrapAlignment.center, crossAxisAlignment: WrapCrossAlignment.center, children: [Text('Already have an account? ', style: AppText.bodySmall.copyWith(color: c.textSecondary)), TextLink('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn))])),
         ]),
       ),
     );
@@ -109,7 +110,7 @@ class LoginPage extends StatelessWidget {
           Obx(() => ctrl.error.value == null ? const SizedBox.shrink() : Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(ctrl.error.value!, key: const Key('li-error'), style: AppText.bodySmall.copyWith(color: c.dangerText)))),
           Obx(() => PrimaryButton('Log in', loading: ctrl.busy.value, onPressed: () async => await ctrl.submit() ? done() : null)),
           const SizedBox(height: 16),
-          Center(child: Row(mainAxisSize: MainAxisSize.min, children: [Text('New to WeHum? ', style: AppText.bodySmall.copyWith(color: c.textSecondary)), TextLink('Create an account', onPressed: () => Get.toNamed(AppRoutes.signUpWithEmail))])),
+          Center(child: Wrap(alignment: WrapAlignment.center, crossAxisAlignment: WrapCrossAlignment.center, children: [Text('New to WeHum? ', style: AppText.bodySmall.copyWith(color: c.textSecondary)), TextLink('Create an account', onPressed: () => Get.toNamed(AppRoutes.signUpWithEmail))])),
         ]),
       ),
     );
@@ -152,9 +153,7 @@ class CheckEmailPage extends StatelessWidget {
     final c = context.colors;
     return AppScaffold(
       title: 'Check your email',
-      body: Padding(
-        padding: const EdgeInsets.all(Gap.gutterOnboarding),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      body: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: 12),
           Center(child: Icon(Icons.mark_email_unread_outlined, size: 64, color: c.ember)),
           const SizedBox(height: 20),
@@ -169,7 +168,7 @@ class CheckEmailPage extends StatelessWidget {
           Obx(() => Center(
                 child: ctrl.cooldown.value > 0
                     ? Text('Send again in ${ctrl.cooldown.value} s', key: const Key('resend-wait'), style: AppText.bodySmall.copyWith(color: c.textTertiary))
-                    : Row(mainAxisSize: MainAxisSize.min, children: [Text('Didn’t get it? ', style: AppText.bodySmall.copyWith(color: c.textSecondary)), TextLink('Send again', onPressed: ctrl.resend)]),
+                    : Wrap(alignment: WrapAlignment.center, crossAxisAlignment: WrapCrossAlignment.center, children: [Text('Didn’t get it? ', style: AppText.bodySmall.copyWith(color: c.textSecondary)), TextLink('Send again', onPressed: ctrl.resend)]),
               )),
         ]),
       ),

@@ -9,7 +9,7 @@ abstract final class Radii {
 }
 
 abstract final class Sizes {
-  static const double touch = 44, primaryButton = 56, secondaryButton = 52, navBar = 52, toggleW = 52, toggleH = 32;
+  static const double touch = 48, primaryButton = 56, secondaryButton = 52, navBar = 52, toggleW = 52, toggleH = 32;
 }
 
 abstract final class Motion {

@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
@@ -109,9 +110,8 @@ class _PlanTile extends StatelessWidget {
             Row(children: [
               Icon(selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded, color: selected ? c.ember : c.textTertiary),
               const SizedBox(width: 10),
-              Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary)),
-              const Spacer(),
-              Text(price, style: AppText.title.copyWith(color: c.textPrimary)),
+              Expanded(child: Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary))),
+              Flexible(child: Text(price, textAlign: TextAlign.end, style: AppText.title.copyWith(color: c.textPrimary))),
               Text(per, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
             ]),
             const SizedBox(height: 6),
@@ -140,9 +140,7 @@ class PurchaseStatusPage extends StatelessWidget {
     };
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.gutterOnboarding),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        child: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Center(child: state == 'loading' ? const CircularProgressIndicator() : Icon(icon, size: 64, color: c.ember)),
             const SizedBox(height: 20),
             Text(title, textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
@@ -167,9 +165,7 @@ class WelcomePage extends StatelessWidget {
     final c = context.colors;
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.gutterOnboarding),
-          child: Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        child: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 const Spacer(),
                 Icon(Icons.celebration_outlined, size: 56, color: c.ember),
                 const SizedBox(height: 20),
@@ -316,9 +312,7 @@ class TrialEndingPage extends StatelessWidget {
     final price = (ctrl.ent.productId ?? '').contains('monthly') ? offer?.monthly?.priceString : offer?.annual?.priceString;
     return AppScaffold(
       title: 'Your trial',
-      body: Padding(
-        padding: const EdgeInsets.all(Gap.gutterOnboarding),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      body: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: 16),
           Text('Your free trial ends in 2 days', key: const Key('trial-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
           const SizedBox(height: 12),
@@ -343,9 +337,7 @@ class BillingIssuePage extends StatelessWidget {
     final c = context.colors;
     return AppScaffold(
       title: 'Billing issue',
-      body: Padding(
-        padding: const EdgeInsets.all(Gap.gutterOnboarding),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      body: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: 16),
           Icon(Icons.credit_card_off_outlined, size: 56, color: c.dangerText),
           const SizedBox(height: 16),
@@ -372,9 +364,7 @@ class MembershipEndedPage extends StatelessWidget {
     final c = context.colors;
     return AppScaffold(
       title: 'Membership ended',
-      body: Padding(
-        padding: const EdgeInsets.all(Gap.gutterOnboarding),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      body: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: 16),
           Text('Your membership has ended', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
           const SizedBox(height: 10),

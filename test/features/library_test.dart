@@ -57,6 +57,8 @@ void main() {
     await settle(t);
     await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Free for you'), findsOneWidget);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -240));
+    await t.pump();
     expect(find.text('FREE FOR YOU'), findsWidgets);
     await t.pumpWidget(const SizedBox());
     await e.dispose();

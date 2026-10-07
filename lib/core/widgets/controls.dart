@@ -25,7 +25,7 @@ class SegmentedControl<T> extends StatelessWidget {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque, onTap: () => onChanged(o),
                 child: AnimatedContainer(
-                  duration: Motion.state, constraints: const BoxConstraints(minHeight: 44), padding: const EdgeInsets.symmetric(vertical: 8), alignment: Alignment.center,
+                  duration: Motion.state, constraints: const BoxConstraints(minHeight: 48), padding: const EdgeInsets.symmetric(vertical: 8), alignment: Alignment.center,
                   decoration: BoxDecoration(color: o == value ? c.textPrimary : Colors.transparent, borderRadius: BorderRadius.circular(Radii.pill)),
                   child: Text(labelOf?.call(o) ?? '$o', style: AppText.navTitle.copyWith(fontSize: 15, color: o == value ? c.bg : c.textPrimary)),
                 ),

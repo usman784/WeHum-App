@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
@@ -76,7 +77,7 @@ class LibraryPage extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       key: const Key('search-field'), onTap: () => Get.toNamed(AppRoutes.search),
-                      child: Container(height: 48, padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: c.surfaceInput, borderRadius: BorderRadius.circular(Radii.pill), border: Border.all(color: c.border)), child: Row(children: [Icon(Icons.search_rounded, color: c.textSecondary), const SizedBox(width: 8), Text('Search meditations', style: AppText.bodyLarge.copyWith(color: c.textTertiary))])),
+                      child: Container(height: 48, padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: c.surfaceInput, borderRadius: BorderRadius.circular(Radii.pill), border: Border.all(color: c.border)), child: Row(children: [Icon(Icons.search_rounded, color: c.textSecondary), const SizedBox(width: 8), Flexible(child: Text('Search meditations', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodyLarge.copyWith(color: c.textTertiary)))])),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -88,8 +89,8 @@ class LibraryPage extends StatelessWidget {
                   for (final s in list) SessionRow(s: s, onTap: () => ctrl.open(s), showFree: !member, downloaded: ctrl.downloadedIds.contains(s.id)),
                   if (list.isEmpty) const EmptyState(title: 'No meditations match', body: 'Try changing or resetting the filters.', icon: Icons.filter_alt_off_rounded),
                 ] else ...[
-                  GridView.count(
-                    crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.7,
+                  AdaptiveGrid(
+                    baseExtent: 100,
                     children: [
                       _Tile(key: const Key('tile-silence'), icon: Icons.nightlight_round, title: 'Silence Room', badge: member ? null : BadgeKind.premium, onTap: ctrl.goSilence),
                       _Tile(key: const Key('tile-byo'), icon: Icons.tune_rounded, title: 'Build your own', onTap: () => member ? Get.toNamed(AppRoutes.buildYourOwn) : openPaywall('lock')),
@@ -98,7 +99,7 @@ class LibraryPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Row(children: [Text('Programs', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('All programs', onPressed: () => Get.toNamed(AppRoutes.allPrograms))]),
+                  Row(children: [Expanded(child: Text('Programs', style: AppText.title.copyWith(color: c.textPrimary))), TextLink('All programs', onPressed: () => Get.toNamed(AppRoutes.allPrograms))]),
                   if (ctrl.programCard.value != null)
                     AppCard(onTap: () => Get.toNamed('/program/${ctrl.programCard.value!.id}', arguments: {'id': ctrl.programCard.value!.id}), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Overline('In progress · day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}'), const SizedBox(height: 4), Text(ctrl.programCard.value!.title, style: AppText.navTitle.copyWith(color: c.textPrimary)), const SizedBox(height: 8), AppProgressBar(ctrl.programCard.value!.day / ctrl.programCard.value!.days)]))
                   else
@@ -106,8 +107,8 @@ class LibraryPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   Text('Themes', key: const Key('themes-title'), style: AppText.title.copyWith(color: c.textPrimary)),
                   const SizedBox(height: 8),
-                  GridView.count(
-                    crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.25,
+                  AdaptiveGrid(
+                    baseExtent: 148,
                     children: [
                       for (final t in cat.themes)
                         AppCard(
@@ -151,7 +152,7 @@ class _Tile extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Row(children: [Icon(icon, color: c.emberText), const Spacer(), if (badge != null) AppBadge(badge!)]),
+        Row(children: [Icon(icon, color: c.emberText), const SizedBox(width: 6), Expanded(child: Align(alignment: Alignment.centerRight, child: badge == null ? const SizedBox.shrink() : AppBadge(badge!)))]),
         Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
       ]),
     );

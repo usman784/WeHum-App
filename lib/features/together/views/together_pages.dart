@@ -62,7 +62,7 @@ class MotdRoomPage extends StatelessWidget {
               final g = ctrl.group;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
                 HeroImageCard(image: m.cover?.url, blurHash: m.cover?.blurhash, height: 240, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
-                  const Spacer(),
+                  const SizedBox(height: 70),
                   const Overline('Meditation of the day'),
                   const SizedBox(height: 4),
                   Text(m.title, style: AppText.heroTitle.copyWith(color: Colors.white)),
