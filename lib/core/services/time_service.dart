@@ -10,5 +10,8 @@ class TimeService extends GetxService {
     offset = serverTime.add(half).difference(DateTime.now().toUtc());
   }
 
+  /// From the socket's median-of-3 `time:sync`.
+  void setOffset(Duration d) => offset = d;
+
   DateTime now() => DateTime.now().toUtc().add(offset);
 }
