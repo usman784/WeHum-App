@@ -67,7 +67,9 @@ abstract final class AppRoutes {
   static const breathPattern = '/soon/breath-pattern'; // 72
   static const milestones = '/soon/milestones'; // 73
   static const intent = '/setup/intent'; // 74 (features.intent)
-  // not drawn: maintenance, deep link not found
+  // not drawn: set a new password after the reset link, email links, maintenance, deep link not found
+  static const resetPassword = '/login/reset';
+  static const authLink = '/auth/link';
   static const maintenance = '/maintenance';
   static const notFound = '/not-found';
 }

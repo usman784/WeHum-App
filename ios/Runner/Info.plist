@@ -88,6 +88,10 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>WeHum does not record audio.</string>
+	<key>GIDClientID</key>
+	<string>$(GOOGLE_CLIENT_ID)</string>
+	<key>GIDServerClientID</key>
+	<string>717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
 </dict>

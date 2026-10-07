@@ -5,7 +5,7 @@ enum ErrorCode {
   accountRequired('ACCOUNT_REQUIRED'), meditationRequired('MEDITATION_REQUIRED'), muted('MUTED'), notFound('NOT_FOUND'),
   accountExists('ACCOUNT_EXISTS'), conflictVersion('CONFLICT_VERSION'), dedicationLinks('DEDICATION_LINKS'),
   dedicationLimit('DEDICATION_LIMIT'), invalidState('INVALID_STATE'), updateRequired('UPDATE_REQUIRED'),
-  rateLimited('RATE_LIMITED'), maintenance('MAINTENANCE'), dependencyDown('DEPENDENCY_DOWN'),
+  rateLimited('RATE_LIMITED'), invalidCredentials('INVALID_CREDENTIALS'), gone('GONE'), roomLimit('ROOM_LIMIT'), featureOff('FEATURE_OFF'), maintenance('MAINTENANCE'), dependencyDown('DEPENDENCY_DOWN'),
   network('NETWORK'), timeout('TIMEOUT'), internal('INTERNAL');
 
   const ErrorCode(this.wire);

@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import '../../features/system/views/placeholder_page.dart';
+import '../../features/account/views/account_pages.dart';
+import '../../features/membership/views/membership_pages.dart';
 import '../../features/onboarding/views/intro_pages.dart';
 import '../../features/onboarding/views/setup_pages.dart';
 import '../../features/onboarding/views/splash_page.dart';
@@ -18,16 +20,16 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.setup2MeditationReminder, page: () => const TimePage()),
     GetPage(name: AppRoutes.setup3Reminder, page: () => const ReminderPermissionPage()),
     GetPage(name: AppRoutes.howDoYouWantToStart, page: () => const StartPage()),
-    GetPage(name: AppRoutes.purchaseStates, page: () => const PlaceholderPage('purchaseStates')),
-    GetPage(name: AppRoutes.trialStarted, page: () => const PlaceholderPage('trialStarted')),
-    GetPage(name: AppRoutes.saveYourProgressOptional, page: () => const PlaceholderPage('saveYourProgressOptional')),
-    GetPage(name: AppRoutes.membershipPaywall, page: () => const PlaceholderPage('membershipPaywall')),
-    GetPage(name: AppRoutes.restorePurchase, page: () => const PlaceholderPage('restorePurchase')),
-    GetPage(name: AppRoutes.saveYourProgressFreeUser, page: () => const PlaceholderPage('saveYourProgressFreeUser')),
-    GetPage(name: AppRoutes.signUpWithEmail, page: () => const PlaceholderPage('signUpWithEmail')),
-    GetPage(name: AppRoutes.logIn, page: () => const PlaceholderPage('logIn')),
-    GetPage(name: AppRoutes.forgotPassword, page: () => const PlaceholderPage('forgotPassword')),
-    GetPage(name: AppRoutes.checkYourEmail, page: () => const PlaceholderPage('checkYourEmail')),
+    GetPage(name: AppRoutes.purchaseStates, page: () => const PurchaseStatusPage()),
+    GetPage(name: AppRoutes.trialStarted, page: () => const WelcomePage()),
+    GetPage(name: AppRoutes.saveYourProgressOptional, page: () => const SaveProgressPage(free: false)),
+    GetPage(name: AppRoutes.membershipPaywall, page: () => const PaywallPage()),
+    GetPage(name: AppRoutes.restorePurchase, page: () => const RestorePage()),
+    GetPage(name: AppRoutes.saveYourProgressFreeUser, page: () => const SaveProgressPage(free: true)),
+    GetPage(name: AppRoutes.signUpWithEmail, page: () => const EmailSignUpPage()),
+    GetPage(name: AppRoutes.logIn, page: () => const LoginPage()),
+    GetPage(name: AppRoutes.forgotPassword, page: () => const ForgotPasswordPage()),
+    GetPage(name: AppRoutes.checkYourEmail, page: () => const CheckEmailPage()),
     GetPage(name: AppRoutes.todayMember, page: () => const PlaceholderPage('todayMember')),
     GetPage(name: AppRoutes.motdRoom, page: () => const PlaceholderPage('motdRoom')),
     GetPage(name: AppRoutes.todayFree, page: () => const PlaceholderPage('todayFree')),
@@ -63,10 +65,10 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.downloads, page: () => const PlaceholderPage('downloads')),
     GetPage(name: AppRoutes.privacyData, page: () => const PlaceholderPage('privacyData')),
     GetPage(name: AppRoutes.helpAbout, page: () => const PlaceholderPage('helpAbout')),
-    GetPage(name: AppRoutes.manageMembership, page: () => const PlaceholderPage('manageMembership')),
-    GetPage(name: AppRoutes.trialEnding, page: () => const PlaceholderPage('trialEnding')),
-    GetPage(name: AppRoutes.billingIssue, page: () => const PlaceholderPage('billingIssue')),
-    GetPage(name: AppRoutes.membershipEnded, page: () => const PlaceholderPage('membershipEnded')),
+    GetPage(name: AppRoutes.manageMembership, page: () => const ManageMembershipPage()),
+    GetPage(name: AppRoutes.trialEnding, page: () => const TrialEndingPage()),
+    GetPage(name: AppRoutes.billingIssue, page: () => const BillingIssuePage()),
+    GetPage(name: AppRoutes.membershipEnded, page: () => const MembershipEndedPage()),
     GetPage(name: AppRoutes.offline, page: () => const PlaceholderPage('offline')),
     GetPage(name: AppRoutes.updateRequired, page: () => const PlaceholderPage('updateRequired')),
     GetPage(name: AppRoutes.challenges, page: () => const PlaceholderPage('challenges')),
@@ -77,5 +79,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.intent, page: () => const PlaceholderPage('intent')),
     GetPage(name: AppRoutes.maintenance, page: () => const PlaceholderPage('maintenance')),
     GetPage(name: AppRoutes.notFound, page: () => const PlaceholderPage('notFound')),
+    GetPage(name: AppRoutes.resetPassword, page: () => const ResetPasswordPage()),
+    GetPage(name: AppRoutes.authLink, page: () => const AuthLinkPage()),
   ];
 }

@@ -36,6 +36,16 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="wehum"/>
             </intent-filter>
+            <!-- https://wehum.app/auth/* (email links), /r/{slug} (shared recipes), /session/{id} -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="wehum.app" android:pathPrefix="/auth"/>
+                <data android:scheme="https" android:host="wehum.app" android:pathPrefix="/r"/>
+                <data android:scheme="https" android:host="wehum.app" android:pathPrefix="/session"/>
+                <data android:scheme="https" android:host="wehum.app" android:pathPrefix="/program"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

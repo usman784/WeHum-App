@@ -1,3 +1,4 @@
+import '../../errors/error_code.dart';
 import '../../realtime/socket_events.dart';
 import '../contracts/auth_repository.dart';
 import '../contracts/bootstrap_repository.dart';
@@ -20,8 +21,50 @@ class MockAuthRepository implements AuthRepository {
   Future<AuthSession> social(String provider, String firebaseIdToken, {String? firstName}) async => AuthSession(
         accessToken: 'mock-access', refreshToken: 'mock-refresh-token-0000000000', me: Me(id: 'mock-user', isGuest: false, firstName: firstName));
 
+  /// Test controls: which emails already have an account, and what the calls received.
+  final existingEmails = <String>{'taken@example.com'};
+  final calls = <String>[];
+  String? failNextWith;
+  AuthSession _acct({String? first, String? merge}) => AuthSession(accessToken: 'acct-access', refreshToken: 'acct-refresh-token-000000000', me: Me(id: 'mock-user', isGuest: false, firstName: first), mergeToken: merge);
+
+  Never _exists(String provider) => throw ApiException(ErrorCode.accountExists, status: 409, details: {'mergeToken': 'merge-token-0000000000000000', 'provider': provider});
+
   @override
-  Future<void> logout() async {}
+  Future<AuthSession> linkSocial(String provider, String firebaseIdToken, {String? firstName}) async {
+    calls.add('link:$provider');
+    if (firebaseIdToken == 'exists') _exists(provider);
+    return _acct(first: firstName);
+  }
+
+  @override
+  Future<AuthSession> linkEmail({required String email, required String password, String? firstName}) async {
+    calls.add('linkEmail:$email');
+    if (existingEmails.contains(email)) _exists('email');
+    return _acct(first: firstName);
+  }
+
+  @override
+  Future<AuthSession> emailLogin({required String email, required String password}) async {
+    calls.add('emailLogin:$email');
+    if (password != 'correct-password') throw ApiException(ErrorCode.invalidCredentials, status: 401);
+    return _acct(merge: 'merge-token-0000000000000000');
+  }
+
+  @override
+  Future<void> forgotPassword(String email) async => calls.add('forgot:$email');
+  @override
+  Future<void> resetPassword({required String token, required String password}) async => calls.add('reset');
+  @override
+  Future<void> sendMagicLink(String email) async => calls.add('magic:$email');
+  @override
+  Future<AuthSession> verifyMagicLink(String token) async => _acct();
+  @override
+  Future<void> verifyEmail(String token) async => calls.add('verifyEmail');
+  @override
+  Future<void> merge(String mergeToken) async => calls.add('merge');
+
+  @override
+  Future<void> logout() async => calls.add('logout');
 }
 
 class MockBootstrapRepository implements BootstrapRepository {

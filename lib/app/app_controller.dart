@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
@@ -40,6 +41,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
   final unread = 0.obs;
   String? _lastTz;
   bool started = false;
+  StreamSubscription<Uri>? _links;
 
   @override
   void onInit() {
@@ -70,6 +72,19 @@ class AppController extends GetxService with WidgetsBindingObserver {
     unawaited(sync.flush());
     started = true;
     lastBootstrap = b;
+    _listenForLinks();
+  }
+
+  /// Universal links / custom scheme while the app runs, and the one that launched it.
+  void _listenForLinks() {
+    if (_links != null) return;
+    try {
+      final al = AppLinks();
+      _links = al.uriLinkStream.listen((u) => openLink(u.toString()));
+      al.getInitialLink().then((u) {
+        if (u != null) openLink(u.toString());
+      });
+    } catch (_) {/* platform without link support (tests) */}
   }
 
   /// True when the last start could not reach the backend (cached content, banner "You're offline").
@@ -127,6 +142,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
+    _links?.cancel();
     super.onClose();
   }
 }

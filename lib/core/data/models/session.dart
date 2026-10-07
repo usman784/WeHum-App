@@ -1,14 +1,17 @@
 /// Result of /v1/auth/guest, /refresh and social sign-in.
 class AuthSession {
-  const AuthSession({required this.accessToken, required this.refreshToken, required this.me});
+  const AuthSession({required this.accessToken, required this.refreshToken, required this.me, this.mergeToken});
   final String accessToken;
   final String refreshToken;
   final Me me;
+  /// Present when a guest signed in to an existing account: its data can be moved with `POST /v1/auth/merge`.
+  final String? mergeToken;
 
   factory AuthSession.fromJson(Map<String, dynamic> j) => AuthSession(
         accessToken: j['accessToken'] as String,
         refreshToken: j['refreshToken'] as String,
         me: Me.fromJson((j['me'] as Map).cast<String, dynamic>()),
+        mergeToken: j['mergeToken'] as String?,
       );
 }
 

@@ -19,7 +19,9 @@ import 'package:meditation/core/realtime/realtime_coordinator.dart';
 import 'package:meditation/core/realtime/socket_service.dart';
 import 'package:meditation/core/services/access_service.dart';
 import 'package:meditation/core/services/analytics_service.dart';
+import 'package:meditation/core/services/account_service.dart';
 import 'package:meditation/core/services/auth_service.dart';
+import 'package:meditation/core/services/social_auth_service.dart';
 import 'package:meditation/core/services/catalog_service.dart';
 import 'package:meditation/core/services/config_service.dart';
 import 'package:meditation/core/services/crash_service.dart';
@@ -68,6 +70,26 @@ class FakeNotifications extends NotificationService {
   Future<void> cancelEndBell() async => calls.add('cancelBell');
 }
 
+class FakeSocialAuth implements SocialAuth {
+  String? googleToken = 'google-firebase-token', appleToken = 'apple-firebase-token';
+  bool cancel = false;
+  int signOuts = 0;
+  @override
+  Future<SocialCredential> google() async {
+    if (cancel) throw SocialAuthCancelled();
+    return SocialCredential(provider: 'google', idToken: googleToken!, firstName: 'Lena');
+  }
+
+  @override
+  Future<SocialCredential> apple() async {
+    if (cancel) throw SocialAuthCancelled();
+    return SocialCredential(provider: 'apple', idToken: appleToken!, firstName: 'Lena');
+  }
+
+  @override
+  Future<void> signOut() async => signOuts++;
+}
+
 /// Everything the screens need, backed by mocks, an in-memory database and a fake socket server.
 class TestEnv {
   TestEnv._();
@@ -83,6 +105,8 @@ class TestEnv {
   late MemoryBox prefs;
   late AccessService access;
   late SocketService socket;
+  late MockAuthRepository authRepo;
+  late FakeSocialAuth social;
 
   static Future<TestEnv> create({bool member = false, bool onboardingDone = false, Map<String, Object?> prefs = const {}}) async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -108,7 +132,8 @@ class TestEnv {
     e.meditations = MockMeditationRepository();
     e.community = MockCommunityRepository();
     e.recipes = MockRecipeRepository();
-    Get.put<AuthRepository>(MockAuthRepository());
+    e.authRepo = MockAuthRepository();
+    Get.put<AuthRepository>(e.authRepo);
     Get.put<BootstrapRepository>(MockBootstrapRepository(member: member));
     Get.put<TodayRepository>(e.today);
     Get.put<CatalogRepository>(MockCatalogRepository());
@@ -134,6 +159,9 @@ class TestEnv {
     Get.put(SyncService(Get.find(), e.db));
     e.notifications = Get.put<NotificationService>(FakeNotifications(e.me, store, crash)) as FakeNotifications;
     Get.put(AppController(auth: auth, config: Get.find(), access: e.access, catalog: Get.find(), socket: e.socket, sync: Get.find(), notifications: e.notifications, me: e.me, crash: crash, session: store, purchases: purchases));
+    e.social = FakeSocialAuth();
+    Get.put<SocialAuth>(e.social);
+    Get.put(AccountService(auth: auth, repo: e.authRepo, social: e.social, access: e.access, purchases: purchases, config: Get.find(), me: e.me, socket: e.socket, notifications: e.notifications, analytics: analytics));
     Get.put(RealtimeCoordinator(e.socket, refreshBootstrap: () async {}, refreshCatalog: () async {}, onInbox: (_) {}, onEntitlement: e.access.onSocket));
     return e;
   }

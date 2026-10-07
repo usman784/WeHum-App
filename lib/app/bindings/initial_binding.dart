@@ -18,6 +18,8 @@ import '../../core/realtime/realtime_coordinator.dart';
 import '../../core/realtime/socket_service.dart';
 import '../../core/realtime/socket_transport.dart';
 import '../../core/services/access_service.dart';
+import '../../core/services/account_service.dart';
+import '../../core/services/social_auth_service.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/catalog_service.dart';
@@ -102,6 +104,14 @@ class InitialBinding extends Bindings {
     Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>()), fenix: true);
     Get.lazyPut<NotificationService>(
       () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId)),
+      fenix: true,
+    );
+    Get.put<SocialAuth>(FirebaseSocialAuth(), permanent: true);
+    Get.lazyPut<AccountService>(
+      () => AccountService(
+        auth: auth, repo: Get.find(), social: Get.find(), access: access, purchases: Get.find(), config: Get.find(), me: Get.find(), socket: socket,
+        notifications: Get.find(), analytics: Get.find(),
+      ),
       fenix: true,
     );
     Get.lazyPut<AppController>(

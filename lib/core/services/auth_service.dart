@@ -72,14 +72,14 @@ class AuthService extends GetxService {
     );
   }
 
-  /// Google / Apple through Firebase. The Firebase id token is verified by our API.
-  Future<Me> signInWithFirebase(String provider, String idToken, {String? firstName}) async {
-    final s = await _repo.social(provider, idToken, firstName: firstName);
+  /// A new session after link / login / merge: tokens are already saved by the repository.
+  Me applySession(AuthSession s) {
     _set(s);
+    wasAccount.value = false;
     return s.me;
   }
 
-  /// Local sign-out: server revokes the device and leaves the push topic, then a fresh guest is created.
+  /// Local sign-out: the server revokes the device (and the push token / topic), then a fresh guest is created.
   Future<void> signOut() async {
     await _repo.logout();
     me.value = null;

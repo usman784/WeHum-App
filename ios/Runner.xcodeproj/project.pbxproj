@@ -582,6 +582,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = prod;
+				GOOGLE_CLIENT_ID = "717113097844-qqa3erdj13a2sljo6csnv3l9bsnjkpqc.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-qqa3erdj13a2sljo6csnv3l9bsnjkpqc";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -643,6 +644,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = prod;
+				GOOGLE_CLIENT_ID = "717113097844-qqa3erdj13a2sljo6csnv3l9bsnjkpqc.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-qqa3erdj13a2sljo6csnv3l9bsnjkpqc";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -670,6 +672,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = staging;
+				GOOGLE_CLIENT_ID = "717113097844-55aqr60325kdthhg0d4htlt08eoq4hch.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-55aqr60325kdthhg0d4htlt08eoq4hch";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -750,6 +753,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = dev;
+				GOOGLE_CLIENT_ID = "717113097844-k5hhprebtmlc9guen4ot7e8kmakse2hm.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-k5hhprebtmlc9guen4ot7e8kmakse2hm";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -778,6 +782,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = staging;
+				GOOGLE_CLIENT_ID = "717113097844-55aqr60325kdthhg0d4htlt08eoq4hch.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-55aqr60325kdthhg0d4htlt08eoq4hch";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -824,6 +829,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = prod;
+				GOOGLE_CLIENT_ID = "717113097844-qqa3erdj13a2sljo6csnv3l9bsnjkpqc.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-qqa3erdj13a2sljo6csnv3l9bsnjkpqc";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -960,6 +966,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = dev;
+				GOOGLE_CLIENT_ID = "717113097844-k5hhprebtmlc9guen4ot7e8kmakse2hm.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-k5hhprebtmlc9guen4ot7e8kmakse2hm";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1189,6 +1196,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = dev;
+				GOOGLE_CLIENT_ID = "717113097844-k5hhprebtmlc9guen4ot7e8kmakse2hm.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-k5hhprebtmlc9guen4ot7e8kmakse2hm";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1216,6 +1224,7 @@
 				DEVELOPMENT_TEAM = 853GRHSXSM;
 				ENABLE_BITCODE = NO;
 				FLAVOR = staging;
+				GOOGLE_CLIENT_ID = "717113097844-55aqr60325kdthhg0d4htlt08eoq4hch.apps.googleusercontent.com";
 				GOOGLE_REVERSED_CLIENT_ID = "com.googleusercontent.apps.717113097844-55aqr60325kdthhg0d4htlt08eoq4hch";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

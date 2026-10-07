@@ -40,6 +40,16 @@ abstract final class DeepLinks {
         return id == null ? const LinkTarget(AppRoutes.notFound) : LinkTarget(AppRoutes.programDetail, {'id': id});
       case 'r':
         return id == null ? const LinkTarget(AppRoutes.notFound) : LinkTarget(AppRoutes.buildYourOwn, {'slug': id});
+      case 'auth':
+        // https://wehum.app/auth/{sign-in|reset-password|verify-email}?token=…  (the API's email templates)
+        final token = uri.queryParameters['token'];
+        if (token == null || token.isEmpty || id == null) return const LinkTarget(AppRoutes.notFound);
+        return switch (id) {
+          'sign-in' => LinkTarget(AppRoutes.authLink, {'kind': 'sign-in', 'token': token}),
+          'verify-email' => LinkTarget(AppRoutes.authLink, {'kind': 'verify-email', 'token': token}),
+          'reset-password' => LinkTarget(AppRoutes.resetPassword, {'token': token}),
+          _ => const LinkTarget(AppRoutes.notFound),
+        };
       case 'message':
         return LinkTarget(AppRoutes.dailyMessage, {'date': id ?? ''});
       default:
