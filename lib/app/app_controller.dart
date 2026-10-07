@@ -13,6 +13,7 @@ import '../core/services/auth_service.dart';
 import '../core/services/catalog_service.dart';
 import '../core/services/config_service.dart';
 import '../core/services/crash_service.dart';
+import '../core/services/download_service.dart';
 import '../core/services/deep_links.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/purchase_service.dart';
@@ -51,6 +52,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
 
   /// Runs once per launch (splash). Returns true when the app may continue to its first screen.
   Future<void> startup() async {
+    await Get.find<DownloadService>().init(); // index of downloaded media: playable offline from the first frame
     final me0 = await auth.ensureSession();
     if (me0.id.isNotEmpty) unawaited(purchases.configure(me0.id)); // after ensureSession, appUserID = backend user id (spec §9)
     final cat = catalog.load(); // stored copy first, so the library is there offline

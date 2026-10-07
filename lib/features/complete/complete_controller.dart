@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../../core/data/contracts/repositories.dart';
 import '../../core/data/models/activity.dart';
+import '../../core/data/models/content.dart';
 import '../../core/realtime/live_service.dart';
 import '../../core/services/access_service.dart';
 import '../../core/services/analytics_service.dart';
@@ -51,6 +52,11 @@ class CompleteController extends GetxController {
   void onReady() {
     super.onReady();
     _loadStats();
+    // a finished program day moves the program forward (no rest days, no streaks)
+    final pid = player.programId, day = player.programDay;
+    if (pid != null && day != null && args.counted) {
+      Get.find<ProgramRepository>().completeDay(pid, day).catchError((_) => const Program(id: '', slug: '', title: '', access: Access.free));
+    }
     Get.find<AnalyticsService>().track('dedication_open', {'session_id': player.sessionId ?? ''});
   }
 

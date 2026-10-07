@@ -1,4 +1,6 @@
 import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'dart:io';
+import 'package:dio/dio.dart' show CancelToken;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart' show WidgetTester, addTearDown;
 import 'package:get/get.dart';
@@ -7,7 +9,10 @@ import 'package:meditation/app/routes/app_pages.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/audio/audio_engine.dart';
 import 'package:meditation/core/audio/engines.dart';
+import 'package:meditation/core/audio/download_engine.dart';
 import 'package:meditation/core/audio/local_media.dart';
+import 'package:meditation/core/services/download_service.dart';
+import 'package:meditation/core/data/api/caching_media.dart';
 import 'package:meditation/core/data/contracts/auth_repository.dart';
 import 'package:meditation/core/data/contracts/bootstrap_repository.dart';
 import 'package:meditation/core/data/contracts/repositories.dart';
@@ -76,6 +81,16 @@ class FakeNotifications extends NotificationService {
   Future<void> cancelEndBell() async => calls.add('cancelBell');
 }
 
+/// Writes a tiny file instead of downloading.
+class FakeDownloadEngine implements DownloadEngine {
+  @override
+  Future<int> download(String url, String path, {int resumeFrom = 0, void Function(int, int)? onProgress, CancelToken? cancel}) async {
+    await File(path).writeAsBytes(List.filled(1000, 1));
+    onProgress?.call(1000, 1000);
+    return 1000;
+  }
+}
+
 /// Connectivity without platform streams: always online unless a test says otherwise.
 class TestConnectivity extends ConnectivityService {
   bool up = true;
@@ -122,6 +137,8 @@ class TestEnv {
   late AccessService access;
   late SocketService socket;
   late FakeAudioEngine engine;
+  late DownloadService downloads;
+  late Directory dlDir;
   late MockAuthRepository authRepo;
   late FakeSocialAuth social;
 
@@ -155,12 +172,17 @@ class TestEnv {
     Get.put<BootstrapRepository>(MockBootstrapRepository(member: member));
     Get.put<TodayRepository>(e.today);
     Get.put<CatalogRepository>(MockCatalogRepository());
-    Get.put<MediaRepository>(MockMediaRepository());
+    final cachingMedia = CachingMediaRepository(MockMediaRepository());
+    Get.put<CachingMediaRepository>(cachingMedia);
+    Get.put<MediaRepository>(cachingMedia);
     e.engine = FakeAudioEngine();
     Get.put<AudioEngineFactory>(() => e.engine);
     Get.put<VideoEngineFactory>(() => e.engine);
     Get.put<YoutubeEngineFactory>(() => e.engine);
-    Get.put<LocalMedia>(const NoLocalMedia());
+    e.dlDir = Directory.systemTemp.createTempSync('wehum-test-dl'); // sync: real async IO never completes inside a widget test
+    e.downloads = DownloadService(db: e.db, media: Get.find<MediaRepository>(), engine: FakeDownloadEngine(), root: e.dlDir, access: AccessService(), analytics: null);
+    Get.put<DownloadService>(e.downloads);
+    Get.put<LocalMedia>(e.downloads);
     Get.put<MeditationRepository>(e.meditations);
     Get.put<MeRepository>(e.me);
     Get.put<CommunityRepository>(e.community);
@@ -200,6 +222,7 @@ class TestEnv {
 
   Future<void> dispose() async {
     await db.close();
+    if (dlDir.existsSync()) dlDir.deleteSync(recursive: true);
   }
 }
 

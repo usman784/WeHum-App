@@ -11,7 +11,10 @@ import '../../core/audio/local_media.dart';
 import '../../core/data/contracts/auth_repository.dart';
 import '../../core/data/contracts/bootstrap_repository.dart';
 import '../../core/data/contracts/repositories.dart';
+import 'dart:io';
+import '../../core/audio/download_engine.dart';
 import '../../core/data/local/app_database.dart';
+import '../../core/services/download_service.dart';
 import '../../core/data/mock/mock_repositories.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/session_store.dart';
@@ -65,7 +68,6 @@ class InitialBinding extends Bindings {
     );
     Get.put<ApiClient>(api, permanent: true);
     Get.put<SecureKv>(kv, permanent: true);
-    Get.putAsync<AppDatabase>(() => AppDatabase.open(), permanent: true);
 
     // ── repositories
     Get.put<AuthRepository>(mocks ? MockAuthRepository() : AuthApi(api, store), permanent: true);
@@ -78,7 +80,6 @@ class InitialBinding extends Bindings {
     Get.put<AudioEngineFactory>(() => JustAudioEngine(), permanent: true);
     Get.put<VideoEngineFactory>(() => VideoEngine(), permanent: true);
     Get.put<YoutubeEngineFactory>(() => YoutubeEngine(), permanent: true);
-    Get.put<LocalMedia>(const NoLocalMedia(), permanent: true);
     Get.put<MeditationRepository>(mocks ? MockMeditationRepository() : MeditationApi(api), permanent: true);
     Get.put<MeRepository>(mocks ? MockMeRepository() : MeApi(api), permanent: true);
     Get.put<CommunityRepository>(mocks ? MockCommunityRepository() : CommunityApi(api), permanent: true);
@@ -90,6 +91,11 @@ class InitialBinding extends Bindings {
     auth = Get.put(AuthService(Get.find(), store, crash, refreshToken: api.refreshAccessToken, cache: kv), permanent: true);
     Get.put(ConfigService(Get.find(), time), permanent: true);
     final access = Get.put(AccessService(), permanent: true);
+    final downloads = Get.put(
+      DownloadService(db: Get.find<AppDatabase>(), media: media, engine: DioDownloadEngine(), root: Get.find<Directory>(tag: 'downloads'), access: access, analytics: Get.find<AnalyticsService>()),
+      permanent: true,
+    );
+    Get.put<LocalMedia>(downloads, permanent: true); // the player prefers a downloaded file
 
     Get.put(PurchaseService(PurchasesRc(), access, Get.find<AnalyticsService>(), syncEntitlement: () => Get.find<MeRepository>().syncEntitlement()), permanent: true);
 
@@ -143,7 +149,10 @@ class InitialBinding extends Bindings {
         },
         refreshCatalog: () => Get.find<CatalogService>().refresh(),
         onInbox: (item) => Get.find<InboxService>().onSocket(item),
-        onEntitlement: access.onSocket,
+        onEntitlement: (e) {
+          access.onSocket(e);
+          downloads.purgeIfNotMember(); // downloads belong to the membership
+        },
       ),
       fenix: true,
     );

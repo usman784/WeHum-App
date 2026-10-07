@@ -121,6 +121,7 @@ class AppDatabase extends _$AppDatabase {
 
   // ───────────── downloads
   Future<void> upsertDownload(DownloadsCompanion d) => into(downloads).insertOnConflictUpdate(d);
+  Future<List<Download>> allDownloads() => (select(downloads)..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
   Stream<List<Download>> watchDownloads() => (select(downloads)..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   Future<Download?> downloadFor(String sessionId, [int variant = 0]) => (select(downloads)..where((t) => t.sessionId.equals(sessionId) & t.variant.equals(variant))).getSingleOrNull();
   Future<void> removeDownload(String sessionId, [int variant = 0]) => (delete(downloads)..where((t) => t.sessionId.equals(sessionId) & t.variant.equals(variant))).go();

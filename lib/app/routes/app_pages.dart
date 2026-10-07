@@ -2,6 +2,9 @@ import 'package:get/get.dart';
 import '../../features/system/views/placeholder_page.dart';
 import '../../features/account/views/account_pages.dart';
 import '../../features/complete/complete_pages.dart';
+import '../../features/library/views/detail_pages.dart';
+import '../../features/library/views/library_pages.dart';
+import '../../features/library/views/session_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
 import '../../features/player/views/player_pages.dart';
@@ -44,16 +47,16 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.dailyMessage, page: () => const DailyMessagePage()),
     GetPage(name: AppRoutes.notifications, page: () => const NotificationsPage()),
     GetPage(name: AppRoutes.sosHowCanIHelp, page: () => const SosPage()),
-    GetPage(name: AppRoutes.library, page: () => const PlaceholderPage('library')),
-    GetPage(name: AppRoutes.themePage, page: () => const PlaceholderPage('themePage')),
-    GetPage(name: AppRoutes.search, page: () => const PlaceholderPage('search')),
-    GetPage(name: AppRoutes.allPrograms, page: () => const PlaceholderPage('allPrograms')),
-    GetPage(name: AppRoutes.programDetail, page: () => const PlaceholderPage('programDetail')),
-    GetPage(name: AppRoutes.teacherBio, page: () => const PlaceholderPage('teacherBio')),
+    GetPage(name: AppRoutes.library, page: () => const LibraryPage()),
+    GetPage(name: AppRoutes.themePage, page: () => const ThemePage()),
+    GetPage(name: AppRoutes.search, page: () => const SearchPage()),
+    GetPage(name: AppRoutes.allPrograms, page: () => const ProgramsPage()),
+    GetPage(name: AppRoutes.programDetail, page: () => const ProgramDetailPage()),
+    GetPage(name: AppRoutes.teacherBio, page: () => const TeacherPage()),
     GetPage(name: AppRoutes.myMeditations, page: () => const PlaceholderPage('myMeditations')),
     GetPage(name: AppRoutes.buildYourOwn, page: () => const PlaceholderPage('buildYourOwn')),
     GetPage(name: AppRoutes.buildYourOwnAdvanced, page: () => const PlaceholderPage('buildYourOwnAdvanced')),
-    GetPage(name: AppRoutes.sessionDetail, page: () => const PlaceholderPage('sessionDetail')),
+    GetPage(name: AppRoutes.sessionDetail, page: () => const SessionDetailPage()),
     GetPage(name: AppRoutes.playerPresenceRing, page: () => const PlayerPage()),
     GetPage(name: AppRoutes.videoPlayer, page: () => const VideoPlayerPage()),
     GetPage(name: AppRoutes.freePlayer, page: () => const FreePlayerPage()),
@@ -68,7 +71,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.yourProgress, page: () => const PlaceholderPage('yourProgress')),
     GetPage(name: AppRoutes.editProfile, page: () => const PlaceholderPage('editProfile')),
     GetPage(name: AppRoutes.reminders, page: () => const PlaceholderPage('reminders')),
-    GetPage(name: AppRoutes.downloads, page: () => const PlaceholderPage('downloads')),
+    GetPage(name: AppRoutes.downloads, page: () => const DownloadsPage()),
     GetPage(name: AppRoutes.privacyData, page: () => const PlaceholderPage('privacyData')),
     GetPage(name: AppRoutes.helpAbout, page: () => const PlaceholderPage('helpAbout')),
     GetPage(name: AppRoutes.manageMembership, page: () => const ManageMembershipPage()),
