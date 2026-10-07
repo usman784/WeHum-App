@@ -28,7 +28,8 @@ abstract class CatalogRepository {
 }
 
 abstract class MediaRepository {
-  Future<PlayUrl> playUrl(PlayTarget target, {bool download = false});
+  /// [fresh] skips any prefetched URL (used after an expired URL).
+  Future<PlayUrl> playUrl(PlayTarget target, {bool download = false, bool fresh = false});
 }
 
 abstract class MeditationRepository {

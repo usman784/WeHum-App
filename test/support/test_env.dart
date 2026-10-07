@@ -5,6 +5,9 @@ import 'package:get/get.dart';
 import 'package:meditation/app/app_controller.dart';
 import 'package:meditation/app/routes/app_pages.dart';
 import 'package:meditation/app/routes/app_routes.dart';
+import 'package:meditation/core/audio/audio_engine.dart';
+import 'package:meditation/core/audio/engines.dart';
+import 'package:meditation/core/audio/local_media.dart';
 import 'package:meditation/core/data/contracts/auth_repository.dart';
 import 'package:meditation/core/data/contracts/bootstrap_repository.dart';
 import 'package:meditation/core/data/contracts/repositories.dart';
@@ -24,6 +27,7 @@ import 'package:meditation/core/services/auth_service.dart';
 import 'package:meditation/core/services/social_auth_service.dart';
 import 'package:meditation/core/services/catalog_service.dart';
 import 'package:meditation/core/services/config_service.dart';
+import 'package:meditation/core/services/connectivity_service.dart';
 import 'package:meditation/core/services/inbox_service.dart';
 import 'package:meditation/core/services/crash_service.dart';
 import 'package:meditation/core/services/notification_service.dart';
@@ -37,6 +41,7 @@ import 'package:meditation/core/theme/theme_controller.dart';
 import '../core/fake_adapter.dart';
 import 'fonts.dart';
 import '../core/purchase_service_test.dart' show FakeRc;
+import '../player/fake_audio_engine.dart';
 import '../realtime/fake_transport.dart';
 
 /// Notification service without Firebase: records what the app asked for.
@@ -69,6 +74,16 @@ class FakeNotifications extends NotificationService {
   Future<void> scheduleEndBell(DateTime atUtc) async => calls.add('bell');
   @override
   Future<void> cancelEndBell() async => calls.add('cancelBell');
+}
+
+/// Connectivity without platform streams: always online unless a test says otherwise.
+class TestConnectivity extends ConnectivityService {
+  bool up = true;
+  @override
+  Future<bool> reachable() async => up;
+  @override
+  // ignore: must_call_super
+  void onInit() {}
 }
 
 class FakeSocialAuth implements SocialAuth {
@@ -106,6 +121,7 @@ class TestEnv {
   late MemoryBox prefs;
   late AccessService access;
   late SocketService socket;
+  late FakeAudioEngine engine;
   late MockAuthRepository authRepo;
   late FakeSocialAuth social;
 
@@ -128,6 +144,7 @@ class TestEnv {
     final crash = Get.put(CrashService());
     final time = Get.put(TimeService());
     final analytics = Get.put(AnalyticsService());
+    Get.put<ConnectivityService>(TestConnectivity());
     e.today = MockTodayRepository(member: member);
     e.me = MockMeRepository()..profile = MeProfile(id: 'mock-user', firstName: 'Marcus', entitlement: Entitlement(active: member));
     e.meditations = MockMeditationRepository();
@@ -139,6 +156,11 @@ class TestEnv {
     Get.put<TodayRepository>(e.today);
     Get.put<CatalogRepository>(MockCatalogRepository());
     Get.put<MediaRepository>(MockMediaRepository());
+    e.engine = FakeAudioEngine();
+    Get.put<AudioEngineFactory>(() => e.engine);
+    Get.put<VideoEngineFactory>(() => e.engine);
+    Get.put<YoutubeEngineFactory>(() => e.engine);
+    Get.put<LocalMedia>(const NoLocalMedia());
     Get.put<MeditationRepository>(e.meditations);
     Get.put<MeRepository>(e.me);
     Get.put<CommunityRepository>(e.community);

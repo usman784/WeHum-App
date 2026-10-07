@@ -20,6 +20,7 @@ dependencies:
   path_provider: ^2.1.4
   path: ^1.9.0
   crypto: ^3.0.6
+  clock: ^1.1.1
   app_links: ^6.4.0
   sqlite3: ^3.0.0
   freezed_annotation: ^3.1.0
@@ -47,6 +48,7 @@ dependencies:
   flutter_blurhash: ^0.9.1
   flutter_svg: ^2.0.10
   share_plus: ^13.3.1
+  gal: ^2.3.1
   url_launcher: ^6.3.0
   package_info_plus: ^10.2.2
   device_info_plus: ^13.3.0

@@ -125,7 +125,7 @@ class MockCatalogRepository implements CatalogRepository {
 
 class MockMediaRepository implements MediaRepository {
   @override
-  Future<PlayUrl> playUrl(PlayTarget target, {bool download = false}) async =>
+  Future<PlayUrl> playUrl(PlayTarget target, {bool download = false, bool fresh = false}) async =>
       PlayUrl(type: 'audio', url: 'https://example.com/mock.mp3', durationSec: 600, expiresAt: DateTime.now().toUtc().add(const Duration(hours: 6)));
 }
 

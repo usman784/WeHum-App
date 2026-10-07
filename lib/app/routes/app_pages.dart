@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import '../../features/system/views/placeholder_page.dart';
 import '../../features/account/views/account_pages.dart';
+import '../../features/complete/complete_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
+import '../../features/player/views/player_pages.dart';
 import '../../features/sos/sos_page.dart';
 import '../../features/onboarding/views/intro_pages.dart';
 import '../../features/today/views/today_pages.dart';
@@ -52,12 +54,12 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.buildYourOwn, page: () => const PlaceholderPage('buildYourOwn')),
     GetPage(name: AppRoutes.buildYourOwnAdvanced, page: () => const PlaceholderPage('buildYourOwnAdvanced')),
     GetPage(name: AppRoutes.sessionDetail, page: () => const PlaceholderPage('sessionDetail')),
-    GetPage(name: AppRoutes.playerPresenceRing, page: () => const PlaceholderPage('playerPresenceRing')),
-    GetPage(name: AppRoutes.videoPlayer, page: () => const PlaceholderPage('videoPlayer')),
-    GetPage(name: AppRoutes.freePlayer, page: () => const PlaceholderPage('freePlayer')),
-    GetPage(name: AppRoutes.meditationCompletePayoff, page: () => const PlaceholderPage('meditationCompletePayoff')),
-    GetPage(name: AppRoutes.shareYourMeditation, page: () => const PlaceholderPage('shareYourMeditation')),
-    GetPage(name: AppRoutes.sessionDedications, page: () => const PlaceholderPage('sessionDedications')),
+    GetPage(name: AppRoutes.playerPresenceRing, page: () => const PlayerPage()),
+    GetPage(name: AppRoutes.videoPlayer, page: () => const VideoPlayerPage()),
+    GetPage(name: AppRoutes.freePlayer, page: () => const FreePlayerPage()),
+    GetPage(name: AppRoutes.meditationCompletePayoff, page: () => const CompletePage()),
+    GetPage(name: AppRoutes.shareYourMeditation, page: () => const SharePage()),
+    GetPage(name: AppRoutes.sessionDedications, page: () => const DedicationsPage()),
     GetPage(name: AppRoutes.silenceRoomSetup, page: () => const PlaceholderPage('silenceRoomSetup')),
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const PlaceholderPage('silenceRoomMeditating')),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage()),

@@ -62,7 +62,7 @@ class CatalogApi extends ApiBase implements CatalogRepository {
 class MediaApi extends ApiBase implements MediaRepository {
   MediaApi(super.api);
   @override
-  Future<PlayUrl> playUrl(PlayTarget target, {bool download = false}) async => PlayUrl.fromJson(await call('POST', '/v1/media/play-url', body: target.toBody(download: download)));
+  Future<PlayUrl> playUrl(PlayTarget target, {bool download = false, bool fresh = false}) async => PlayUrl.fromJson(await call('POST', '/v1/media/play-url', body: target.toBody(download: download)));
 }
 
 class MeditationApi extends ApiBase implements MeditationRepository {

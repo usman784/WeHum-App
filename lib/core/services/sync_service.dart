@@ -18,7 +18,8 @@ class SyncService extends GetxService {
   final pending = 0.obs;
   Future<void>? _run;
   bool _again = false;
-  final _results = <String, MeditationResult>{};
+  /// Server answers by meditation id (the payoff screen reads its numbers from here).
+  final byId = <String, MeditationResult>{}.obs;
   final _waiters = <String, Completer<MeditationResult?>>{};
 
   /// Called when the player finishes (or is ended after ≥ 3 min, spec §13).
@@ -32,7 +33,7 @@ class SyncService extends GetxService {
     return done.future.timeout(const Duration(seconds: 3), onTimeout: () => null);
   }
 
-  MeditationResult? resultFor(String id) => _results[id];
+  MeditationResult? resultFor(String id) => byId[id];
 
   /// Sends everything in the outbox (≤ 50 per request) FIFO. Safe to call at any time; one run at once.
   Future<void> flush() {
@@ -78,7 +79,7 @@ class SyncService extends GetxService {
         final ok = <String>[];
         for (final (i, res) in results.indexed) {
           final id = records[i].id;
-          if (res.status != 'rejected') _results[id] = res;
+          if (res.status != 'rejected') byId[id] = res;
           ok.add(id); // created, duplicate or rejected by the server: none of them can succeed by retrying
           final w = _waiters.remove(id);
           if (w != null && !w.isCompleted) w.complete(res);

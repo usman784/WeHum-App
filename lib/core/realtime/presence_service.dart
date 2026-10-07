@@ -61,7 +61,7 @@ class PresenceService extends GetxService {
     _socket.keepAlive = false;
     final sub = _sessSub;
     _sessSub = null;
-    await sub?.cancel();
+    unawaited(sub?.cancel() ?? Future<void>.value());
   }
 
   @override
