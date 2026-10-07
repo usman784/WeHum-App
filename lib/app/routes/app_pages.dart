@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../../features/system/views/placeholder_page.dart';
 import '../../features/account/views/account_pages.dart';
+import '../../features/byo/byo_pages.dart';
 import '../../features/complete/complete_pages.dart';
 import '../../features/library/views/detail_pages.dart';
 import '../../features/library/views/library_pages.dart';
@@ -56,9 +57,9 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.allPrograms, page: () => const ProgramsPage()),
     GetPage(name: AppRoutes.programDetail, page: () => const ProgramDetailPage()),
     GetPage(name: AppRoutes.teacherBio, page: () => const TeacherPage()),
-    GetPage(name: AppRoutes.myMeditations, page: () => const PlaceholderPage('myMeditations')),
-    GetPage(name: AppRoutes.buildYourOwn, page: () => const PlaceholderPage('buildYourOwn')),
-    GetPage(name: AppRoutes.buildYourOwnAdvanced, page: () => const PlaceholderPage('buildYourOwnAdvanced')),
+    GetPage(name: AppRoutes.myMeditations, page: () => const MyMeditationsPage()),
+    GetPage(name: AppRoutes.buildYourOwn, page: () => const ByoPage()),
+    GetPage(name: AppRoutes.buildYourOwnAdvanced, page: () => const ByoAdvancedPage()),
     GetPage(name: AppRoutes.sessionDetail, page: () => const SessionDetailPage()),
     GetPage(name: AppRoutes.playerPresenceRing, page: () => const PlayerPage()),
     GetPage(name: AppRoutes.videoPlayer, page: () => const VideoPlayerPage()),

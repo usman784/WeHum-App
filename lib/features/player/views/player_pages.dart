@@ -6,11 +6,13 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_engine.dart';
 import '../../../core/audio/engines.dart';
 import '../../../core/audio/local_media.dart';
+import '../../../core/audio/recipe_engine.dart' show RecipeEngineFactory;
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/presence_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
+import '../../../core/services/catalog_service.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -28,7 +30,7 @@ import '../player_args.dart';
 PlayerController _make(PlayerArgs args, AudioEngine engine) => Get.put(
       PlayerController(
         args, engine: engine, media: Get.find<MediaRepository>(), presence: Get.find<PresenceService>(), sync: Get.find<SyncService>(), analytics: Get.find<AnalyticsService>(),
-        local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>()),
+        local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>(), catalog: () => Get.find<CatalogService>().catalog.value),
       tag: args.sessionId ?? args.title,
     );
 
@@ -144,7 +146,7 @@ class PlayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = _args();
-    final ctrl = _make(args, Get.find<AudioEngineFactory>()());
+    final ctrl = _make(args, args.recipe != null ? Get.find<RecipeEngineFactory>()() : Get.find<AudioEngineFactory>()());
     final live = Get.find<LiveService>();
     final c = context.colors;
     return PopScope(
@@ -174,7 +176,7 @@ class PlayerPage extends StatelessWidget {
                 _TogetherLine(people: people, countries: t?.countries ?? 0, quiet: quiet, meditatedToday: live.agg.value?.meditatedToday ?? 0, paused: live.paused),
                 const SizedBox(height: 20),
                 StalledBanner(ctrl: ctrl),
-                if (ctrl.phase.value == PlayerPhase.loading) const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: CircularProgressIndicator()) else TransportControls(ctrl: ctrl, live: args.live),
+                if (ctrl.phase.value == PlayerPhase.loading) const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: CircularProgressIndicator()) else TransportControls(ctrl: ctrl, live: args.live || args.recipe != null),
                 const SizedBox(height: 16),
                 OutlineButton('End meditation', key: const Key('end'), onPressed: ctrl.endEarly),
                 const SizedBox(height: 10),

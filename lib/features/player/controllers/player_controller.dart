@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_engine.dart';
 import '../../../core/audio/local_media.dart';
+import '../../../core/audio/recipe_engine.dart';
+import '../../../core/audio/recipe_plan.dart';
+import '../../../core/data/models/content.dart';
 import '../../../core/audio/session_recorder.dart';
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/models/activity.dart';
@@ -47,9 +50,9 @@ class CompleteArgs {
 class PlayerController extends GetxController {
   PlayerController(this.args, {
     required AudioEngine engine, required MediaRepository media, required PresenceService presence, required SyncService sync, required AnalyticsService analytics,
-    LocalMedia? local, ConnectivityService? connectivity, PlayerNav? nav, DateTime Function()? now,
+    LocalMedia? local, ConnectivityService? connectivity, PlayerNav? nav, DateTime Function()? now, Catalog? Function()? catalog,
     this.stallGrace = const Duration(seconds: 4),
-  })  : _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now;
+  })  : _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog;
 
   final PlayerArgs args;
   final AudioEngine _engine;
@@ -61,6 +64,7 @@ class PlayerController extends GetxController {
   final ConnectivityService? _connectivity;
   final PlayerNav _nav;
   final DateTime Function()? _now;
+  final Catalog? Function()? _catalog;
   final Duration stallGrace;
 
   late final SessionRecorder recorder = SessionRecorder(
@@ -123,6 +127,7 @@ class PlayerController extends GetxController {
 
   /// Downloaded file first (works offline), else the signed URL (prefetched when Session detail opened).
   Future<EngineSource> _resolve() async {
+    if (args.recipe != null) return _recipeSource(args.recipe!);
     final t = args.target;
     if (t == null && args.youtubeId != null) return YoutubeSource(args.youtubeId!);
     if (t == null) throw ApiException(ErrorCode.notFound);
@@ -136,6 +141,16 @@ class PlayerController extends GetxController {
     final u = _url!.url ?? _url!.hlsUrl;
     if (u == null) throw ApiException(ErrorCode.notFound);
     return UrlSource(u);
+  }
+
+  /// "Build your own": timeline from the catalog's block lengths, every block's signed URL fetched in parallel.
+  Future<EngineSource> _recipeSource(Recipe r) async {
+    final cat = _catalog?.call();
+    if (cat == null) throw ApiException(ErrorCode.notFound);
+    final plan = RecipePlan.build(r, cat);
+    final ids = plan.blockIds.toList();
+    final urls = await Future.wait([for (final id in ids) _media.playUrl(PlayBlock(id)).then((u) => u.url ?? u.hlsUrl)]);
+    return RecipeSource(plan, {for (final (i, id) in ids.indexed) if (urls[i] != null) id: urls[i]!}, bellUrl: bundledBell);
   }
 
   void _listen() {
@@ -209,7 +224,7 @@ class PlayerController extends GetxController {
 
   /// Signed URL expired or the stream failed: ask for a fresh one and continue from where we were (spec §10).
   Future<void> _onError(Object e) async {
-    if (_finished || offlinePlayback.value || args.target == null) return; // YouTube handles its own errors
+    if (_finished || offlinePlayback.value || args.target == null) return; // YouTube and recipes handle their own errors
     _analytics.track('error_shown', {'code': 'playback', 'screen': 'player'});
     await _reopenAt(position.value);
   }

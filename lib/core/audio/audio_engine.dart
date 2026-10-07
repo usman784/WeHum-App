@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
+import 'recipe_plan.dart';
 
 sealed class EngineSource {
   const EngineSource();
@@ -9,6 +10,14 @@ sealed class EngineSource {
 class UrlSource extends EngineSource {
   const UrlSource(this.url);
   final String url;
+}
+
+/// A "Build your own" meditation: the timeline plus the signed URL of every block (played by RecipeEngine).
+class RecipeSource extends EngineSource {
+  const RecipeSource(this.plan, this.urls, {this.bellUrl});
+  final RecipePlan plan;
+  final Map<String, String> urls; // block id → signed URL
+  final String? bellUrl;
 }
 
 /// A YouTube video id (free items from Raphael's online library).
@@ -108,7 +117,7 @@ class JustAudioEngine implements AudioEngine {
 
   @override
   Future<Duration?> open(EngineSource src, {Duration start = Duration.zero}) async {
-    final uri = switch (src) { UrlSource() => Uri.parse(src.url), FileSource() => Uri.file(src.path), YoutubeSource() => throw UnsupportedError('YouTube is played by YoutubeEngine') };
+    final uri = switch (src) { UrlSource() => Uri.parse(src.url), FileSource() => Uri.file(src.path), YoutubeSource() => throw UnsupportedError('YouTube is played by YoutubeEngine'), RecipeSource() => throw UnsupportedError('recipes are played by RecipeEngine') };
     return _player.setAudioSource(AudioSource.uri(uri), initialPosition: start);
   }
 

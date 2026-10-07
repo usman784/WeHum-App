@@ -67,6 +67,7 @@ class VideoEngine implements AudioEngine {
       UrlSource() => VideoPlayerController.networkUrl(Uri.parse(src.url)),
       FileSource() => VideoPlayerController.file(File(src.path)),
       YoutubeSource() => throw UnsupportedError('use YoutubeEngine'),
+      RecipeSource() => throw UnsupportedError('use RecipeEngine'),
     };
     await controller!.initialize();
     controller!.addListener(_onValue);

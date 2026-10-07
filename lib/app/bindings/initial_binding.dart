@@ -7,6 +7,7 @@ import '../../core/data/api/bootstrap_api.dart';
 import '../../core/data/api/caching_media.dart';
 import '../../core/audio/audio_engine.dart';
 import '../../core/audio/engines.dart';
+import '../../core/audio/recipe_engine.dart';
 import '../../core/audio/local_media.dart';
 import '../../core/data/contracts/auth_repository.dart';
 import '../../core/data/contracts/bootstrap_repository.dart';
@@ -78,6 +79,7 @@ class InitialBinding extends Bindings {
     Get.put<CachingMediaRepository>(media, permanent: true);
     Get.put<MediaRepository>(media, permanent: true);
     Get.put<AudioEngineFactory>(() => JustAudioEngine(), permanent: true);
+    Get.put<RecipeEngineFactory>(() => RecipeEngine(clipFactory: () => JustClipPlayer()), permanent: true);
     Get.put<VideoEngineFactory>(() => VideoEngine(), permanent: true);
     Get.put<YoutubeEngineFactory>(() => YoutubeEngine(), permanent: true);
     Get.put<MeditationRepository>(mocks ? MockMeditationRepository() : MeditationApi(api), permanent: true);

@@ -9,6 +9,7 @@ import 'package:meditation/app/routes/app_pages.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/audio/audio_engine.dart';
 import 'package:meditation/core/audio/engines.dart';
+import 'package:meditation/core/audio/recipe_engine.dart';
 import 'package:meditation/core/audio/download_engine.dart';
 import 'package:meditation/core/audio/local_media.dart';
 import 'package:meditation/core/services/download_service.dart';
@@ -177,6 +178,7 @@ class TestEnv {
     Get.put<MediaRepository>(cachingMedia);
     e.engine = FakeAudioEngine();
     Get.put<AudioEngineFactory>(() => e.engine);
+    Get.put<RecipeEngineFactory>(() => e.engine);
     Get.put<VideoEngineFactory>(() => e.engine);
     Get.put<YoutubeEngineFactory>(() => e.engine);
     e.dlDir = Directory.systemTemp.createTempSync('wehum-test-dl'); // sync: real async IO never completes inside a widget test
