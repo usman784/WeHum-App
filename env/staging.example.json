@@ -1,0 +1,9 @@
+{
+  "FLAVOR": "staging",
+  "API_BASE_URL": "https://api.wehum.app",
+  "SOCKET_URL": "https://api.wehum.app",
+  "SENTRY_DSN": "",
+  "RC_APPLE_KEY": "",
+  "RC_GOOGLE_KEY": "",
+  "USE_MOCKS": false
+}

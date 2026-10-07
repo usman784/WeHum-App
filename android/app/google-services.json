@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "717113097844",
+    "project_id": "wehum-a7fc5",
+    "storage_bucket": "wehum-a7fc5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717113097844:android:c194baeb2d975311255b21",
+        "android_client_info": {
+          "package_name": "app.wehum.meditation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717113097844-07sb3ilh1qo2cgu09iabqhv3c2qditt0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.wehum.meditation",
+            "certificate_hash": "ce08c2bf9a3c28fb8079fbbfb25aa9aea1243cba"
+          }
+        },
+        {
+          "client_id": "717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3cjmw-AFMw4g2rlR60mQ-pqx23CRgNag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "717113097844-55aqr60325kdthhg0d4htlt08eoq4hch.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.wehum.meditation.staging"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717113097844:android:151b1e2b88fee231255b21",
+        "android_client_info": {
+          "package_name": "app.wehum.meditation.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3cjmw-AFMw4g2rlR60mQ-pqx23CRgNag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "717113097844-55aqr60325kdthhg0d4htlt08eoq4hch.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.wehum.meditation.staging"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717113097844:android:9d5c4f0e052596a3255b21",
+        "android_client_info": {
+          "package_name": "app.wehum.meditation.staging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3cjmw-AFMw4g2rlR60mQ-pqx23CRgNag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717113097844-7grv4tr0q2q89068qcjdp2dj8s1m1a3s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "717113097844-55aqr60325kdthhg0d4htlt08eoq4hch.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.wehum.meditation.staging"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

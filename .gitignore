@@ -8,3 +8,15 @@ build/
 .dart_tool/
 *.iml
 .idea/
+
+# Flutter / secrets
+env/*.json
+!env/*.example.json
+.flutter-plugins*
+local.properties
+key.properties
+*.jks
+Pods/
+.symlinks/
+ios/Flutter/ephemeral/
+google-services.json.bak

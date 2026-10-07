@@ -1,0 +1,9 @@
+{
+  "FLAVOR": "dev",
+  "API_BASE_URL": "http://10.0.2.2:3000",
+  "SOCKET_URL": "http://10.0.2.2:3000",
+  "SENTRY_DSN": "",
+  "RC_APPLE_KEY": "",
+  "RC_GOOGLE_KEY": "",
+  "USE_MOCKS": false
+}
