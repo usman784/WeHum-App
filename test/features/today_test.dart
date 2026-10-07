@@ -46,6 +46,7 @@ void main() {
       expect(liveLineText(snapshot: const LiveLine(total: 9, countries: 3, quiet: false, meditatedToday: 50), paused: false), '9 meditating now · 3 countries');
       expect(liveLineText(agg: a(false), paused: true), 'Live counts paused');
       expect(liveLineText(paused: false), isNull);
+      expect(liveLineText(snapshot: const LiveLine(total: 0, countries: 0, quiet: true, meditatedToday: 0), paused: false), 'Be the first to meditate today');
     });
   });
 

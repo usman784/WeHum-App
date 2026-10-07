@@ -45,8 +45,9 @@ class TabHeader extends StatelessWidget {
       child: Row(children: [
         const BrandLogo(size: 30),
         const SizedBox(width: 10),
-        Flexible(child: Text('WeHum', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary))),
-        const Spacer(),
+        // Expanded, not Flexible + Spacer: those two would split the free space and cut the name to "We…"
+        Expanded(child: Text('WeHum', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary))),
+        const SizedBox(width: 8),
         const SosPill(),
         const SizedBox(width: 8),
         Semantics(

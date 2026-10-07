@@ -33,10 +33,10 @@ String groupNumber(int v) => NumberFormat.decimalPattern('en').format(v);
 /// Numbers are never presented as live when the socket is paused.
 String? liveLineText({LiveAgg? agg, LiveLine? snapshot, required bool paused}) {
   if (paused) return 'Live counts paused';
-  if (agg != null) {
-    return agg.quiet ? '${groupNumber(agg.meditatedToday)} meditated today' : '${groupNumber(agg.total)} meditating now · ${agg.countries} countries';
-  }
-  if (snapshot != null) return snapshot.quiet ? '${groupNumber(snapshot.meditatedToday)} meditated today' : '${groupNumber(snapshot.total)} meditating now · ${snapshot.countries} countries';
+  // quiet room with nobody yet today: say so honestly instead of showing "0 meditated today"
+  String quiet(int today) => today == 0 ? 'Be the first to meditate today' : '${groupNumber(today)} meditated today';
+  if (agg != null) return agg.quiet ? quiet(agg.meditatedToday) : '${groupNumber(agg.total)} meditating now · ${agg.countries} countries';
+  if (snapshot != null) return snapshot.quiet ? quiet(snapshot.meditatedToday) : '${groupNumber(snapshot.total)} meditating now · ${snapshot.countries} countries';
   return null;
 }
 
