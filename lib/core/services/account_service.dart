@@ -156,6 +156,17 @@ class AccountService extends GetxService {
     return AccountFailed(a);
   }
 
+  /// After the account was deleted on the server: nothing to revoke, just reset this phone to a fresh guest.
+  Future<void> signOutLocalOnly() async {
+    await notifications.onSignedOut();
+    await purchases.signedOut();
+    await social.signOut();
+    await socket.disconnect();
+    access.sdkPremium.value = false;
+    await auth.resetToGuest();
+    access.setFromProfile(auth.profileFallback());
+  }
+
   /// Sign out: the server drops the device token and the push topic; this phone also gets a fresh push token,
   /// Firebase/RevenueCat are cleared, and a new guest is created. Downloads stay (spec §10).
   Future<void> signOut() async {

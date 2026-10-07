@@ -9,6 +9,7 @@ import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
 import '../../features/player/views/player_pages.dart';
 import '../../features/sos/sos_page.dart';
+import '../../features/you/views/you_pages.dart';
 import '../../features/onboarding/views/intro_pages.dart';
 import '../../features/today/views/today_pages.dart';
 import '../../features/together/views/together_pages.dart';
@@ -67,13 +68,13 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const PlaceholderPage('silenceRoomMeditating')),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
-    GetPage(name: AppRoutes.you, page: () => const PlaceholderPage('you')),
-    GetPage(name: AppRoutes.yourProgress, page: () => const PlaceholderPage('yourProgress')),
-    GetPage(name: AppRoutes.editProfile, page: () => const PlaceholderPage('editProfile')),
-    GetPage(name: AppRoutes.reminders, page: () => const PlaceholderPage('reminders')),
+    GetPage(name: AppRoutes.you, page: () => const YouPage()),
+    GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),
+    GetPage(name: AppRoutes.editProfile, page: () => const EditProfilePage()),
+    GetPage(name: AppRoutes.reminders, page: () => const RemindersPage()),
     GetPage(name: AppRoutes.downloads, page: () => const DownloadsPage()),
-    GetPage(name: AppRoutes.privacyData, page: () => const PlaceholderPage('privacyData')),
-    GetPage(name: AppRoutes.helpAbout, page: () => const PlaceholderPage('helpAbout')),
+    GetPage(name: AppRoutes.privacyData, page: () => const PrivacyPage()),
+    GetPage(name: AppRoutes.helpAbout, page: () => const HelpPage()),
     GetPage(name: AppRoutes.manageMembership, page: () => const ManageMembershipPage()),
     GetPage(name: AppRoutes.trialEnding, page: () => const TrialEndingPage()),
     GetPage(name: AppRoutes.billingIssue, page: () => const BillingIssuePage()),
@@ -88,6 +89,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.intent, page: () => const PlaceholderPage('intent')),
     GetPage(name: AppRoutes.maintenance, page: () => const PlaceholderPage('maintenance')),
     GetPage(name: AppRoutes.notFound, page: () => const PlaceholderPage('notFound')),
+    GetPage(name: AppRoutes.pushPreview, page: () => const PushPreviewPage()),
     GetPage(name: AppRoutes.resetPassword, page: () => const ResetPasswordPage()),
     GetPage(name: AppRoutes.authLink, page: () => const AuthLinkPage()),
   ];

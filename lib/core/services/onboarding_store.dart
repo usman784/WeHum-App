@@ -48,5 +48,9 @@ class OnboardingStore extends GetxService {
   String get notificationChoice => _box.read<String>('notification_choice') ?? 'unknown';
   set notificationChoice(String v) => _box.write('notification_choice', v);
 
+  /// Downloads only on Wi-Fi (Reminders & sounds).
+  bool get wifiOnlyDownloads => _box.read<bool>('wifi_only') ?? true;
+  set wifiOnlyDownloads(bool v) => _box.write('wifi_only', v);
+
   Future<void> reset() => _box.erase();
 }

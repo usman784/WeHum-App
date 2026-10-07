@@ -68,6 +68,7 @@ abstract final class AppRoutes {
   static const milestones = '/soon/milestones'; // 73
   static const intent = '/setup/intent'; // 74 (features.intent)
   // not drawn: set a new password after the reset link, email links, maintenance, deep link not found
+  static const pushPreview = '/push-preview'; // 29
   static const resetPassword = '/login/reset';
   static const authLink = '/auth/link';
   static const maintenance = '/maintenance';
