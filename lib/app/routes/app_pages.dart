@@ -8,7 +8,9 @@ import '../../features/library/views/session_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
 import '../../features/player/views/player_pages.dart';
+import '../../features/silence/silence_pages.dart';
 import '../../features/sos/sos_page.dart';
+import '../../features/system/views/system_pages.dart';
 import '../../features/you/views/you_pages.dart';
 import '../../features/onboarding/views/intro_pages.dart';
 import '../../features/today/views/today_pages.dart';
@@ -64,8 +66,8 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.meditationCompletePayoff, page: () => const CompletePage()),
     GetPage(name: AppRoutes.shareYourMeditation, page: () => const SharePage()),
     GetPage(name: AppRoutes.sessionDedications, page: () => const DedicationsPage()),
-    GetPage(name: AppRoutes.silenceRoomSetup, page: () => const PlaceholderPage('silenceRoomSetup')),
-    GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const PlaceholderPage('silenceRoomMeditating')),
+    GetPage(name: AppRoutes.silenceRoomSetup, page: () => const SilenceSetupPage()),
+    GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const SilenceRunPage()),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
     GetPage(name: AppRoutes.you, page: () => const YouPage()),
@@ -79,16 +81,16 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.trialEnding, page: () => const TrialEndingPage()),
     GetPage(name: AppRoutes.billingIssue, page: () => const BillingIssuePage()),
     GetPage(name: AppRoutes.membershipEnded, page: () => const MembershipEndedPage()),
-    GetPage(name: AppRoutes.offline, page: () => const PlaceholderPage('offline')),
-    GetPage(name: AppRoutes.updateRequired, page: () => const PlaceholderPage('updateRequired')),
+    GetPage(name: AppRoutes.offline, page: () => const OfflinePage()),
+    GetPage(name: AppRoutes.updateRequired, page: () => const UpdateRequiredPage()),
     GetPage(name: AppRoutes.challenges, page: () => const PlaceholderPage('challenges')),
     GetPage(name: AppRoutes.gratitude, page: () => const PlaceholderPage('gratitude')),
     GetPage(name: AppRoutes.breathwork, page: () => const PlaceholderPage('breathwork')),
     GetPage(name: AppRoutes.breathPattern, page: () => const PlaceholderPage('breathPattern')),
     GetPage(name: AppRoutes.milestones, page: () => const PlaceholderPage('milestones')),
     GetPage(name: AppRoutes.intent, page: () => const PlaceholderPage('intent')),
-    GetPage(name: AppRoutes.maintenance, page: () => const PlaceholderPage('maintenance')),
-    GetPage(name: AppRoutes.notFound, page: () => const PlaceholderPage('notFound')),
+    GetPage(name: AppRoutes.maintenance, page: () => const MaintenancePage()),
+    GetPage(name: AppRoutes.notFound, page: () => const NotFoundPage()),
     GetPage(name: AppRoutes.pushPreview, page: () => const PushPreviewPage()),
     GetPage(name: AppRoutes.resetPassword, page: () => const ResetPasswordPage()),
     GetPage(name: AppRoutes.authLink, page: () => const AuthLinkPage()),
