@@ -73,8 +73,9 @@ class HeroImageCard extends StatelessWidget {
         Padding(padding: const EdgeInsets.all(Gap.x20), child: ConstrainedBox(constraints: BoxConstraints(minHeight: ((height ?? 0) - 2 * Gap.x20).clamp(0.0, double.infinity)), child: child)),
       ]),
     );
-    // `height` is a minimum: at large text sizes the card grows with its content instead of overflowing
-    final sized = height == null ? body : ConstrainedBox(constraints: BoxConstraints(minHeight: height!), child: body);
+    // at large text sizes the card grows with its content instead of overflowing;
+    // always the full width of its parent (never as narrow as its content); `height` is a minimum
+    final sized = ConstrainedBox(constraints: BoxConstraints(minWidth: double.infinity, minHeight: height ?? 0), child: body);
     return onTap == null ? sized : GestureDetector(onTap: onTap, child: sized);
   }
 }

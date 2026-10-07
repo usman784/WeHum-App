@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:meditation/core/widgets/surfaces.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/services/analytics_service.dart';
 import 'package:meditation/core/services/purchase_service.dart';
@@ -53,6 +54,10 @@ void main() {
     final e = await TestEnv.create();
     await t.pumpWidget(e.app(initial: AppRoutes.intro1Welcome));
     await settle(t);
+    // the photo fills the width between the gutters (it once shrank to a strip because its content is empty)
+    final hero = t.getSize(find.byType(HeroImageCard));
+    expect(hero.width, t.view.physicalSize.width / t.view.devicePixelRatio - 48);
+    expect(hero.height, 330);
     await t.tap(find.text('Next'));
     await settle(t);
     expect(find.text('You’re never meditating alone.'), findsOneWidget);
