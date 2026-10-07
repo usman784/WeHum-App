@@ -87,12 +87,13 @@ class MockTodayRepository implements TodayRepository {
   MockTodayRepository({this.member = true});
   bool member;
   bool groupReminder = false;
+  Duration groupStartsIn = const Duration(minutes: 12);
   @override
-  Future<TodayData> today(String date) async => MockData.today(date, member: member);
+  Future<TodayData> today(String date) async => MockData.today(date, member: member, groupStartsIn: groupStartsIn);
   @override
   Future<MotdInfo> motd(String date) async => MockData.motd(date);
   @override
-  Future<GroupInfo> groupNext() async => MockData.group(DateTime.now().toIso8601String().substring(0, 10));
+  Future<GroupInfo> groupNext() async => MockData.group(DateTime.now().toIso8601String().substring(0, 10), startsIn: groupStartsIn);
   @override
   Future<DailyMessage> dailyMessage(String date) async => DailyMessage(date: date, type: 'text', title: 'Releasing Cognitive Friction', text: 'You do not have to solve your mind. Let it settle.', themeTag: 'Focus');
   @override

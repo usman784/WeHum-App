@@ -91,7 +91,7 @@ class SubHeader extends StatelessWidget implements PreferredSizeWidget {
           child: Row(children: [
             IconButton(tooltip: 'Back', onPressed: onBack ?? () => Get.back<void>(), icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: c.textPrimary)),
             Expanded(child: Text(title, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary))),
-            SizedBox(width: Sizes.touch + 4, child: action),
+            ConstrainedBox(constraints: const BoxConstraints(minWidth: Sizes.touch + 4), child: action ?? const SizedBox.shrink()),
           ]),
         ),
       ),

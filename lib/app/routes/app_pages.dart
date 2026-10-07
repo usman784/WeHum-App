@@ -4,6 +4,7 @@ import '../../features/account/views/account_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
 import '../../features/onboarding/views/intro_pages.dart';
 import '../../features/today/views/today_pages.dart';
+import '../../features/together/views/together_pages.dart';
 import '../../features/onboarding/views/setup_pages.dart';
 import '../../features/onboarding/views/splash_page.dart';
 import '../../features/onboarding/views/start_page.dart';
@@ -32,9 +33,9 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.forgotPassword, page: () => const ForgotPasswordPage()),
     GetPage(name: AppRoutes.checkYourEmail, page: () => const CheckEmailPage()),
     GetPage(name: AppRoutes.todayMember, page: () => const TodayPage()),
-    GetPage(name: AppRoutes.motdRoom, page: () => const PlaceholderPage('motdRoom')),
+    GetPage(name: AppRoutes.motdRoom, page: () => const MotdRoomPage()),
     GetPage(name: AppRoutes.todayFree, page: () => const TodayFreePage()),
-    GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const PlaceholderPage('worldMapWorldVibration')),
+    GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const WorldPage()),
     GetPage(name: AppRoutes.dailyMessage, page: () => const PlaceholderPage('dailyMessage')),
     GetPage(name: AppRoutes.exploreArchive, page: () => const PlaceholderPage('exploreArchive')),
     GetPage(name: AppRoutes.notifications, page: () => const PlaceholderPage('notifications')),
@@ -57,8 +58,8 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.sessionDedications, page: () => const PlaceholderPage('sessionDedications')),
     GetPage(name: AppRoutes.silenceRoomSetup, page: () => const PlaceholderPage('silenceRoomSetup')),
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const PlaceholderPage('silenceRoomMeditating')),
-    GetPage(name: AppRoutes.together, page: () => const PlaceholderPage('together')),
-    GetPage(name: AppRoutes.groupMeditationLobby, page: () => const PlaceholderPage('groupMeditationLobby')),
+    GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
+    GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
     GetPage(name: AppRoutes.you, page: () => const PlaceholderPage('you')),
     GetPage(name: AppRoutes.yourProgress, page: () => const PlaceholderPage('yourProgress')),
     GetPage(name: AppRoutes.editProfile, page: () => const PlaceholderPage('editProfile')),

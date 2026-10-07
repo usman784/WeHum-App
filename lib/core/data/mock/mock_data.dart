@@ -51,15 +51,17 @@ abstract final class MockData {
 
   static MotdInfo motd(String date) => MotdInfo(date: date, sessionId: 's-motd', title: 'Steady Under Pressure', teacher: 'Raphael', theme: 'Anxiety & Stress', cover: cover('ocean'), lengths: const [10, 30, 45], practicedToday: 1280);
 
-  static GroupInfo group(String date) {
-    final starts = DateTime.now().toUtc().add(const Duration(minutes: 12));
+  /// [startsIn] negative = the group is already running (a late joiner).
+  static GroupInfo group(String date, {Duration startsIn = const Duration(minutes: 12)}) {
+    final starts = DateTime.now().toUtc().add(startsIn);
+    final phase = startsIn.isNegative ? GroupPhase.live : (startsIn <= const Duration(minutes: 3) ? GroupPhase.lobby : GroupPhase.scheduled);
     return GroupInfo(
         date: date, startsAt: starts, endsAt: starts.add(const Duration(minutes: 30)), lobbyOpensAt: starts.subtract(const Duration(minutes: 3)),
-        lengthMin: 30, state: GroupPhase.scheduled, waiting: 120, sessionId: 's-motd', title: 'Steady Under Pressure');
+        lengthMin: 30, state: phase, waiting: 120, sessionId: 's-motd', title: 'Steady Under Pressure');
   }
 
-  static TodayData today(String date, {required bool member}) => TodayData(
-        date: date, motd: motd(date), live: const LiveLine(total: 412, countries: 37, quiet: false, meditatedToday: 1280), group: group(date),
+  static TodayData today(String date, {required bool member, Duration groupStartsIn = const Duration(minutes: 12)}) => TodayData(
+        date: date, motd: motd(date), live: const LiveLine(total: 412, countries: 37, quiet: false, meditatedToday: 1280), group: group(date, startsIn: groupStartsIn),
         freePick: member ? null : const FreePick(sessionId: 's-free1', title: 'Breathing Reset', youtubeId: 'dQw4w9WgXcQ', durationSec: 480),
         program: member ? const ProgramCard(id: 'p-7', title: '7-Day Autonomic Reset', day: 4, days: 7) : null,
         progress: const WeekProgress(minutes: 105, meditations: 7, daysThisWeek: [true, true, false, true, true, false, false]),
