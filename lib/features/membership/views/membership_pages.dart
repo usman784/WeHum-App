@@ -319,7 +319,7 @@ class TrialEndingPage extends StatelessWidget {
           const SizedBox(height: 16),
           Text('Your free trial ends in 2 days', key: const Key('trial-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
           const SizedBox(height: 12),
-          Text('On ${formatDate(ctrl.ent.expiresAt)} your ${(ctrl.ent.productId ?? '').contains('monthly') ? 'monthly' : 'annual'} plan starts${price == null ? '' : ' at $price'}. Do nothing to keep it. To stop, cancel in your ${Platform.isIOS ? 'App Store' : 'Google Play'} subscriptions before then.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+          Text('${ctrl.ent.expiresAt == null ? 'Soon' : 'On ${formatDate(ctrl.ent.expiresAt)}'} your ${(ctrl.ent.productId ?? '').contains('monthly') ? 'monthly' : 'annual'} plan starts${price == null ? '' : ' at $price'}. Do nothing to keep it. To stop, cancel in your ${Platform.isIOS ? 'App Store' : 'Google Play'} subscriptions before then.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
           const Spacer(),
           PrimaryButton('Keep my membership', onPressed: () => Get.offAllNamed(AppRoutes.todayMember)),
           const SizedBox(height: 8),

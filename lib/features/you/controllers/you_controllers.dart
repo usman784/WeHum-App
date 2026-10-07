@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart' show ThemeMode;
+import 'package:flutter/material.dart' show TextEditingController, ThemeMode;
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/contracts/repositories.dart';
@@ -131,22 +132,36 @@ class EditProfileController extends GetxController {
   final saved = false.obs;
   static final _ok = RegExp(r"^[\p{L}\p{M}' -]+$", unicode: true);
 
+  /// The field's text. Filled from the phone at once and from the server when it answers (an `initialValue` would
+  /// be read before the profile arrives and leave the field empty).
+  final firstField = TextEditingController();
+
+  void _setFirst(String v) {
+    first.value = v;
+    if (firstField.text != v) firstField.text = v;
+  }
+
   @override
   void onInit() {
     super.onInit();
+    _setFirst(Get.find<OnboardingStore>().name);
     _load();
+  }
+
+  @override
+  void onClose() {
+    firstField.dispose();
+    super.onClose();
   }
 
   Future<void> _load() async {
     try {
       final p = await _me.me();
-      first.value = p.firstName ?? '';
+      if ((p.firstName ?? '').isNotEmpty) _setFirst(p.firstName!);
       email.value = p.email;
       provider.value = p.providers.isEmpty ? null : p.providers.first;
       theme.value = Get.find<ThemeController>().mode.value.name; // what this phone actually shows
-    } catch (_) {
-      first.value = Get.find<OnboardingStore>().name;
-    }
+    } catch (_) {/* offline: the name from this phone is already in the field */}
   }
 
   String? get firstError {
@@ -333,5 +348,33 @@ class HelpController extends GetxController {
   void onInit() {
     super.onInit();
     PackageInfo.fromPlatform().then((i) => version.value = 'Version ${i.version}');
+  }
+}
+
+/// 29 What the notifications look like, built from the person's own settings and today's group time.
+class PushPreviewController extends GetxController {
+  final groupWarningAt = RxnString();
+
+  @override
+  void onInit() {
+    super.onInit();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final g = await Get.find<TodayRepository>().groupNext();
+      groupWarningAt.value = DateFormat('HH:mm').format(g.startsAt.toLocal().subtract(Duration(minutes: g.reminderMin)));
+    } catch (_) {/* no group time known: that card shows no time */}
+  }
+
+  List<(String, String, String)> get items {
+    final store = Get.find<OnboardingStore>();
+    final name = store.name.trim();
+    return [
+      (name.isEmpty ? 'Time to meditate.' : 'Time to meditate, $name.', 'Today’s meditation with Raphael is ready.', store.reminderTime),
+      ('Group meditation in 10 minutes', 'Join the lobby and start together.', groupWarningAt.value ?? ''),
+      ('Today’s message from Raphael', 'A short note for your day.', store.reminderTime),
+    ];
   }
 }

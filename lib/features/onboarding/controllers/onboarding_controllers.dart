@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../app/app_controller.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/contracts/repositories.dart';
@@ -63,6 +64,15 @@ class IntroController extends GetxController {
     super.onReady();
     Get.find<AnalyticsService>().track('onboarding_step_view', {'step': 'intro$step'});
     if (step == 2) live.acquireToday();
+    if (step == 3) _loadMotd();
+  }
+
+  /// Slide 3 shows today's real Meditation of the Day (never a sample title); until it arrives the card has no title.
+  final motdTitle = RxnString();
+  Future<void> _loadMotd() async {
+    try {
+      motdTitle.value = (await Get.find<TodayRepository>().today(DateFormat('yyyy-MM-dd').format(DateTime.now()))).motd?.title;
+    } catch (_) {/* offline: the card keeps its label only */}
   }
 
   @override

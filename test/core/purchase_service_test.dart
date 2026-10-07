@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/services/access_service.dart';
 import 'package:meditation/core/services/analytics_service.dart';
 import 'package:meditation/core/services/purchase_service.dart';
@@ -34,6 +35,32 @@ class FakeRc implements RcClient {
   Future<bool> isPremium() async => premium;
   @override
   void onChange(void Function(bool) cb) => listener = cb;
+}
+
+/// Stands for the real SDK before `configure`: every call is fatal.
+class _ThrowingRc implements RcClient {
+  final calls = <String>[];
+  Never _die(String what) {
+    calls.add(what);
+    throw StateError('Purchases has not been configured ($what)');
+  }
+
+  @override
+  Future<void> configure(String apiKey, String appUserId) async => _die('configure');
+  @override
+  Future<void> logIn(String id) async => _die('logIn');
+  @override
+  Future<void> logOut() async => _die('logOut');
+  @override
+  Future<Offer> offer() async => _die('offer');
+  @override
+  Future<PurchaseOutcome> purchase(String packageId) async => _die('purchase');
+  @override
+  Future<RestoreOutcome> restore() async => _die('restore');
+  @override
+  Future<bool> isPremium() async => _die('isPremium');
+  @override
+  void onChange(void Function(bool) cb) => _die('onChange');
 }
 
 void main() {
@@ -101,6 +128,23 @@ void main() {
     await s.configureForTest('user-1');
     expect(await s.buy(rc.current.annual!), PurchaseOutcome.success);
     expect(access.sdkPremium.value, true);
+  });
+
+  test('no SDK key (not configured): buy and restore never touch the store SDK (it would abort the app); restore asks the server', () async {
+    final strict = _ThrowingRc();
+    var synced = 0;
+    final bare = PurchaseService(strict, access, analytics, syncEntitlement: () async => synced++);
+    expect(bare.available, false);
+    expect(await bare.buy(rc.current.annual!), PurchaseOutcome.unavailable);
+    expect(await bare.restore(), RestoreOutcome.notFound);
+    expect(synced, 1);
+    access.entitlement.value = const Entitlement(active: true); // the server knows a membership for this account
+    expect(await bare.restore(), RestoreOutcome.restored);
+    expect(await bare.loadOffer(), isNull);
+    await bare.signedOut();
+    expect(strict.calls, isEmpty);
+    final offline = PurchaseService(strict, AccessService(), analytics, syncEntitlement: () async => throw StateError('offline'));
+    expect(await offline.restore(), RestoreOutcome.failed);
   });
 
   test('restore: found / not found; SDK listener keeps the flag in sync (renewal, expiry, refund)', () async {

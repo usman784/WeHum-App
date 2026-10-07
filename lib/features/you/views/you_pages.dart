@@ -154,7 +154,7 @@ class EditProfilePage extends StatelessWidget {
     return AppScaffold(
       title: 'Edit profile',
       body: Obx(() => ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
-            TextFormField(key: const Key('profile-first'), initialValue: ctrl.first.value, onChanged: (v) {
+            TextFormField(key: const Key('profile-first'), controller: ctrl.firstField, onChanged: (v) {
               ctrl.first.value = v;
               ctrl.saved.value = false;
             }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: InputDecoration(labelText: 'First name', errorText: ctrl.error.value, helperText: 'Shown with your dedications and gratitude posts.', filled: true, fillColor: c.surfaceInput, border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border)))),
@@ -235,23 +235,20 @@ class PushPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    const items = [
-      ('Time to meditate, Marcus.', 'Today’s meditation with Raphael is ready.', '07:00'),
-      ('Group meditation in 10 minutes', 'Join the lobby and start together.', '15:50'),
-      ('Today’s message from Raphael', 'Releasing Cognitive Friction Before Work', '07:00'),
-    ];
+    final ctrl = Get.put(PushPreviewController());
     return AppScaffold(
       title: 'Push notifications',
-      body: ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
-        for (final (title, body, at) in items)
-          Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(Radii.card)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [const BrandLogo(size: 16), const SizedBox(width: 6), Text('WEHUM', style: AppText.overline.copyWith(color: c.textTertiary)), const Spacer(), Text(at, style: AppText.caption.copyWith(color: c.textTertiary))]),
-            const SizedBox(height: 6),
-            Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary)),
-            Text(body, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+      body: Obx(() => ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
+            // the person's own name, reminder time and (from the server) the group time: nothing here is sample data
+            for (final (title, body, at) in ctrl.items)
+              Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(Radii.card)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [const BrandLogo(size: 16), const SizedBox(width: 6), Text('WEHUM', style: AppText.overline.copyWith(color: c.textTertiary)), const Spacer(), Text(at, style: AppText.caption.copyWith(color: c.textTertiary))]),
+                const SizedBox(height: 6),
+                Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                Text(body, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              ])),
+            Text('You choose the daily time. Group warnings are optional. No marketing, ever.', style: AppText.caption.copyWith(color: c.textTertiary)),
           ])),
-        Text('You choose the daily time. Group warnings are optional. No marketing, ever.', style: AppText.caption.copyWith(color: c.textTertiary)),
-      ]),
     );
   }
 }

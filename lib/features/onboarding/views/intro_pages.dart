@@ -51,7 +51,7 @@ class IntroPage extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Row(children: [Expanded(child: Overline('Meditation of the day')), SizedBox(width: 8), AppBadge(BadgeKind.premium)]),
             const SizedBox(height: 12),
-            Text('Steady Under Pressure', style: AppText.title.copyWith(color: c.textPrimary)),
+            Obx(() => Text(ctrl.motdTitle.value ?? 'Today’s meditation', key: const Key('intro-motd-title'), style: AppText.title.copyWith(color: c.textPrimary))),
             const SizedBox(height: 16),
             Container(height: 48, alignment: Alignment.center, decoration: BoxDecoration(color: c.ember, borderRadius: BorderRadius.circular(Radii.pill)), child: Text('Begin', style: AppText.button.copyWith(color: c.onEmber))),
             const SizedBox(height: 20),

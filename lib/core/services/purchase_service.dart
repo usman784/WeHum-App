@@ -174,6 +174,8 @@ class PurchaseService extends GetxService {
   }
 
   Future<PurchaseOutcome> buy(PlanOption plan) async {
+    // the SDK aborts the whole app (native fatalError) when called before configure: never reach it unconfigured
+    if (!_configured) return PurchaseOutcome.unavailable;
     _analytics.track('purchase_start', {'product_id': plan.productId});
     final out = await _rc.purchase(plan.packageId);
     switch (out) {
@@ -198,6 +200,17 @@ class PurchaseService extends GetxService {
   }
 
   Future<RestoreOutcome> restore() async {
+    if (!_configured) {
+      // no store SDK in this build: the server may still know a membership (same account on another phone)
+      try {
+        await syncEntitlement();
+      } catch (_) {
+        _analytics.track('restore_fail');
+        return RestoreOutcome.failed;
+      }
+      _analytics.track(_access.isMember ? 'restore_success' : 'restore_fail');
+      return _access.isMember ? RestoreOutcome.restored : RestoreOutcome.notFound;
+    }
     final r = await _rc.restore();
     if (r == RestoreOutcome.restored) {
       _access.sdkPremium.value = true;
