@@ -10,6 +10,8 @@ import 'package:meditation/core/widgets/painters.dart';
 import 'package:meditation/core/widgets/states.dart';
 import 'package:meditation/core/widgets/surfaces.dart';
 
+import '../support/fonts.dart';
+
 Widget host(Widget child, {Brightness b = Brightness.dark, double scale = 1}) => MaterialApp(
       theme: buildTheme(b),
       builder: (c, w) => MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: w!),
@@ -47,6 +49,7 @@ Widget gallery() => Column(crossAxisAlignment: CrossAxisAlignment.start, childre
     ]);
 
 void main() {
+  setUpAll(loadAppFonts);
   for (final b in Brightness.values) {
     for (final scale in [1.0, 2.0]) {
       testWidgets('components render without overflow: ${b.name} × $scale', (t) async {

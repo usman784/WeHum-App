@@ -1,20 +1,23 @@
 import 'package:get/get.dart';
 import '../../features/system/views/placeholder_page.dart';
+import '../../features/onboarding/views/intro_pages.dart';
+import '../../features/onboarding/views/setup_pages.dart';
 import '../../features/onboarding/views/splash_page.dart';
+import '../../features/onboarding/views/start_page.dart';
 import 'app_routes.dart';
 
 /// Every route has a page from P0; each phase swaps its placeholders for the real screen (spec §14).
 abstract final class AppPages {
   static final pages = <GetPage<dynamic>>[
     GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
-    GetPage(name: AppRoutes.intro1Welcome, page: () => const PlaceholderPage('intro1Welcome')),
-    GetPage(name: AppRoutes.intro2NeverAlone, page: () => const PlaceholderPage('intro2NeverAlone')),
-    GetPage(name: AppRoutes.intro3EveryDay, page: () => const PlaceholderPage('intro3EveryDay')),
-    GetPage(name: AppRoutes.intro4TrainingNotTherapy, page: () => const PlaceholderPage('intro4TrainingNotTherapy')),
-    GetPage(name: AppRoutes.setup1YourName, page: () => const PlaceholderPage('setup1YourName')),
-    GetPage(name: AppRoutes.setup2MeditationReminder, page: () => const PlaceholderPage('setup2MeditationReminder')),
-    GetPage(name: AppRoutes.setup3Reminder, page: () => const PlaceholderPage('setup3Reminder')),
-    GetPage(name: AppRoutes.howDoYouWantToStart, page: () => const PlaceholderPage('howDoYouWantToStart')),
+    GetPage(name: AppRoutes.intro1Welcome, page: () => const IntroPage(1)),
+    GetPage(name: AppRoutes.intro2NeverAlone, page: () => const IntroPage(2)),
+    GetPage(name: AppRoutes.intro3EveryDay, page: () => const IntroPage(3)),
+    GetPage(name: AppRoutes.intro4TrainingNotTherapy, page: () => const IntroPage(4)),
+    GetPage(name: AppRoutes.setup1YourName, page: () => const NamePage()),
+    GetPage(name: AppRoutes.setup2MeditationReminder, page: () => const TimePage()),
+    GetPage(name: AppRoutes.setup3Reminder, page: () => const ReminderPermissionPage()),
+    GetPage(name: AppRoutes.howDoYouWantToStart, page: () => const StartPage()),
     GetPage(name: AppRoutes.purchaseStates, page: () => const PlaceholderPage('purchaseStates')),
     GetPage(name: AppRoutes.trialStarted, page: () => const PlaceholderPage('trialStarted')),
     GetPage(name: AppRoutes.saveYourProgressOptional, page: () => const PlaceholderPage('saveYourProgressOptional')),

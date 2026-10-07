@@ -34,7 +34,7 @@ class MockBootstrapRepository implements BootstrapRepository {
         'maintenance': false,
         'features': {'intent': false, 'challenges': false, 'gratitude': false, 'breathwork': false, 'milestones': false},
         'catalogVersion': 1,
-        'founding': {'taken': 412, 'cap': 1000, 'open': true},
+        'founding': {'left': 588, 'cap': 1000, 'open': true},
         'me': {'id': 'mock-user', 'isGuest': true, 'theme': 'system'},
         'entitlement': {'active': member},
       });

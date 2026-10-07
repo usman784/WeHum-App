@@ -188,5 +188,5 @@ class Overline extends StatelessWidget {
   final String text;
   final Color? color;
   @override
-  Widget build(BuildContext context) => Text(text.toUpperCase(), style: AppText.overline.copyWith(color: color ?? context.colors.emberText));
+  Widget build(BuildContext context) => Text(text.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: color ?? context.colors.emberText));
 }

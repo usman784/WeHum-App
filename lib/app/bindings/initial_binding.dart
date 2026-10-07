@@ -25,6 +25,7 @@ import '../../core/services/config_service.dart';
 import '../../core/services/connectivity_service.dart';
 import '../../core/services/crash_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/onboarding_store.dart';
 import '../../core/services/purchase_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../core/services/time_service.dart';
@@ -40,6 +41,7 @@ class InitialBinding extends Bindings {
 
     // ── infrastructure
     Get.put(ThemeController(), permanent: true);
+    Get.put(OnboardingStore(), permanent: true);
     final crash = Get.put(CrashService(), permanent: true);
     final time = Get.put(TimeService(), permanent: true);
     Get.put(AnalyticsService(), permanent: true);
