@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'painters.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../theme/app_colors.dart';
@@ -42,7 +43,7 @@ class TabHeader extends StatelessWidget {
     return ClampedText(child: Padding(
       padding: const EdgeInsets.fromLTRB(Gap.gutter, 12, Gap.gutter, 8),
       child: Row(children: [
-        Icon(Icons.track_changes_rounded, color: c.ember, size: 30),
+        const BrandLogo(size: 30),
         const SizedBox(width: 10),
         Flexible(child: Text('WeHum', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary))),
         const Spacer(),

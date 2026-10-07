@@ -75,6 +75,7 @@ class IntroController extends GetxController {
   String? get livePill {
     final a = live.agg.value;
     if (a == null || live.paused) return null;
+    if (a.quiet && a.meditatedToday == 0) return null; // nothing true to say yet: say nothing (never a made-up number)
     return a.quiet ? '${_n(a.meditatedToday)} meditated today' : '${_n(a.total)} meditating now';
   }
 

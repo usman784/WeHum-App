@@ -94,3 +94,15 @@ flutter:
 flutter_native_splash:
   color: "#0B0D0E"
   image: assets/brand/logo_512.png
+  android_12:
+    color: "#0B0D0E"
+    image: assets/brand/icon_foreground.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/brand/icon_1024.png
+  adaptive_icon_background: "#0B0D0E"
+  adaptive_icon_foreground: assets/brand/icon_foreground.png
+  min_sdk_android: 24

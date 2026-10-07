@@ -190,3 +190,32 @@ class Overline extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(text.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: color ?? context.colors.emberText));
 }
+
+/// The WeHum ring logo (spec §3.3, same numbers as assets/brand/logo.svg): an ember arc with the gap top-right,
+/// a green disc and a dark centre dot. Brand colours are fixed in both themes. Decorative: no semantics.
+class BrandLogo extends StatelessWidget {
+  const BrandLogo({super.key, this.size = 30});
+  final double size;
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(child: CustomPaint(size: Size.square(size), painter: const _BrandLogoPainter()));
+}
+
+class _BrandLogoPainter extends CustomPainter {
+  const _BrandLogoPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 30);
+    const centre = Offset(15, 15);
+    final arc = Paint()
+      ..color = const Color(0xFFFF7A45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(Rect.fromCircle(center: centre, radius: 11), 0, 52 / 11, false, arc); // dasharray 52 18
+    canvas.drawCircle(centre, 6, Paint()..color = const Color(0xFF4ADE80));
+    canvas.drawCircle(centre, 2.4, Paint()..color = const Color(0xFF0B0D0E));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

@@ -40,7 +40,7 @@ class IntroPage extends StatelessWidget {
           return Container(
             height: 330, width: double.infinity, decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(28), border: Border.all(color: c.border)),
             child: Stack(alignment: Alignment.center, children: [
-              PresenceRing(people: ctrl.live.agg.value?.total ?? 12, size: 250),
+              PresenceRing(people: ctrl.live.agg.value?.total ?? 0, size: 250),
               if (pill != null) Positioned(top: 18, left: 18, child: LivePill(text: pill, quiet: ctrl.live.agg.value?.quiet ?? false)),
             ]),
           );

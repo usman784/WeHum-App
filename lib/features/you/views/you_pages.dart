@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import '../../../core/widgets/painters.dart';
 import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -244,7 +245,7 @@ class PushPreviewPage extends StatelessWidget {
       body: ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
         for (final (title, body, at) in items)
           Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(Radii.card)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [Icon(Icons.track_changes_rounded, size: 16, color: c.ember), const SizedBox(width: 6), Text('WEHUM', style: AppText.overline.copyWith(color: c.textTertiary)), const Spacer(), Text(at, style: AppText.caption.copyWith(color: c.textTertiary))]),
+            Row(children: [const BrandLogo(size: 16), const SizedBox(width: 6), Text('WEHUM', style: AppText.overline.copyWith(color: c.textTertiary)), const Spacer(), Text(at, style: AppText.caption.copyWith(color: c.textTertiary))]),
             const SizedBox(height: 6),
             Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary)),
             Text(body, style: AppText.bodySmall.copyWith(color: c.textSecondary)),

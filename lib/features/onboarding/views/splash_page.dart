@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/painters.dart';
 import 'package:get/get.dart';
 import '../../../core/errors/error_code.dart';
 import '../../../core/theme/app_colors.dart';
@@ -19,7 +20,7 @@ class SplashPage extends StatelessWidget {
         child: Obx(() {
           final failed = ctrl.failure.value;
           return Column(mainAxisSize: MainAxisSize.min, children: [
-            ExcludeSemantics(child: Icon(Icons.track_changes_rounded, size: 88, color: c.ember)),
+            const BrandLogo(size: 88),
             const SizedBox(height: 20),
             Text('WeHum', style: AppText.display.copyWith(color: c.textPrimary)),
             const SizedBox(height: 4),
