@@ -527,35 +527,87 @@ Golden tests for every component in dark and light, at text scale 1.0 and 2.0.
 
 ## 9. Payments (RevenueCat)
 
-**Setup and identity**
-- Configure the SDK on app start **after** `ensureSession()`, with `appUserID = backend user id` (the guest id at first). On linking an account the id stays the same, so purchases stay attached.
-- On merge (409 `ACCOUNT_EXISTS` → login → `POST /v1/auth/merge`), call `Purchases.logIn(newUserId)`. RevenueCat transfers per project settings. Then refresh the bootstrap.
+RevenueCat is the **only** IAP integration — no store-specific code, no second payment provider. The **backend is the source of truth** for entitlement (§9.4); the SDK is only used to drive the UI and to talk to the stores. This section is written to close every edge case the client has hit in testing (cross-account subscription theft, "item already owned" on upgrade/downgrade, and multi-account-on-one-device) — follow it exactly, it is not optional guidance.
 
-**Offerings and paywall**
+### 9.1 Identity — one permanent `appUserID` per backend user, forever
+
+- `appUserID` passed to `Purchases.configure()` is **always the backend user id** — the same id created by `POST /v1/auth/guest` on first launch. This id is generated **before any purchase can happen**, and it **never changes for the lifetime of that person's account**.
+- "Save your progress" (13/16 — linking Apple/Google/email) does **not** create a new backend user and does **not** call `Purchases.logIn()` with a different id. It only attaches an auth credential to the **same** existing user row (`POST /v1/auth/apple|google|email/link`). The RevenueCat subscriber stays bound to the one id it has always had. This is deliberate: it means the common "I bought as a guest, now I'm linking my account" flow never has to transfer a purchase between RevenueCat subscribers at all, so it can never go wrong.
+- `Purchases.logIn(newUserId)` is called in **exactly one** place: the explicit account-merge flow (409 `ACCOUNT_EXISTS` → password/OAuth verified login → `POST /v1/auth/merge`), where the backend has already cryptographically verified the person owns both identities before the client ever touches RevenueCat. This is the only path allowed to change which subscriber a device is talking to.
+- **Cross-platform entitlement (buy on Android, use on iOS with the same account) needs no special code** — RevenueCat identifies a subscriber by `appUserID`, not by store. As long as both platforms log in with the same backend user id, `CustomerInfo.entitlements.active` comes back identical on both. Add an explicit P3 test for this (buy on Android sandbox, log in with the same account on iOS, assert `premium` is active with zero extra calls).
+
+### 9.2 Restore behavior — nobody can ever end up with someone else's subscription
+
+This is a **RevenueCat Project Settings** change, not app code: **Project Settings → General → Restore Behavior → "Keep with original App User ID"** (not the default "Transfer to new App User ID", and not the legacy "Share between App User IDs" — both of those let a second account silently inherit an active subscription, which is the exact theft scenario we must prevent).
+
+With "Keep with original App User ID":
+- If a store receipt is already attached to `appUserID = A`, and a device logged in as `appUserID = B` calls `restorePurchases()` or attempts to purchase the same product, RevenueCat **returns an error** instead of moving the entitlement to B. Nothing is silently transferred, ever.
+- This is safe for our guest-first flow specifically *because* of §9.1: a guest's id is permanent from first launch, so "the original owner" is always the one real person, never a throwaway anonymous id that gets discarded later.
+- Client handling for the resulting error (`RESTORE_PURCHASES_BELONGING_TO_OTHER_USER` / similar RC error code): show a dedicated sheet — *"This purchase is linked to a different WeHum account. Log in with that account, or contact support if you believe this is a mistake."* — never retry silently, never fall back to unlocking the UI anyway.
+
+### 9.3 "Item already owned" / "already purchased" — the two distinct causes, and the fix for each
+
+**Cause A — a second person on the same device shares the same Apple ID / Google Play account.**
+Store-level entitlement is tied to the **Play Store / App Store account**, not to our backend user. If that Play Store account already holds an active purchase token for a product, Google will refuse to sell it again to *any* app-level account signed in on that device — this is store policy, not something we can bypass. Handle it as a known, expected flow, not a bug:
+1. Catch `PurchasesErrorCode.productAlreadyPurchasedError` (iOS) / `ITEM_ALREADY_OWNED` (Android) on `purchasePackage()`.
+2. Call `Purchases.restorePurchases()` to pull the existing receipt into view.
+3. Compare the resulting `CustomerInfo.originalAppUserId` to the currently logged-in backend user id:
+   - **Matches** → this really is the same person re-buying from a fresh install; sync entitlement and unlock normally.
+   - **Does not match** → this is a different WeHum account sharing a Play/Apple Store account with the original purchaser; per §9.2 the restore is already blocked server-side — show the same "linked to a different account" sheet and do **not** unlock.
+
+**Cause B — upgrade then downgrade (monthly → annual → monthly) fails on the second change.**
+This is caused by treating a plan change as two independent, unrelated purchases instead of telling the store it's a *replacement* of an existing subscription.
+
+- **iOS**: put **all four products** (`wehum_monthly`, `wehum_annual`, `wehum_annual_founding`, and any future tier) in **one App Store Connect Subscription Group**. Inside a group, StoreKit handles upgrade/downgrade/crossgrade natively — **no client code needed** for the plan-change call itself. Upgrades apply immediately with a prorated refund of unused time; downgrades take effect at the next renewal, never mid-cycle. (Caveat to test: if the original purchase is still inside its free-trial period, Apple can briefly show two simultaneous "active" products during the switch — don't treat that as a bug in our own entitlement sync.)
+- **Android**: every plan-change purchase call **must** pass the subscriber's current product as the *old* product being replaced, plus an explicit replacement mode — omitting this is exactly what produces `ITEM_ALREADY_OWNED` on the second switch:
+  ```dart
+  final current = await Purchases.getCustomerInfo();
+  final oldProductId = current.entitlements.active['premium']?.productIdentifier;
+
+  await Purchases.purchasePackage(
+    newPackage,
+    googleProductChangeInfo: GoogleProductChangeInfo(
+      oldProductId!,
+      prorationMode: isUpgrade
+          ? ProrationMode.immediateWithTimeProration   // monthly → annual: switch now, credit remaining time
+          : ProrationMode.deferred,                     // annual → monthly: switch at next renewal, no refund
+    ),
+  );
+  ```
+  Always read `oldProductId` live from `CustomerInfo` immediately before the call — never cache it, since it can go stale if the subscription changed via the store's own "Manage Subscription" UI outside the app.
+- `ManageMembership` (61) "Change plan" always routes through this same upgrade/downgrade code path, never a plain `purchasePackage()` call with no `googleProductChangeInfo`.
+
+### 9.4 Entitlement — server is the source of truth
+
+- `premium` maps to `PurchaseService.isPremium` (`RxBool`), from `CustomerInfo.entitlements.active`.
+- After a successful purchase **or** plan change, call `POST /v1/me/entitlement/sync`. The server independently confirms via the RevenueCat REST API (server-side, using the secret key — never trust the client's local receipt), and the socket `entitlement:changed` also arrives from the RC webhook, so the server's view updates even if the app is killed mid-purchase.
+- If the SDK and the server disagree for more than 60 s, trust the SDK for UI unlocking and retry the sync in the background. Server-only features (signed media URLs, dedications) always wait for the **server's** confirmation, never the client SDK alone — this is what makes §9.2's restore block actually enforceable (a client can't unlock premium features just by having a local `CustomerInfo` object say so).
+- Webhooks the backend must handle idempotently (duplicate delivery is normal): `INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `UNCANCELLATION`, `NON_RENEWING_PURCHASE`, `EXPIRATION`, `BILLING_ISSUE`, `PRODUCT_CHANGE`, `TRANSFER` (log every `TRANSFER` event even though §9.2 should make it rare — it's the canary for a misconfigured restore-behavior setting), `REFUND`.
+
+### 9.5 Offerings and paywall
+
 - Offerings: `default` (founding annual $59 + monthly) and `regular` (annual $79 + monthly). The backend switches the current offering when the Founding cap is reached.
 - The app always renders prices from `StoreProduct.priceString`, never from constants. The founding banner ("N SPOTS LEFT") comes from `bootstrap.founding` and updates live (`config:changed`).
 - The paywall (14) and Start screen (09) show: price, period, trial length, auto-renew text, Terms (EULA), Privacy and **Restore**. Annual is pre-selected.
 
-**Entitlement**
-- `premium` maps to `PurchaseService.isPremium` (`RxBool`), from `CustomerInfo.entitlements.active`.
-- After a successful purchase, call `POST /v1/me/entitlement/sync`. The server confirms through the RevenueCat REST API, and the socket `entitlement:changed` also arrives from the webhook.
-- If the SDK and the server disagree for more than 60 s, trust the SDK for UI unlocking and retry the sync. Server-only features (signed URLs, dedications) wait for the server.
-
-**States to handle** (screen 11 Purchase states, and 61–64)
+### 9.6 States to handle (screen 11 Purchase states, and 61–64)
 - success;
 - cancelled (no error);
 - pending or deferred (Ask to Buy);
 - failed (network or store);
-- already subscribed;
+- already subscribed — same account, same device (§9.3 Cause A, matched user) → silently sync and unlock;
+- already owned by a different account (§9.3 Cause A, mismatched user / §9.2 restore block) → explicit "linked to a different account" sheet, never unlock;
 - product unavailable;
 - trial ending (push "Trial ends in 2 days");
 - billing issue / grace period;
 - expired;
 - refunded;
-- restored on a new device;
-- upgrade from monthly to annual.
+- restored on a new device (same account);
+- upgrade monthly → annual (§9.3, immediate + prorated);
+- downgrade annual → monthly (§9.3, deferred to renewal);
+- plan change initiated from the store's own subscription management UI, outside the app (picked up via webhook `PRODUCT_CHANGE` + `entitlement:changed`, not a client-driven flow).
 
-Never unlock from client receipt parsing.
+Never unlock from client receipt parsing. Never call `purchasePackage()` for a plan change without `googleProductChangeInfo` on Android.
 
 ---
 

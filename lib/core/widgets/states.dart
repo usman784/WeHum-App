@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../errors/error_code.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
@@ -42,6 +43,8 @@ class StateSwitcher extends StatelessWidget {
           ViewKind.loading => _Delayed(delay: skeletonDelay, child: skeleton ?? const SkeletonList()),
           ViewKind.content => KeyedSubtree(key: const ValueKey('content'), child: content()),
           ViewKind.empty => empty ?? const EmptyState(title: 'Nothing here yet', body: ''),
+          // the server says "members only": that is a locked door, not a failure
+          ViewKind.error when state.error?.code == ErrorCode.premiumRequired => const MembersOnlyState(),
           ViewKind.error => ErrorState(code: state.error?.code.wire, traceId: state.error?.traceId, onRetry: onRetry),
           ViewKind.offline => ErrorState(offline: true, onRetry: onRetry),
         },
@@ -130,6 +133,17 @@ class SkeletonList extends StatelessWidget {
             for (var i = 0; i < rows; i++) ...[const SizedBox(height: 14), const Skeleton(height: 64, radius: Radii.card)],
           ]),
         ),
+      );
+}
+
+/// Shown where a free user reaches something that is part of membership (spec §7.3): lock + the way to the paywall.
+class MembersOnlyState extends StatelessWidget {
+  const MembersOnlyState({super.key, this.title = 'This is part of membership', this.body = 'Start your free trial to open it. Your free meditations stay free.'});
+  final String title, body;
+  @override
+  Widget build(BuildContext context) => EmptyState(
+        key: const Key('members-only'), icon: Icons.lock_outline_rounded, title: title, body: body, ctaLabel: 'See membership options',
+        onCta: () => Get.toNamed<void>('/membership', arguments: {'source': 'lock'}),
       );
 }
 

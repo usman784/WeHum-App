@@ -75,7 +75,7 @@ class SosPage extends StatelessWidget {
                 Text('Short sessions for hard moments. Pick one and Raphael’s voice starts right away.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 16),
                 AdaptiveGrid(
-                  baseExtent: 92,
+                  baseExtent: 108,
                   children: [
                     for (final t in s.tiles)
                       AppCard(

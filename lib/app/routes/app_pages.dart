@@ -1,4 +1,8 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import '../../core/services/access_service.dart';
+import '../../core/widgets/app_scaffold.dart';
+import '../../core/widgets/states.dart';
 import '../../features/account/views/account_pages.dart';
 import '../../features/byo/byo_pages.dart';
 import '../../features/complete/complete_pages.dart';
@@ -47,7 +51,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.motdRoom, page: () => const MotdRoomPage()),
     GetPage(name: AppRoutes.todayFree, page: () => const TodayFreePage()),
     GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const WorldPage()),
-    GetPage(name: AppRoutes.exploreArchive, page: () => const ArchivePage()),
+    GetPage(name: AppRoutes.exploreArchive, page: () => const MembersOnly(title: 'Explore archive', child: ArchivePage())),
     GetPage(name: AppRoutes.dailyMessage, page: () => const DailyMessagePage()),
     GetPage(name: AppRoutes.notifications, page: () => const NotificationsPage()),
     GetPage(name: AppRoutes.sosHowCanIHelp, page: () => const SosPage()),
@@ -57,9 +61,9 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.allPrograms, page: () => const ProgramsPage()),
     GetPage(name: AppRoutes.programDetail, page: () => const ProgramDetailPage()),
     GetPage(name: AppRoutes.teacherBio, page: () => const TeacherPage()),
-    GetPage(name: AppRoutes.myMeditations, page: () => const MyMeditationsPage()),
-    GetPage(name: AppRoutes.buildYourOwn, page: () => const ByoPage()),
-    GetPage(name: AppRoutes.buildYourOwnAdvanced, page: () => const ByoAdvancedPage()),
+    GetPage(name: AppRoutes.myMeditations, page: () => const MembersOnly(title: 'My Meditations', child: MyMeditationsPage())),
+    GetPage(name: AppRoutes.buildYourOwn, page: () => const MembersOnly(title: 'Build your own', child: ByoPage())),
+    GetPage(name: AppRoutes.buildYourOwnAdvanced, page: () => const MembersOnly(title: 'Build your own', child: ByoAdvancedPage())),
     GetPage(name: AppRoutes.sessionDetail, page: () => const SessionDetailPage()),
     GetPage(name: AppRoutes.playerPresenceRing, page: () => const PlayerPage()),
     GetPage(name: AppRoutes.videoPlayer, page: () => const VideoPlayerPage()),
@@ -67,8 +71,8 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.meditationCompletePayoff, page: () => const CompletePage()),
     GetPage(name: AppRoutes.shareYourMeditation, page: () => const SharePage()),
     GetPage(name: AppRoutes.sessionDedications, page: () => const DedicationsPage()),
-    GetPage(name: AppRoutes.silenceRoomSetup, page: () => const SilenceSetupPage()),
-    GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const SilenceRunPage()),
+    GetPage(name: AppRoutes.silenceRoomSetup, page: () => const MembersOnly(title: 'Silence Room', child: SilenceSetupPage())),
+    GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const MembersOnly(title: 'Silence Room', child: SilenceRunPage())),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
     GetPage(name: AppRoutes.you, page: () => const YouPage()),
@@ -97,4 +101,13 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.resetPassword, page: () => const ResetPasswordPage()),
     GetPage(name: AppRoutes.authLink, page: () => const AuthLinkPage()),
   ];
+}
+
+/// Premium screens opened directly (deep link, push, a stale route) by someone who is not a member: the lock, not the screen.
+class MembersOnly extends StatelessWidget {
+  const MembersOnly({super.key, required this.title, required this.child});
+  final String title;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Obx(() => Get.find<AccessService>().isMember ? child : AppScaffold(title: title, body: const MembersOnlyState()));
 }

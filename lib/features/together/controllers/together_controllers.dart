@@ -111,7 +111,14 @@ class MotdRoomController extends GetxController {
   bool get groupOpen => group != null && group!.state != GroupPhase.ended;
   String get groupTime => group == null ? '' : DateFormat('HH:mm').format(group!.startsAt.toLocal());
 
+  bool get isMember => Get.find<AccessService>().isMember;
+
   void meditateNow() {
+    // the Meditation of the Day is part of membership (spec §1.2): a free user gets the paywall, never a failing player
+    if (!isMember) {
+      Get.toNamed(AppRoutes.membershipPaywall, arguments: {'source': 'lock'});
+      return;
+    }
     final m = data.value!.motd!;
     Get.toNamed(AppRoutes.playerPresenceRing, arguments: PlayerArgs(
       kind: 'motd', title: m.title, subtitle: 'with ${m.teacher ?? 'Raphael'}', sessionId: m.sessionId, coverUrl: m.cover?.url, date: date, lengthMin: length.value,

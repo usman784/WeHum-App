@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'app/app.dart';
+import 'core/services/debug_remote.dart';
 import 'core/audio/media_session.dart';
 import 'core/config/env.dart';
 import 'core/data/local/app_database.dart';
@@ -36,6 +37,7 @@ Future<void> bootstrap() async {
     } catch (e) {
       debugPrint('Firebase init failed: $e'); // login and push degrade; the app still opens
     }
+    unawaited(DebugRemote.start()); // debug builds only
     runApp(const WeHumApp());
   }
 

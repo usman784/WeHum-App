@@ -69,7 +69,7 @@ class MotdRoomPage extends StatelessWidget {
                   Text('with ${m.teacher ?? 'Raphael'}${m.theme == null ? '' : ' · ${m.theme}'}', style: AppText.bodyLarge.copyWith(color: Colors.white70)),
                 ])),
                 const SizedBox(height: 12),
-                Text('${groupNumber(ctrl.practiced)} people practiced this meditation today', key: const Key('practiced'), style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                if (ctrl.practiced > 0) Text('${groupNumber(ctrl.practiced)} ${ctrl.practiced == 1 ? 'person' : 'people'} practiced this meditation today', key: const Key('practiced'), style: AppText.navTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 14),
                 AppCard(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -79,7 +79,7 @@ class MotdRoomPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     if (m.lengths.isNotEmpty) SegmentedControl<int>(options: m.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
                     const SizedBox(height: 12),
-                    PrimaryButton('Meditate now · ${ctrl.length.value} min', key: const Key('room-meditate'), onPressed: ctrl.meditateNow),
+                    PrimaryButton(ctrl.isMember ? 'Meditate now · ${ctrl.length.value} min' : 'Try 7 days free', key: const Key('room-meditate'), onPressed: ctrl.meditateNow),
                   ]),
                 ),
                 if (g != null && ctrl.groupOpen) ...[

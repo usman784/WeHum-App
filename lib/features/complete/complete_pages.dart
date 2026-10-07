@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../core/utils/countries.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -172,7 +173,7 @@ class DedicationsPage extends StatelessWidget {
                 return false;
               },
               child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
-                    Text('${ctrl.total.value} dedications', key: const Key('ded-count'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                    Text('${ctrl.total.value} ${ctrl.total.value == 1 ? 'dedication' : 'dedications'}', key: const Key('ded-count'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                     const SizedBox(height: 8),
                     for (final d in ctrl.items) _DedicationCard(key: Key('ded-${d.id}'), d: d, ctrl: ctrl),
                     const SizedBox(height: 8),
@@ -198,7 +199,7 @@ class _DedicationCard extends StatelessWidget {
           Row(children: [
             CircleAvatar(radius: 16, backgroundColor: c.teal, child: Text(d.firstName.isEmpty ? '·' : d.firstName[0], style: AppText.navTitle.copyWith(color: c.tealText, fontSize: 14))),
             const SizedBox(width: 10),
-            Expanded(child: Text('${d.firstName}${d.country == null ? '' : ' · ${d.country}'}', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15))),
+            Expanded(child: Text('${d.firstName}${d.country == null ? '' : ' · ${countryName(d.country)}'}', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15))),
             IconButton(tooltip: 'Report or block', onPressed: () => showReportSheet(context, ctrl, d), icon: Icon(Icons.more_horiz_rounded, color: c.textSecondary)),
           ]),
           Text('“${d.text}”', style: AppText.body.copyWith(color: c.textBody)),

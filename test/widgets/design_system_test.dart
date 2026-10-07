@@ -102,6 +102,16 @@ void main() {
     expect(find.text("You're offline"), findsOneWidget);
   });
 
+  testWidgets('StateSwitcher: PREMIUM_REQUIRED is a locked door (membership prompt), not "Something went wrong"', (t) async {
+    await t.pumpWidget(host(SizedBox(height: 500, child: StateSwitcher(state: ViewState.fromError(ApiException(ErrorCode.premiumRequired, traceId: 'tr-9')), content: () => const Text('CONTENT'), onRetry: () {}))));
+    await t.pumpAndSettle();
+    expect(find.byKey(const Key('members-only')), findsOneWidget);
+    expect(find.text('See membership options'), findsOneWidget);
+    expect(find.text('Something went wrong'), findsNothing);
+    expect(find.textContaining('PREMIUM_REQUIRED'), findsNothing);
+    expect(find.text('Try again'), findsNothing);
+  });
+
   testWidgets('CountdownText counts down from the injected (server) clock', (t) async {
     var now = DateTime.utc(2026, 10, 7, 15, 55, 56);
     final target = DateTime.utc(2026, 10, 7, 16);

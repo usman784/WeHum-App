@@ -144,7 +144,7 @@ class SessionDetailPage extends StatelessWidget {
               final d = ctrl.detail.value;
               final member = ctrl.access.isMember;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
-                HeroImageCard(image: s.cover?.url, blurHash: s.cover?.blurhash, height: 220, child: Align(alignment: Alignment.topLeft, child: Row(children: [if (s.isPremium) const AppBadge(BadgeKind.premium), const SizedBox(width: 8), AppBadge(s.isVideo ? BadgeKind.video : BadgeKind.audio)]))),
+                HeroImageCard(image: s.cover?.url, blurHash: s.cover?.blurhash, height: 220, child: Align(alignment: Alignment.topLeft, child: Row(children: [if (s.isPremium) const AppBadge(BadgeKind.premium), const SizedBox(width: 8), if (!s.isYoutube) AppBadge(s.isVideo ? BadgeKind.video : BadgeKind.audio)]))),
                 const SizedBox(height: 14),
                 Text(s.title, key: const Key('session-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 Text('${d?.teacher?.name ?? 'Raphael'}${d?.theme == null ? '' : ' · ${d!.theme!.name}'} · ${ctrl.motd.value != null ? ctrl.motd.value!.lengths.map((l) => '$l').join(', ') : '${s.minutes}'} min', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
@@ -163,7 +163,7 @@ class SessionDetailPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 if (ctrl.liveNow != null && ctrl.liveNow!.people > 0)
                   Text('${groupNumber(ctrl.liveNow!.people)} meditating this right now · ${ctrl.liveNow!.countries} ${ctrl.liveNow!.countries == 1 ? 'country' : 'countries'}', key: const Key('session-live'), style: AppText.bodySmall.copyWith(color: c.success, fontWeight: FontWeight.w600)),
-                if (d != null) Text('${groupNumber(d.practicedToday)} people meditated this today', key: const Key('practiced-today'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                if (d != null && d.practicedToday > 0) Text('${groupNumber(d.practicedToday)} ${d.practicedToday == 1 ? 'person' : 'people'} meditated with this today', key: const Key('practiced-today'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 if (d != null && d.dedications.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Row(children: [Text('Dedications', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('See all', onPressed: () => Get.toNamed('/dedications/${s.id}', arguments: {'sessionId': s.id}))]),

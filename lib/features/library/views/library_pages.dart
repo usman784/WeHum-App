@@ -43,7 +43,7 @@ class SessionRow extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(s.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
               const SizedBox(height: 2),
-              Text('${s.isVideo ? 'Video' : (s.isYoutube ? 'Raphael\'s online library' : 'Audio')} · ${s.minutes} min', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              Text('${s.isVideo ? 'Video' : (s.isYoutube ? 'Online library' : 'Audio')} · ${s.minutes} min', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
             ]),
           ),
           if (downloaded) Padding(padding: const EdgeInsets.only(right: 6), child: Icon(Icons.download_done_rounded, size: 18, color: c.tealText)),
@@ -93,7 +93,7 @@ class LibraryPage extends StatelessWidget {
                     baseExtent: 100,
                     children: [
                       _Tile(key: const Key('tile-silence'), icon: Icons.nightlight_round, title: 'Silence Room', badge: member ? null : BadgeKind.premium, onTap: ctrl.goSilence),
-                      _Tile(key: const Key('tile-byo'), icon: Icons.tune_rounded, title: 'Build your own', onTap: () => member ? Get.toNamed(AppRoutes.buildYourOwn) : openPaywall('lock')),
+                      _Tile(key: const Key('tile-byo'), icon: Icons.tune_rounded, title: 'Build your own', badge: member ? null : BadgeKind.premium, onTap: () => member ? Get.toNamed(AppRoutes.buildYourOwn) : openPaywall('lock')),
                       _Tile(key: const Key('tile-challenges'), icon: Icons.emoji_events_outlined, title: 'Challenges', badge: BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.challenges)),
                       _Tile(key: const Key('tile-breath'), icon: Icons.air_rounded, title: 'Breathwork', badge: BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.breathwork)),
                     ],
