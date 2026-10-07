@@ -2,6 +2,7 @@ import '../../realtime/socket_events.dart';
 import '../models/activity.dart';
 import '../models/content.dart';
 import '../models/json.dart';
+import '../models/soon.dart';
 import '../models/today.dart';
 
 /// Controllers talk to these interfaces only (spec §6.1). `api/` and `mock/` implement them.
@@ -90,4 +91,19 @@ abstract class ProgramRepository {
 
 abstract class AnalyticsRepository {
   Future<void> send(List<Json> events);
+}
+
+/// P12 "coming soon" features. Every call throws `FEATURE_OFF` while its flag is off.
+abstract class ComingSoonRepository {
+  Future<ChallengesData> challenges();
+  Future<void> joinChallenge(String id);
+  Future<void> leaveChallenge(String id);
+  Future<Page<GratitudePost>> gratitude(String kind, {String? cursor});
+  Future<PostResult> shareGratitude(String kind, String text);
+  Future<void> reportGratitude(String id, {required String reason, bool block = false});
+  Future<BreathworkData> breathwork();
+  Future<List<BreathPattern>> myPatterns();
+  Future<BreathPattern> savePattern(BreathPattern p);
+  Future<void> deletePattern(String id);
+  Future<MilestonesData> milestones();
 }

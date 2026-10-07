@@ -48,6 +48,10 @@ class OnboardingStore extends GetxService {
   String get notificationChoice => _box.read<String>('notification_choice') ?? 'unknown';
   set notificationChoice(String v) => _box.write('notification_choice', v);
 
+  /// What brought the person here (setup step 74, behind `features.intent`): stress | focus | sleep | deep.
+  String? get intent => _box.read<String>('intent');
+  set intent(String? v) => _box.write('intent', v);
+
   /// Downloads only on Wi-Fi (Reminders & sounds).
   bool get wifiOnlyDownloads => _box.read<bool>('wifi_only') ?? true;
   set wifiOnlyDownloads(bool v) => _box.write('wifi_only', v);

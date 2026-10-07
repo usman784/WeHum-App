@@ -132,6 +132,7 @@ class TestEnv {
   late MockMeditationRepository meditations;
   late MockCommunityRepository community;
   late MockRecipeRepository recipes;
+  late MockComingSoonRepository soon;
   late FakeRc rc;
   late FakeNotifications notifications;
   late MemoryBox prefs;
@@ -189,6 +190,8 @@ class TestEnv {
     Get.put<MeRepository>(e.me);
     Get.put<CommunityRepository>(e.community);
     Get.put<RecipeRepository>(e.recipes);
+    e.soon = MockComingSoonRepository();
+    Get.put<ComingSoonRepository>(e.soon);
     Get.put<ProgramRepository>(MockProgramRepository());
     Get.put<AnalyticsRepository>(MockAnalyticsRepository());
     final auth = Get.put(AuthService(Get.find(), store, crash, device: (id) async => DeviceInfoDto(installId: id, platform: 'ios', appVersion: '1.0.0', timezone: 'UTC'), cache: kv));

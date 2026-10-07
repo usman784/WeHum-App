@@ -86,6 +86,7 @@ class InitialBinding extends Bindings {
     Get.put<MeRepository>(mocks ? MockMeRepository() : MeApi(api), permanent: true);
     Get.put<CommunityRepository>(mocks ? MockCommunityRepository() : CommunityApi(api), permanent: true);
     Get.put<RecipeRepository>(mocks ? MockRecipeRepository() : RecipeApi(api), permanent: true);
+    Get.put<ComingSoonRepository>(mocks ? MockComingSoonRepository() : ComingSoonApi(api), permanent: true);
     Get.put<ProgramRepository>(mocks ? MockProgramRepository() : ProgramApi(api), permanent: true);
     Get.put<AnalyticsRepository>(mocks ? MockAnalyticsRepository() : AnalyticsApi(api), permanent: true);
 

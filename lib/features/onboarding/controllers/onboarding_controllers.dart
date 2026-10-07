@@ -120,10 +120,13 @@ class NameController extends GetxController {
     touched.value = true;
     if (!valid) return;
     Get.find<OnboardingStore>().name = trimmed;
-    Get.toNamed(AppRoutes.setup2MeditationReminder);
+    _next();
   }
 
-  void skip() => Get.toNamed(AppRoutes.setup2MeditationReminder);
+  void skip() => _next();
+
+  /// Step 74 "What brings you here?" is only in the flow while `features.intent` is on (off for V1).
+  void _next() => Get.toNamed(Get.find<ConfigService>().feature('intent') ? AppRoutes.intent : AppRoutes.setup2MeditationReminder);
 }
 
 /// 07 Meditation reminder (24-hour wheel).

@@ -3,6 +3,7 @@ import '../contracts/repositories.dart';
 import '../models/activity.dart';
 import '../models/content.dart';
 import '../models/json.dart';
+import '../models/soon.dart';
 import '../models/today.dart';
 import 'api_base.dart';
 
@@ -202,4 +203,54 @@ class AnalyticsApi extends ApiBase implements AnalyticsRepository {
   Future<void> send(List<Json> events) async {
     await call('POST', '/v1/analytics/events', body: {'events': events});
   }
+}
+
+class ComingSoonApi extends ApiBase implements ComingSoonRepository {
+  ComingSoonApi(super.api);
+  @override
+  Future<ChallengesData> challenges() async => ChallengesData.fromJson(await getJson('/v1/challenges'));
+  @override
+  Future<void> joinChallenge(String id) async {
+    await call('POST', '/v1/challenges/$id/join');
+  }
+
+  @override
+  Future<void> leaveChallenge(String id) async {
+    await call('DELETE', '/v1/challenges/$id/join');
+  }
+
+  @override
+  Future<Page<GratitudePost>> gratitude(String kind, {String? cursor}) async {
+    final (rows, next) = await getPage('/v1/gratitude', query: {'kind': kind, if (cursor != null) 'cursor': cursor});
+    return Page(rows.map(GratitudePost.fromJson).toList(), next);
+  }
+
+  @override
+  Future<PostResult> shareGratitude(String kind, String text) async {
+    final j = await call('POST', '/v1/gratitude', body: {'kind': kind, 'text': text});
+    return PostResult(id: j['id'] as String, status: (j['status'] ?? 'visible') as String, showHelp: j['showHelp'] == true, leftToday: asInt(j['postsLeftToday']));
+  }
+
+  @override
+  Future<void> reportGratitude(String id, {required String reason, bool block = false}) async {
+    await call('POST', '/v1/gratitude/$id/report', body: {'reason': reason, if (block) 'block': true});
+  }
+
+  @override
+  Future<BreathworkData> breathwork() async => BreathworkData.fromJson(await getJson('/v1/breathwork'));
+  @override
+  Future<List<BreathPattern>> myPatterns() async {
+    final r = await api.dio.get('/v1/me/breath-patterns');
+    return asJsonList((r.data as Map)['data']).map(BreathPattern.fromJson).toList();
+  }
+
+  @override
+  Future<BreathPattern> savePattern(BreathPattern p) async => BreathPattern.fromJson(await call('POST', '/v1/me/breath-patterns', body: p.toJson()));
+  @override
+  Future<void> deletePattern(String id) async {
+    await call('DELETE', '/v1/me/breath-patterns/$id');
+  }
+
+  @override
+  Future<MilestonesData> milestones() async => MilestonesData.fromJson(await getJson('/v1/me/milestones'));
 }

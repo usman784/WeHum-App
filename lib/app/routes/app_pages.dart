@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import '../../features/system/views/placeholder_page.dart';
 import '../../features/account/views/account_pages.dart';
 import '../../features/byo/byo_pages.dart';
 import '../../features/complete/complete_pages.dart';
@@ -10,6 +9,7 @@ import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
 import '../../features/player/views/player_pages.dart';
 import '../../features/silence/silence_pages.dart';
+import '../../features/soon/soon_pages.dart';
 import '../../features/sos/sos_page.dart';
 import '../../features/system/views/system_pages.dart';
 import '../../features/you/views/you_pages.dart';
@@ -84,14 +84,15 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.membershipEnded, page: () => const MembershipEndedPage()),
     GetPage(name: AppRoutes.offline, page: () => const OfflinePage()),
     GetPage(name: AppRoutes.updateRequired, page: () => const UpdateRequiredPage()),
-    GetPage(name: AppRoutes.challenges, page: () => const PlaceholderPage('challenges')),
-    GetPage(name: AppRoutes.gratitude, page: () => const PlaceholderPage('gratitude')),
-    GetPage(name: AppRoutes.breathwork, page: () => const PlaceholderPage('breathwork')),
-    GetPage(name: AppRoutes.breathPattern, page: () => const PlaceholderPage('breathPattern')),
-    GetPage(name: AppRoutes.milestones, page: () => const PlaceholderPage('milestones')),
-    GetPage(name: AppRoutes.intent, page: () => const PlaceholderPage('intent')),
+    GetPage(name: AppRoutes.challenges, page: () => const ChallengesPage()),
+    GetPage(name: AppRoutes.gratitude, page: () => const GratitudePage()),
+    GetPage(name: AppRoutes.breathwork, page: () => const BreathworkPage()),
+    GetPage(name: AppRoutes.breathPattern, page: () => const BreathPatternPage()),
+    GetPage(name: AppRoutes.milestones, page: () => const MilestonesPage()),
+    GetPage(name: AppRoutes.intent, page: () => const IntentPage()),
     GetPage(name: AppRoutes.maintenance, page: () => const MaintenancePage()),
     GetPage(name: AppRoutes.notFound, page: () => const NotFoundPage()),
+    GetPage(name: AppRoutes.breathRun, page: () => const BreathRunPage()),
     GetPage(name: AppRoutes.pushPreview, page: () => const PushPreviewPage()),
     GetPage(name: AppRoutes.resetPassword, page: () => const ResetPasswordPage()),
     GetPage(name: AppRoutes.authLink, page: () => const AuthLinkPage()),

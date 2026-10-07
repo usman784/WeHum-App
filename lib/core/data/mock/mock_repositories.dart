@@ -8,6 +8,7 @@ import '../models/bootstrap.dart';
 import '../models/content.dart';
 import '../models/json.dart';
 import '../models/session.dart';
+import '../models/soon.dart';
 import '../models/today.dart';
 import 'mock_data.dart';
 
@@ -232,4 +233,99 @@ class MockAnalyticsRepository implements AnalyticsRepository {
   final sent = <Json>[];
   @override
   Future<void> send(List<Json> events) async => sent.addAll(events);
+}
+
+class MockComingSoonRepository implements ComingSoonRepository {
+  bool off = false;
+  final joined = <String>{};
+  final posts = <GratitudePost>[
+    GratitudePost(id: 'g1', kind: 'gratitude', firstName: 'Lena', country: 'DE', text: 'For a quiet morning.', createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 5))),
+    GratitudePost(id: 'g2', kind: 'gratitude', firstName: 'Aiko', country: 'JP', text: 'My family is healthy.', createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 1))),
+  ];
+  final patterns = <BreathPattern>[];
+  void _check() {
+    if (off) throw ApiException(ErrorCode.featureOff, status: 404);
+  }
+
+  @override
+  Future<ChallengesData> challenges() async {
+    _check();
+    Challenge c(String id, String name, int days, {ChallengeMe? me}) => Challenge(id: id, name: name, days: days, peopleInIt: 1904, me: me);
+    return ChallengesData(
+      inProgress: [if (joined.contains('c7')) c('c7', '7 days of calm', 7, me: const ChallengeMe(completedDays: 3))],
+      available: [if (!joined.contains('c7')) c('c7', '7 days of calm', 7), c('c21', '21-Day Resilience Arc', 21)],
+      finished: [(id: 'cf', name: 'September: 7 days', days: 7, finishedAt: DateTime.utc(2026, 9, 21))]);
+  }
+
+  @override
+  Future<void> joinChallenge(String id) async {
+    _check();
+    joined.add(id);
+  }
+
+  @override
+  Future<void> leaveChallenge(String id) async {
+    _check();
+    joined.remove(id);
+  }
+
+  @override
+  Future<Page<GratitudePost>> gratitude(String kind, {String? cursor}) async {
+    _check();
+    return Page(posts.where((p) => p.kind == kind).toList(), null);
+  }
+
+  @override
+  Future<PostResult> shareGratitude(String kind, String text) async {
+    _check();
+    posts.insert(0, GratitudePost(id: 'new${posts.length}', kind: kind, firstName: 'Marcus', country: 'US', text: text, createdAt: DateTime.now().toUtc()));
+    return const PostResult(id: 'new', status: 'visible', leftToday: 2);
+  }
+
+  @override
+  Future<void> reportGratitude(String id, {required String reason, bool block = false}) async {
+    _check();
+    posts.removeWhere((p) => p.id == id);
+  }
+
+  @override
+  Future<BreathworkData> breathwork() async {
+    _check();
+    return BreathworkData(templates: const [
+      BreathPattern(name: 'Box breathing', subtitle: 'Calm and focus', inhaleSec: 4, hold1Sec: 4, exhaleSec: 4, hold2Sec: 4),
+      BreathPattern(name: '4-7-8', subtitle: 'Wind down', inhaleSec: 4, hold1Sec: 7, exhaleSec: 8),
+      BreathPattern(name: 'Coherent', subtitle: 'Even and slow', inhaleSec: 5, exhaleSec: 5),
+    ], lessons: [(lesson: 1, session: MockData.sessions.first)]);
+  }
+
+  @override
+  Future<List<BreathPattern>> myPatterns() async {
+    _check();
+    return List.of(patterns);
+  }
+
+  @override
+  Future<BreathPattern> savePattern(BreathPattern p) async {
+    _check();
+    final n = BreathPattern(id: 'p${patterns.length + 1}', name: p.name, inhaleSec: p.inhaleSec, hold1Sec: p.hold1Sec, exhaleSec: p.exhaleSec, hold2Sec: p.hold2Sec, rounds: p.rounds);
+    patterns.add(n);
+    return n;
+  }
+
+  @override
+  Future<void> deletePattern(String id) async {
+    _check();
+    patterns.removeWhere((p) => p.id == id);
+  }
+
+  @override
+  Future<MilestonesData> milestones() async {
+    _check();
+    return const MilestonesData(reached: 4, total: 12, awards: [
+      Award(key: 'first', label: 'First meditation', badge: '1', target: 1, value: 1, reached: true),
+      Award(key: 'days7', label: '7 days meditated', badge: '7', target: 7, value: 7, reached: true),
+      Award(key: 'minutes100', label: '100 minutes', badge: '100', target: 100, value: 100, reached: true),
+      Award(key: 'group10', label: '10 group meditations', badge: '10', target: 10, value: 4, reached: false),
+    ], world: {'minutes': 2400000, 'meditations': 186000, 'countries': 94, 'dedications': 41000});
+  }
 }
