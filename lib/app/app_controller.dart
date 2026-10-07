@@ -3,12 +3,15 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
+import '../core/config/env.dart';
+import '../core/theme/theme_controller.dart';
 import '../core/data/contracts/repositories.dart';
 import '../core/data/models/activity.dart';
 import '../core/data/models/bootstrap.dart';
 import '../core/network/session_store.dart';
 import '../core/realtime/socket_service.dart';
 import '../core/services/access_service.dart';
+import '../core/services/analytics_service.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/catalog_service.dart';
 import '../core/services/config_service.dart';
@@ -72,6 +75,9 @@ class AppController extends GetxService with WidgetsBindingObserver {
       if (b.catalogVersion != catalog.version) unawaited(catalog.refresh());
     }
     unawaited(sync.flush());
+    final analytics = Get.find<AnalyticsService>();
+    await analytics.start();
+    analytics.userProps(plan: access.plan, isGuest: access.isGuest.value, country: null, theme: Get.find<ThemeController>().mode.value.name, flavor: Env.flavor);
     started = true;
     lastBootstrap = b;
     _listenForLinks();
@@ -111,6 +117,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
         unawaited(_onResume());
       case AppLifecycleState.paused:
         socket.onBackground();
+        unawaited(Get.find<AnalyticsService>().onBackground());
       default:
         break;
     }

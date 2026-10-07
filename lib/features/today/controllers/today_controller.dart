@@ -14,6 +14,7 @@ import '../../../core/realtime/socket_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/onboarding_store.dart';
+import '../../../core/services/perf_service.dart';
 import '../../../core/services/time_service.dart';
 import '../../../core/widgets/states.dart';
 import '../../player/player_args.dart';
@@ -65,6 +66,7 @@ class TodayController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    Perf.start('today_first_content');
     load();
   }
 
@@ -106,6 +108,7 @@ class TodayController extends GetxController {
       offline.value = false;
       state.value = (fresh.motd == null && !access.isMember && fresh.freePick == null) ? ViewState.empty : ViewState.content;
       _pickLength();
+      Perf.finish('today_first_content');
       _db.putCache('today:${access.isMember ? 'm' : 'f'}:$_date', jsonEncode(_toJson(fresh)));
     } catch (e) {
       final failure = ViewState.fromError(e);

@@ -6,6 +6,7 @@ import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/config_service.dart';
 import '../../../core/services/onboarding_store.dart';
+import '../../../core/services/perf_service.dart';
 import '../../../core/services/purchase_service.dart';
 import '../../../core/data/models/bootstrap.dart';
 
@@ -48,8 +49,9 @@ class PaywallController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    Perf.start('paywall_ready');
     Get.find<AnalyticsService>().track('paywall_view', {'source': source, 'offering': offer?.offeringId ?? ''});
-    purchases.loadOffer();
+    purchases.loadOffer().whenComplete(() => Perf.finish('paywall_ready'));
   }
 
   Future<void> start() async {

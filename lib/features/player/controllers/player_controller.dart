@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_engine.dart';
 import '../../../core/audio/local_media.dart';
+import '../../../core/audio/media_session.dart';
 import '../../../core/audio/recipe_engine.dart';
 import '../../../core/audio/recipe_plan.dart';
 import '../../../core/data/models/content.dart';
@@ -13,6 +14,7 @@ import '../../../core/errors/error_code.dart';
 import '../../../core/realtime/presence_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/connectivity_service.dart';
+import '../../../core/services/perf_service.dart';
 import '../../../core/services/sync_service.dart';
 import '../player_args.dart';
 
@@ -50,9 +52,9 @@ class CompleteArgs {
 class PlayerController extends GetxController {
   PlayerController(this.args, {
     required AudioEngine engine, required MediaRepository media, required PresenceService presence, required SyncService sync, required AnalyticsService analytics,
-    LocalMedia? local, ConnectivityService? connectivity, PlayerNav? nav, DateTime Function()? now, Catalog? Function()? catalog,
+    LocalMedia? local, ConnectivityService? connectivity, PlayerNav? nav, DateTime Function()? now, Catalog? Function()? catalog, MediaSessionPort? mediaSession,
     this.stallGrace = const Duration(seconds: 4),
-  })  : _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog;
+  })  : _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog, _session = mediaSession ?? const NoMediaSession();
 
   final PlayerArgs args;
   final AudioEngine _engine;
@@ -65,6 +67,7 @@ class PlayerController extends GetxController {
   final PlayerNav _nav;
   final DateTime Function()? _now;
   final Catalog? Function()? _catalog;
+  final MediaSessionPort _session;
   final Duration stallGrace;
 
   late final SessionRecorder recorder = SessionRecorder(
@@ -98,6 +101,7 @@ class PlayerController extends GetxController {
   }
 
   Future<void> _load() async {
+    Perf.start('player_ready'); // tap → audio playing, target < 1 s on 4G
     phase.value = PlayerPhase.loading;
     _analytics.track('meditation_start', {'kind': args.kind, 'session_id': args.sessionId ?? '', 'length': args.lengthMin ?? 0, 'offline': false});
     try {
@@ -106,6 +110,9 @@ class PlayerController extends GetxController {
       duration.value = d ?? Duration(seconds: args.durationSec ?? 0);
       position.value = args.startAt;
       _listen();
+      await _session.start(
+        id: recorder.id, title: args.title, subtitle: args.subtitle, artUri: args.coverUrl, duration: duration.value, canSeek: !(args.live || args.recipe != null),
+        callbacks: MediaCallbacks(play: play, pause: pause, seekBy: skip, stop: endEarly));
       phase.value = PlayerPhase.ready;
       await play();
       // presence: you are counted live; the ack carries the "together" numbers (not for non-catalog free items)
@@ -154,7 +161,10 @@ class PlayerController extends GetxController {
   }
 
   void _listen() {
-    _subs.add(_engine.position.listen((p) => position.value = p));
+    _subs.add(_engine.position.listen((p) {
+      position.value = p;
+      _session.update(playing: isPlaying, buffering: phase.value == PlayerPhase.buffering, position: p);
+    }));
     _subs.add(_engine.duration.listen((d) {
       if (d != null && d > Duration.zero) duration.value = d;
     }));
@@ -173,6 +183,7 @@ class PlayerController extends GetxController {
   void _onPlaying(bool playing) {
     if (_finished) return;
     if (playing) {
+      Perf.finish('player_ready');
       recorder.playing();
       if (phase.value != PlayerPhase.buffering) phase.value = PlayerPhase.playing;
     } else {
@@ -312,6 +323,7 @@ class PlayerController extends GetxController {
       unawaited(s.cancel()); // cancelling a subscription never needs to be waited for
     }
     _subs.clear();
+    unawaited(_session.stop());
     unawaited(_presence.stop()); // tells the server at once (sync part); the rest is cleanup
     await _engine.stop();
   }

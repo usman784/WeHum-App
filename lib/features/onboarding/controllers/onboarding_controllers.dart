@@ -11,6 +11,7 @@ import '../../../core/services/analytics_service.dart';
 import '../../../core/services/config_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/onboarding_store.dart';
+import '../../../core/services/perf_service.dart';
 import '../../../core/services/purchase_service.dart';
 
 /// 01 Splash: session + bootstrap in parallel, then decide the first screen (spec §12 row 1).
@@ -44,6 +45,7 @@ class SplashController extends GetxController {
     } else {
       Get.find<AnalyticsService>().track('app_open', {'source': 'cold'});
       Get.offAllNamed(firstRoute(onboardingDone: Get.find<OnboardingStore>().done, member: Get.find<AccessService>().isMember));
+      Get.find<PerfService>().results['cold_start'] = appStartWatch.elapsed; // target < 2.0 s on a mid Android
     }
   }
 }

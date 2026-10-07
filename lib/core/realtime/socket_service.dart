@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import '../services/logger.dart';
+import '../services/perf_service.dart';
 import 'socket_events.dart';
 import 'socket_transport.dart';
 
@@ -64,6 +65,7 @@ class SocketService extends GetxService {
       return;
     }
     state.value = SocketState.connecting;
+    Perf.start('socket_connect');
     final t = _t = _factory();
     t.onConnect = _handleConnect;
     t.onDisconnect = (r) {
@@ -94,6 +96,7 @@ class SocketService extends GetxService {
   }
 
   void _handleConnect() {
+    Perf.finish('socket_connect');
     _pausedTimer?.cancel();
     final wasDown = _downSince;
     _downSince = null;

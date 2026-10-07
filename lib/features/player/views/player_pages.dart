@@ -6,6 +6,7 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_engine.dart';
 import '../../../core/audio/engines.dart';
 import '../../../core/audio/local_media.dart';
+import '../../../core/audio/media_session.dart';
 import '../../../core/audio/recipe_engine.dart' show RecipeEngineFactory;
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/realtime/live_service.dart';
@@ -30,7 +31,7 @@ import '../player_args.dart';
 PlayerController _make(PlayerArgs args, AudioEngine engine) => Get.put(
       PlayerController(
         args, engine: engine, media: Get.find<MediaRepository>(), presence: Get.find<PresenceService>(), sync: Get.find<SyncService>(), analytics: Get.find<AnalyticsService>(),
-        local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>(), catalog: () => Get.find<CatalogService>().catalog.value),
+        local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>(), catalog: () => Get.find<CatalogService>().catalog.value, mediaSession: Get.find<MediaSessionPort>()),
       tag: args.sessionId ?? args.title,
     );
 

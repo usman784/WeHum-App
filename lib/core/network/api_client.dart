@@ -20,6 +20,7 @@ class ApiClient {
     this.onSignedOut,
     this.onUpdateRequired,
     this.onMaintenance,
+    this.onApiError,
     Duration retryDelay = const Duration(milliseconds: 300),
   }) : _headers = headers ?? _deviceHeaders(session) {
     this.dio = dio ??
@@ -41,6 +42,8 @@ class ApiClient {
   final void Function()? onSignedOut;
   final void Function()? onUpdateRequired;
   final void Function()? onMaintenance;
+  /// Called for every failed response with its mapped error (Sentry tags + non-fatals).
+  final void Function(ApiException e)? onApiError;
   late final Dio dio;
   final etag = EtagCacheInterceptor();
   Completer<bool>? _refreshing;
@@ -80,6 +83,7 @@ class ApiClient {
         }
       }
     }
+    if (e.response != null) onApiError?.call(map(e));
     if (code == ErrorCode.updateRequired) onUpdateRequired?.call();
     if (code == ErrorCode.maintenance) onMaintenance?.call();
     h.next(e);

@@ -37,7 +37,9 @@ import '../../core/services/connectivity_service.dart';
 import '../../core/services/crash_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/onboarding_store.dart';
+import '../../core/services/perf_service.dart';
 import '../../core/services/purchase_service.dart';
+import 'package:sentry_dio/sentry_dio.dart';
 import '../../core/services/sync_service.dart';
 import '../../core/services/time_service.dart';
 import '../../core/theme/theme_controller.dart';
@@ -55,7 +57,7 @@ class InitialBinding extends Bindings {
     Get.put(OnboardingStore(), permanent: true);
     final crash = Get.put(CrashService(), permanent: true);
     final time = Get.put(TimeService(), permanent: true);
-    Get.put(AnalyticsService(), permanent: true);
+    Get.put(PerfService(sentryEnabled: crash.enabled), permanent: true);
     Get.put(ConnectivityService(), permanent: true);
     final kv = const KeychainKv();
     final store = SessionStore(kv);
@@ -66,7 +68,9 @@ class InitialBinding extends Bindings {
       onSignedOut: () => Get.find<AppController>().onForceLogout('token_invalid'),
       onUpdateRequired: () => Get.offAllNamed(AppRoutes.updateRequired),
       onMaintenance: () => Get.offAllNamed(AppRoutes.maintenance),
+      onApiError: (e) => crash.captureApiError(e),
     );
+    if (crash.enabled) api.dio.addSentry(); // HTTP spans for the p95 view
     Get.put<ApiClient>(api, permanent: true);
     Get.put<SecureKv>(kv, permanent: true);
 
@@ -91,6 +95,7 @@ class InitialBinding extends Bindings {
     Get.put<AnalyticsRepository>(mocks ? MockAnalyticsRepository() : AnalyticsApi(api), permanent: true);
 
     // ── services
+    Get.put(AnalyticsService(repo: Get.find<AnalyticsRepository>(), db: Get.find<AppDatabase>())..serverClock = time.now, permanent: true);
     auth = Get.put(AuthService(Get.find(), store, crash, refreshToken: api.refreshAccessToken, cache: kv), permanent: true);
     Get.put(ConfigService(Get.find(), time), permanent: true);
     final access = Get.put(AccessService(), permanent: true);
@@ -101,6 +106,9 @@ class InitialBinding extends Bindings {
     Get.put<LocalMedia>(downloads, permanent: true); // the player prefers a downloaded file
 
     Get.put(PurchaseService(PurchasesRc(), access, Get.find<AnalyticsService>(), syncEntitlement: () => Get.find<MeRepository>().syncEntitlement()), permanent: true);
+
+    ever(access.entitlement, (_) => crash.tag('plan', access.plan));
+    ever(access.isGuest, (_) => crash.tag('plan', access.plan));
 
     // ── realtime (spec §6.3)
     final socket = Get.put(
@@ -115,6 +123,10 @@ class InitialBinding extends Bindings {
       )..attachTokenSource(() async => store.accessToken),
       permanent: true,
     );
+    ever(socket.state, (st) {
+      crash.tag('socket_state', st.name);
+      crash.breadcrumb('socket ${st.name}', category: 'socket');
+    });
     Get.put(LiveService(socket, restSnapshot: () => Get.find<TodayRepository>().live()), permanent: true);
     Get.put(PresenceService(socket), permanent: true);
     Get.put(LobbyService(socket, time), permanent: true);
