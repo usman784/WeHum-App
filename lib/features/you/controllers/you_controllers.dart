@@ -143,7 +143,7 @@ class EditProfileController extends GetxController {
       first.value = p.firstName ?? '';
       email.value = p.email;
       provider.value = p.providers.isEmpty ? null : p.providers.first;
-      theme.value = p.theme;
+      theme.value = Get.find<ThemeController>().mode.value.name; // what this phone actually shows
     } catch (_) {
       first.value = Get.find<OnboardingStore>().name;
     }

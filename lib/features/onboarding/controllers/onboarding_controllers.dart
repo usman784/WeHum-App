@@ -172,12 +172,6 @@ class ReminderPermissionController extends GetxController {
     await _finish(ok);
   }
 
-  Future<void> notNow() async {
-    Get.find<OnboardingStore>().notificationChoice = 'skipped';
-    Get.find<AnalyticsService>().track('notification_permission', {'result': 'skipped'});
-    await _finish(false);
-  }
-
   Future<void> _finish(bool granted) async {
     final store = Get.find<OnboardingStore>();
     final analytics = Get.find<AnalyticsService>();

@@ -11,13 +11,13 @@ class ThemeController extends GetxController {
   final void Function(String) _save;
   static const _key = 'theme_mode';
 
-  final mode = ThemeMode.system.obs;
+  final mode = ThemeMode.dark.obs; // dark is the designed default (spec §3); Light / System are choices in Edit profile
 
   @override
   void onInit() {
     super.onInit();
     final saved = _load();
-    mode.value = ThemeMode.values.firstWhere((m) => m.name == saved, orElse: () => ThemeMode.system);
+    mode.value = ThemeMode.values.firstWhere((m) => m.name == saved, orElse: () => ThemeMode.dark);
   }
 
   void set(ThemeMode m) {

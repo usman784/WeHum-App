@@ -56,8 +56,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -86,8 +84,22 @@
 		<string>audio</string>
 		<string>remote-notification</string>
 	</array>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>WeHum does not record audio.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>WeHum saves the share image of your meditation to your photo library when you tap Save to Photos.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>WeHum adds the group meditation to your calendar when you tap Add to calendar.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>WeHum adds the group meditation to your calendar when you tap Add to calendar.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>The calendar screen can show your contacts if you choose to invite someone to the event. WeHum itself never reads your contacts.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+		<string>message</string>
+		<string>https</string>
+	</array>
 	<key>GIDClientID</key>
 	<string>$(GOOGLE_CLIENT_ID)</string>
 	<key>GIDServerClientID</key>

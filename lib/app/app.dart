@@ -16,7 +16,7 @@ class WeHumApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: buildTheme(Brightness.light),
         darkTheme: buildTheme(Brightness.dark),
-        themeMode: Get.isRegistered<ThemeController>() ? Get.find<ThemeController>().mode.value : ThemeMode.system,
+        themeMode: Get.isRegistered<ThemeController>() ? Get.find<ThemeController>().mode.value : ThemeMode.dark,
         initialBinding: InitialBinding(),
         routingCallback: (r) {
           final name = r?.current;

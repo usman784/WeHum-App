@@ -149,7 +149,7 @@ class NotificationService extends GetxService {
   /// Silence Room end bell fallback (spec §10): fires even if the app is suspended.
   Future<void> scheduleEndBell(DateTime atUtc) async {
     await _local.zonedSchedule(
-      id: bellId, scheduledDate: tz.TZDateTime.from(atUtc, tz.local), notificationDetails: _details, androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      id: bellId, scheduledDate: tz.TZDateTime.from(atUtc, tz.local), notificationDetails: _details, androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // no exact-alarm permission (Play policy); the in-app bell is the precise one
       title: 'Your meditation is complete', body: 'Take a moment before you go on.');
   }
 

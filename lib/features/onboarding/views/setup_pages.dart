@@ -136,26 +136,45 @@ class ReminderPermissionPage extends StatelessWidget {
     final c = context.colors;
     return OnboardingFrame(
       showBack: true, topRight: Text('STEP 3 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
-      cta: 'Allow notifications', onCta: ctrl.allow,
-      footer: Padding(padding: const EdgeInsets.only(bottom: 12), child: TextLink('Not now', onPressed: ctrl.notNow, color: c.textSecondary)),
+      // One neutral button that opens the system prompt; the person answers there (Apple HIG, "Requesting permission":
+      // no look-alike alert, no "Allow" wording, no button that skips the system prompt). Either answer continues.
+      cta: 'Continue', onCta: ctrl.allow,
       child: Obx(() => ctrl.busy.value
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const SizedBox(height: 12),
               Text('We will invite you to meditate at ${ctrl.timeLabel}.', key: const Key('reminder-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
               const SizedBox(height: 10),
-              Text('A gentle reminder at your chosen time, in your local time zone. You can change it any time in Reminders.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-              const SizedBox(height: 28),
-              Container(
-                padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(Radii.cardLarge), border: Border.all(color: c.border)),
-                child: Column(children: [
-                  Text('“WeHum” Would Like to Send You Notifications', textAlign: TextAlign.center, style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                  const SizedBox(height: 8),
-                  Text('Notifications may include alerts, sounds and icon badges.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textSecondary)),
-                ]),
-              ),
+              Text('Next, your phone will ask if WeHum may send notifications. This is what we use them for:', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+              const SizedBox(height: 20),
+              const _Use(Icons.notifications_none_rounded, 'Your daily reminder', 'Once a day at the time you chose, in your local time zone.'),
+              const _Use(Icons.groups_2_outlined, 'Group meditation', 'A heads-up before the group starts, only if you ask for it.'),
+              const _Use(Icons.mail_outline_rounded, 'Messages from Raphael', 'The daily message and news about your membership.'),
+              const SizedBox(height: 8),
+              Text('No advertising. You can change this any time in Reminders or in your phone’s Settings, and WeHum works without notifications too.', key: const Key('permission-note'), style: AppText.bodySmall.copyWith(color: c.textTertiary)),
             ]))),
     );
   }
 }
 
+
+class _Use extends StatelessWidget {
+  const _Use(this.icon, this.title, this.body);
+  final IconData icon;
+  final String title, body;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        ExcludeSemantics(child: Icon(icon, color: c.emberText)),
+        const SizedBox(width: 14),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: AppText.bodyLarge.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600)),
+          Text(body, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+        ])),
+      ]),
+    );
+  }
+}

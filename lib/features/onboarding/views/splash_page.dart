@@ -30,7 +30,7 @@ class SplashPage extends StatelessWidget {
             else ...[
               Text(failed == ErrorCode.network || failed == ErrorCode.timeout ? "You're offline" : 'Something went wrong', style: AppText.body.copyWith(color: c.textSecondary)),
               const SizedBox(height: 12),
-              OutlineButton('Try again', key: const Key('splash-retry'), onPressed: ctrl.start, fullWidth: false),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: OutlineButton('Try again', key: const Key('splash-retry'), onPressed: ctrl.start)),
             ],
           ]);
         }),

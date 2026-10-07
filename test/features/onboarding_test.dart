@@ -161,7 +161,7 @@ void main() {
       await t.pumpWidget(e.app(initial: AppRoutes.setup3Reminder));
       await settle(t);
       expect(find.text('We will invite you to meditate at 7:00.'), findsOneWidget);
-      await t.tap(find.text('Allow notifications'));
+      await t.tap(find.text('Continue'));
       await settle(t);
       expect(e.notifications.calls, containsAll(['requestPermission', 'daily:07:00:Marcus']));
       expect(e.me.profile.firstName, 'Marcus');
@@ -172,13 +172,13 @@ void main() {
       await e.dispose();
     });
 
-    testWidgets('Don\'t allow and Not now both continue; no local reminder is scheduled', (t) async {
+    testWidgets('Don\'t allow still continues, no local reminder; the screen has one neutral button and no look-alike system alert', (t) async {
     phone(t);
       final e = await TestEnv.create(prefs: {'first_name': 'Lena'});
       e.notifications.grant = false;
       await t.pumpWidget(e.app(initial: AppRoutes.setup3Reminder));
       await settle(t);
-      await t.tap(find.text('Allow notifications'));
+      await t.tap(find.text('Continue'));
       await settle(t);
       expect(e.prefs.map['notification_choice'], 'denied');
       expect(e.notifications.calls.where((c) => c.startsWith('daily')), isEmpty);
@@ -190,10 +190,11 @@ void main() {
       final e2 = await TestEnv.create();
       await t.pumpWidget(e2.app(initial: AppRoutes.setup3Reminder));
       await settle(t);
-      await t.tap(find.text('Not now'));
-      await settle(t);
-      expect(e2.prefs.map['notification_choice'], 'skipped');
-      expect(Get.currentRoute, AppRoutes.howDoYouWantToStart);
+      expect(find.text('Not now'), findsNothing); // the system prompt is where the person says no
+      expect(find.text('Allow notifications'), findsNothing);
+      expect(find.textContaining('Would Like to Send You Notifications'), findsNothing);
+      expect(find.text('Your daily reminder'), findsOneWidget);
+      expect(find.byKey(const Key('permission-note')), findsOneWidget);
       await e2.dispose();
     });
   });
