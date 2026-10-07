@@ -171,7 +171,6 @@ void main() {
         fa.elapse(const Duration(seconds: 2));
         expect(t.disposed, true);
         expect(s.state.value, SocketState.disconnected);
-        final t2 = FakeTransport();
         final s2 = s;
         // foreground: a new transport is created by the factory in real life; here we only check intent
         s2.onForeground();
