@@ -8,12 +8,14 @@ import '../data/models/json.dart';
 import '../errors/error_code.dart';
 import '../utils/uuid7.dart';
 
+/// Also sends the small community actions queued while offline (`pending_actions`: dedication holds and reports).
 /// Meditations are written to the local outbox first and sent in the background (spec §6.2, §10).
 /// Items carry a uuid v7 id, so a retry after a lost response is harmless (server is idempotent).
 class SyncService extends GetxService {
-  SyncService(this._repo, this._db);
+  SyncService(this._repo, this._db, [this._community]);
   final MeditationRepository _repo;
   final AppDatabase _db;
+  final CommunityRepository? _community;
 
   final pending = 0.obs;
   Future<void>? _run;
@@ -86,10 +88,34 @@ class SyncService extends GetxService {
         }
         await _db.outboxDone(ok);
       }
+      await _actions();
     } finally {
       try {
         pending.value = await _db.outboxCount();
       } catch (_) {/* database closed (app shutting down) */}
+    }
+  }
+
+  /// Queued holds / reports, oldest first. A network failure stops the pass (order is kept); anything the server
+  /// refuses for good (post removed, already reported) is dropped.
+  Future<void> _actions() async {
+    final repo = _community;
+    if (repo == null) return;
+    for (final p in await _db.pending()) {
+      try {
+        final j = asJson(jsonDecode(p.payload));
+        switch (p.type) {
+          case 'hold':
+            await repo.hold(j['id'] as String, j['on'] == true);
+          case 'report':
+            await repo.report(j['id'] as String, reason: j['reason'] as String, block: j['block'] == true);
+        }
+      } on ApiException catch (e) {
+        if (e.code == ErrorCode.network || e.code == ErrorCode.timeout || e.code == ErrorCode.internal) return;
+      } on FormatException {
+        // unreadable row: drop it
+      }
+      await _db.removePending(p.id);
     }
   }
 

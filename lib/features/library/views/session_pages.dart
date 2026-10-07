@@ -6,6 +6,8 @@ import '../../../core/data/api/caching_media.dart';
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/content.dart';
+import '../../../core/realtime/live_service.dart';
+import '../../../core/realtime/socket_events.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -34,6 +36,7 @@ class SessionDetailController extends GetxController {
   late final CatalogService catalog = Get.find();
   late final AccessService access = Get.find();
   late final DownloadService downloads = Get.find();
+  late final LiveService live = Get.find();
 
   final state = ViewState.loading.obs;
   final detail = Rxn<SessionDetail>();
@@ -46,6 +49,7 @@ class SessionDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    live.acquireSession(id);
     load();
   }
 
@@ -67,6 +71,15 @@ class SessionDetailController extends GetxController {
     } catch (_) {}
     _prefetch();
   }
+
+  @override
+  void onClose() {
+    live.releaseSession(id);
+    super.onClose();
+  }
+
+  /// People meditating this session right now (socket `session:live`), only while the live feed is up.
+  SessionLive? get liveNow => live.paused ? null : live.sessionPeople[id];
 
   void _prefetch() {
     final x = s;
@@ -101,6 +114,8 @@ class SessionDetailController extends GetxController {
     }
     try {
       await downloads.start(key, title: '${s?.title ?? ''}${motd.value != null ? ' · ${length.value} min' : ''}', estimatedBytes: ((s?.durationSec ?? 0) * 16000));
+    } on WifiRequired {
+      message.value = 'Wi-Fi only is on. Connect to Wi-Fi to download, or turn it off in Reminders & sounds.';
     } on NotEnoughSpace catch (e) {
       message.value = 'Not enough space (needs ${formatBytes(e.needed)}).';
     }
@@ -146,7 +161,9 @@ class SessionDetailPage extends StatelessWidget {
                   if (ctrl.message.value != null) Text(ctrl.message.value!, key: const Key('dl-error'), style: AppText.bodySmall.copyWith(color: c.dangerText)),
                 ],
                 const SizedBox(height: 16),
-                if (d != null) Text('${groupNumber(d.practicedToday)} people meditated this today', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                if (ctrl.liveNow != null && ctrl.liveNow!.people > 0)
+                  Text('${groupNumber(ctrl.liveNow!.people)} meditating this right now · ${ctrl.liveNow!.countries} ${ctrl.liveNow!.countries == 1 ? 'country' : 'countries'}', key: const Key('session-live'), style: AppText.bodySmall.copyWith(color: c.success, fontWeight: FontWeight.w600)),
+                if (d != null) Text('${groupNumber(d.practicedToday)} people meditated this today', key: const Key('practiced-today'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 if (d != null && d.dedications.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Row(children: [Text('Dedications', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('See all', onPressed: () => Get.toNamed('/dedications/${s.id}', arguments: {'sessionId': s.id}))]),

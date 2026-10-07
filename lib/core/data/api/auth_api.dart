@@ -1,13 +1,27 @@
 import 'package:dio/dio.dart' show Options;
 import '../../network/api_client.dart';
+import '../../services/attestation.dart';
 import '../../network/session_store.dart';
 import '../contracts/auth_repository.dart';
 import '../models/session.dart';
 
 class AuthApi implements AuthRepository {
-  AuthApi(this._api, this._session);
+  AuthApi(this._api, this._session, [AttestationProvider? attestation]) : _attest = attestation ?? NoAttestation();
   final ApiClient _api;
   final SessionStore _session;
+  final AttestationProvider _attest;
+
+  /// A fresh challenge + the device's proof. Never blocks sign-in: any failure just means "no proof".
+  Future<Map<String, dynamic>?> _proof() async {
+    try {
+      final c = await _api.dio.post('/v1/auth/attest/challenge', options: Options(extra: {'noAuth': true}));
+      final body = (c.data as Map).cast<String, dynamic>();
+      final challenge = ((body['data'] as Map?)?['challenge'] ?? body['challenge']) as String?;
+      return challenge == null ? null : await _attest.prove(challenge);
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<AuthSession> _save(Map<String, dynamic> body) async {
     final s = AuthSession.fromJson((body['data'] as Map).cast<String, dynamic>());
@@ -17,10 +31,12 @@ class AuthApi implements AuthRepository {
 
   @override
   Future<AuthSession> guest(DeviceInfoDto d) async {
+    final proof = await _proof();
     try {
       final r = await _api.dio.post('/v1/auth/guest', data: {
         'installId': d.installId, 'platform': d.platform, 'appVersion': d.appVersion, 'timezone': d.timezone, 'locale': d.locale,
         if (d.osVersion != null) 'osVersion': d.osVersion, if (d.model != null) 'model': d.model,
+        if (proof != null) 'attestation': proof,
       }, options: Options(extra: {'noAuth': true}));
       return _save((r.data as Map).cast<String, dynamic>());
     } catch (e) {

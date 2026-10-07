@@ -19,6 +19,12 @@ class ConnectivityService extends GetxService {
     _sub = _c.onConnectivityChanged.listen((r) async => online.value = r.any((x) => x != ConnectivityResult.none) && await reachable());
   }
 
+  /// True on Wi-Fi or Ethernet (used by the Wi-Fi-only downloads switch).
+  Future<bool> onWifi() async {
+    final r = await _c.checkConnectivity();
+    return r.contains(ConnectivityResult.wifi) || r.contains(ConnectivityResult.ethernet);
+  }
+
   Future<bool> reachable() async {
     try {
       final r = await _probe.get('/healthz');

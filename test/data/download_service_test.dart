@@ -68,8 +68,8 @@ void main() {
   late AccessService access;
   late AnalyticsService analytics;
 
-  Future<DownloadService> make({StorageProbe? storage}) async {
-    final s = DownloadService(db: db, media: media, engine: engine, root: dir, access: access, analytics: analytics, storage: storage);
+  Future<DownloadService> make({StorageProbe? storage, bool wifiOnly = false, bool wifi = true}) async {
+    final s = DownloadService(db: db, media: media, engine: engine, root: dir, access: access, analytics: analytics, storage: storage, wifiOnly: () => wifiOnly, onWifi: () async => wifi);
     return s.init();
   }
 
@@ -100,6 +100,21 @@ void main() {
     expect(s.usedBytes, 1000);
     expect(analytics.drain().map((e) => e['name']), containsAll(['download_start', 'download_complete']));
     expect(await s.pathFor(const PlaySession('other')), isNull);
+  });
+
+  test('Wi-Fi only: refuses on mobile data, downloads on Wi-Fi, and is off when the switch is off', () async {
+    final cell = await make(wifiOnly: true, wifi: false);
+    await expectLater(cell.start(const DownloadKey('s-a'), title: 'A'), throwsA(isA<WifiRequired>()));
+    expect(media.calls, isEmpty);
+    expect(cell.errors['s-a#0'], contains('Wi-Fi'));
+    final wifi = await make(wifiOnly: true, wifi: true);
+    await wifi.start(const DownloadKey('s-a'), title: 'A');
+    await until(() => wifi.isDownloaded('s-a'));
+    expect(wifi.isDownloaded('s-a'), true);
+    final free = await make(wifiOnly: false, wifi: false);
+    await free.start(const DownloadKey('s-b'), title: 'B');
+    await until(() => free.isDownloaded('s-b'));
+    expect(free.isDownloaded('s-b'), true);
   });
 
   test('MOTD downloads are per variant', () async {

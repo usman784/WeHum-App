@@ -1,3 +1,4 @@
+import '../../../core/services/pip.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
@@ -240,6 +241,7 @@ class VideoPlayerPage extends StatelessWidget {
               const SizedBox(height: 12),
               StalledBanner(ctrl: ctrl),
               TransportControls(ctrl: ctrl),
+              if (Pip.supported) const Align(child: TextLink('Picture in picture', key: Key('pip'), onPressed: Pip.enter)),
               const SizedBox(height: 16),
               if (ctrl.togetherRx.value != null) Text('${ctrl.togetherRx.value!.people} people in this session now', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
               const SizedBox(height: 12),

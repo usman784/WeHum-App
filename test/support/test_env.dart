@@ -210,7 +210,7 @@ class TestEnv {
     Get.put(PresenceService(e.socket));
     Get.put(LobbyService(e.socket, time));
     Get.put(CatalogService(Get.find(), e.db));
-    Get.put(SyncService(Get.find(), e.db));
+    Get.put(SyncService(Get.find(), e.db, Get.find<CommunityRepository>()));
     Get.put(InboxService(e.me, e.db));
     e.notifications = Get.put<NotificationService>(FakeNotifications(e.me, store, crash)) as FakeNotifications;
     Get.put(AppController(auth: auth, config: Get.find(), access: e.access, catalog: Get.find(), socket: e.socket, sync: Get.find(), notifications: e.notifications, me: e.me, crash: crash, session: store, purchases: purchases));

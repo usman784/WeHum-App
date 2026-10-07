@@ -140,6 +140,23 @@ void main() {
   });
 
   group('41 session detail', () {
+    testWidgets('joins session:{id}; a session:live push shows who is meditating it right now', (t) async {
+      final e = await open(t, AppRoutes.library);
+      await e.socket.connect();
+      e.socketServer.serverConnects();
+      Get.toNamed('/session/s-sleep', arguments: {'id': 's-sleep'});
+      await settle(t);
+      expect(e.socketServer.sentData('room:join').map((d) => (d as Map)['room']), contains('session:s-sleep'));
+      expect(find.byKey(const Key('session-live')), findsNothing);
+      e.socketServer.serverPushes('session:live', {'sessionId': 's-sleep', 'people': 42, 'countries': 9});
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 20));
+      await t.scrollUntilVisible(find.byKey(const Key('practiced-today')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('42 meditating this right now · 9 countries'), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
     testWidgets('member: Play opens the player with the session target; free user on premium gets the paywall', (t) async {
       final e = await open(t, AppRoutes.library);
       Get.toNamed('/session/s-sleep', arguments: {'id': 's-sleep'});

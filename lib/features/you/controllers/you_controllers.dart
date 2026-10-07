@@ -11,6 +11,7 @@ import '../../../core/data/models/json.dart';
 import '../../../core/errors/error_code.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/session_store.dart';
+import '../../../core/services/crash_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/account_service.dart';
 import '../../../core/services/analytics_service.dart';
@@ -317,6 +318,17 @@ class PrivacyController extends GetxController {
 /// 60 Help & about.
 class HelpController extends GetxController {
   final version = ''.obs;
+  var _taps = 0;
+
+  /// Tapping the version 7 times sends a Sentry test event (spec P0 exit: "test crash received"). Nothing else changes.
+  Future<bool> versionTapped() async {
+    if (++_taps < 7) return false;
+    _taps = 0;
+    if (!Get.find<CrashService>().enabled) return false;
+    await Get.find<CrashService>().capture(StateError('Sentry test event from Help → Version'), StackTrace.current);
+    return true;
+  }
+
   @override
   void onInit() {
     super.onInit();

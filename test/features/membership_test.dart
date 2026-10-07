@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/services/access_service.dart';
+import 'package:meditation/core/services/connectivity_service.dart';
+import 'package:meditation/core/widgets/buttons.dart';
 import 'package:meditation/core/services/purchase_service.dart';
 import 'package:meditation/features/membership/controllers/membership_controllers.dart';
 
@@ -62,6 +64,25 @@ void main() {
     await settle(t);
     expect(Get.currentRoute, AppRoutes.trialStarted);
     expect(e.access.isMember, true);
+    await e.dispose();
+  });
+
+  testWidgets('14 paywall offline: the buy button is disabled with the reason, and works again when the connection is back', (t) async {
+    phone(t);
+    final e = await TestEnv.create();
+    await t.pumpWidget(e.app(initial: AppRoutes.membershipPaywall));
+    await settle(t);
+    await Get.find<PurchaseService>().loadOffer();
+    Get.find<PurchaseService>().offer.refresh();
+    Get.find<ConnectivityService>().online.value = false;
+    await t.pump();
+    expect(find.byKey(const Key('buy-offline')), findsOneWidget);
+    final buy = find.widgetWithText(PrimaryButton, 'Start 7-day free trial');
+    expect(t.widget<PrimaryButton>(buy).onPressed, isNull);
+    Get.find<ConnectivityService>().online.value = true;
+    await t.pump();
+    expect(find.byKey(const Key('buy-offline')), findsNothing);
+    expect(t.widget<PrimaryButton>(buy).onPressed, isNotNull);
     await e.dispose();
   });
 

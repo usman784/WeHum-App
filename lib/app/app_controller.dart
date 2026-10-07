@@ -46,11 +46,16 @@ class AppController extends GetxService with WidgetsBindingObserver {
   String? _lastTz;
   bool started = false;
   StreamSubscription<Uri>? _links;
+  Worker? _reconnected;
 
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
+    // the socket coming (back) up is the best "we're online" signal: send whatever was queued offline
+    _reconnected = ever(socket.state, (s) {
+      if (s == SocketState.connected) unawaited(sync.flush());
+    });
   }
 
   /// Runs once per launch (splash). Returns true when the app may continue to its first screen.
@@ -152,6 +157,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     _links?.cancel();
+    _reconnected?.dispose();
     super.onClose();
   }
 }

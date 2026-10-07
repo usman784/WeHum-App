@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:get/get.dart';
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/local/app_database.dart';
@@ -8,6 +9,7 @@ import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/socket_events.dart';
 import '../../../core/realtime/socket_service.dart';
 import '../../../core/services/analytics_service.dart';
+import '../../../core/services/sync_service.dart';
 import '../../../core/widgets/states.dart';
 
 /// Links are blocked client-side too (the server rejects them with DEDICATION_LINKS).
@@ -137,7 +139,7 @@ class DedicationsController extends GetxController {
       _cursor = p.nextCursor;
       total.value = items.length;
       state.value = items.isEmpty ? ViewState.empty : ViewState.content;
-      _flushPending();
+      unawaited(Get.find<SyncService>().flush()); // holds / reports queued while offline
     } catch (e) {
       state.value = ViewState.fromError(e); // "Dedications will load when you're back"
     }
@@ -184,27 +186,19 @@ class DedicationsController extends GetxController {
         final n = await _repo.hold(d.id, on);
         _setHolding(d.id, n);
       } catch (_) {
-        await _db.addPending('hold', '{"id":"${d.id}","on":$on}'); // sent when the connection is back
+        await _db.addPending('hold', jsonEncode({'id': d.id, 'on': on})); // sent when the connection is back (SyncService)
       }
     });
   }
 
-  Future<void> _flushPending() async {
-    for (final p in await _db.pending()) {
-      if (p.type != 'hold') continue;
-      try {
-        final m = RegExp(r'"id":"([^"]+)","on":(true|false)').firstMatch(p.payload);
-        if (m != null) await _repo.hold(m.group(1)!, m.group(2) == 'true');
-        await _db.removePending(p.id);
-      } catch (_) {
-        break;
-      }
-    }
-  }
-
   Future<bool> report(Dedication d, String reason, {bool block = false}) async {
     try {
-      await _repo.report(d.id, reason: reason, block: block);
+      try {
+        await _repo.report(d.id, reason: reason, block: block);
+      } on ApiException catch (e) {
+        if (e.code != ErrorCode.network && e.code != ErrorCode.timeout) rethrow;
+        await _db.addPending('report', jsonEncode({'id': d.id, 'reason': reason, 'block': block})); // offline: queued, hidden at once
+      }
       items.removeWhere((x) => x.id == d.id); // "You won't see this post again"
       _blocked.add(d.id);
       total.value = items.length;

@@ -26,6 +26,7 @@ import '../../core/realtime/realtime_coordinator.dart';
 import '../../core/realtime/socket_service.dart';
 import '../../core/realtime/socket_transport.dart';
 import '../../core/services/access_service.dart';
+import '../../core/services/attestation.dart';
 import '../../core/services/account_service.dart';
 import '../../core/services/social_auth_service.dart';
 import '../../core/services/analytics_service.dart';
@@ -75,7 +76,7 @@ class InitialBinding extends Bindings {
     Get.put<SecureKv>(kv, permanent: true);
 
     // ── repositories
-    Get.put<AuthRepository>(mocks ? MockAuthRepository() : AuthApi(api, store), permanent: true);
+    Get.put<AuthRepository>(mocks ? MockAuthRepository() : AuthApi(api, store, PlatformAttestation()), permanent: true);
     Get.put<BootstrapRepository>(mocks ? MockBootstrapRepository() : BootstrapApi(api), permanent: true);
     Get.put<TodayRepository>(mocks ? MockTodayRepository() : TodayApi(api), permanent: true);
     Get.put<CatalogRepository>(mocks ? MockCatalogRepository() : CatalogApi(api), permanent: true);
@@ -100,7 +101,8 @@ class InitialBinding extends Bindings {
     Get.put(ConfigService(Get.find(), time), permanent: true);
     final access = Get.put(AccessService(), permanent: true);
     final downloads = Get.put(
-      DownloadService(db: Get.find<AppDatabase>(), media: media, engine: DioDownloadEngine(), root: Get.find<Directory>(tag: 'downloads'), access: access, analytics: Get.find<AnalyticsService>()),
+      DownloadService(db: Get.find<AppDatabase>(), media: media, engine: DioDownloadEngine(), root: Get.find<Directory>(tag: 'downloads'), access: access, analytics: Get.find<AnalyticsService>(),
+          wifiOnly: () => Get.find<OnboardingStore>().wifiOnlyDownloads, onWifi: Get.find<ConnectivityService>().onWifi),
       permanent: true,
     );
     Get.put<LocalMedia>(downloads, permanent: true); // the player prefers a downloaded file
@@ -134,7 +136,7 @@ class InitialBinding extends Bindings {
     // the DB opens asynchronously; services that need it are created lazily on first use
     Get.lazyPut<CatalogService>(() => CatalogService(Get.find(), Get.find<AppDatabase>()), fenix: true);
     Get.lazyPut<InboxService>(() => InboxService(Get.find(), Get.find<AppDatabase>()), fenix: true);
-    Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>()), fenix: true);
+    Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>(), Get.find<CommunityRepository>()), fenix: true);
     Get.lazyPut<NotificationService>(
       () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId)),
       fenix: true,

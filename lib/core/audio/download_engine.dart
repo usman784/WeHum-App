@@ -8,6 +8,9 @@ class NotEnoughSpace implements Exception {
   final int needed;
 }
 
+/// Wi-Fi only is on and the phone is on mobile data (Reminders & sounds → Wi-Fi only).
+class WifiRequired implements Exception {}
+
 /// Resumable file download (spec §10): `Range` from the bytes already on disk, progress callbacks, cancel.
 abstract class DownloadEngine {
   /// Downloads [url] into [path] (appending when [resumeFrom] > 0). Returns the total size.

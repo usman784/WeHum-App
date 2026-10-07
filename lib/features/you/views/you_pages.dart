@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
@@ -289,7 +290,7 @@ class PrivacyPage extends StatelessWidget {
     final ok = await showAppSheet<bool>(context, title: 'Delete your account?', builder: (ctx) {
       final c = ctx.colors;
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('This removes your account, meditations, progress, dedications and gratitude posts for good. It does not cancel your App Store subscription.', style: AppText.body.copyWith(color: c.textBody)),
+        Text('This removes your account, meditations, progress, dedications and gratitude posts for good. It does not cancel your ${Platform.isIOS ? 'App Store' : 'Google Play'} subscription: cancel that in your store account.', style: AppText.body.copyWith(color: c.textBody)),
         const SizedBox(height: 16),
         DangerButton('Delete for good', key: const Key('confirm-delete-account'), onPressed: () => Navigator.of(ctx).pop(true)),
         const SizedBox(height: 8),
@@ -324,7 +325,7 @@ class HelpPage extends StatelessWidget {
         ListRow(title: 'Terms of use', onTap: () => open(AppLinks.terms)),
         ListRow(title: 'Privacy policy', onTap: () => open(AppLinks.privacy)),
         const SizedBox(height: 24),
-        Center(child: Column(children: [Text('WeHum by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary))), const SizedBox(height: 4), Text('Meditation training, not therapy.', style: AppText.caption.copyWith(color: c.textTertiary))])),
+        Center(child: Column(children: [Text('WeHum by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () async { if (await ctrl.versionTapped() && context.mounted) AppSnack.success(context, 'Test event sent'); }, child: Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary)))), const SizedBox(height: 4), Text('Meditation training, not therapy.', style: AppText.caption.copyWith(color: c.textTertiary))])),
       ]),
     );
   }

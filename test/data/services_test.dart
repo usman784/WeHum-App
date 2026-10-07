@@ -97,6 +97,21 @@ void main() {
     });
   });
 
+  test('SyncService: holds and reports queued offline are sent in order when the connection is back; refused ones are dropped', () async {
+    final community = _FlakyCommunity();
+    final sync = SyncService(FlakyMeditations()..offline = false, db, community);
+    await db.addPending('hold', '{"id":"d1","on":true}');
+    await db.addPending('report', '{"id":"d2","reason":"spam","block":true}');
+    await db.addPending('hold', '{"id":"gone","on":true}');
+    await sync.flush();
+    expect(community.calls, isEmpty); // still offline: nothing lost
+    expect((await db.pending()).length, 3);
+    community.offline = false;
+    await sync.flush();
+    expect(community.calls, ['hold d1 true', 'report d2 spam true', 'hold gone true']);
+    expect(await db.pending(), isEmpty); // "gone" was refused by the server (404) and is not retried forever
+  });
+
   test('uuid v7: version/variant bits, time ordered, unique', () {
     final a = uuid7(DateTime.utc(2026, 1, 1)), b = uuid7(DateTime.utc(2026, 1, 2));
     expect(a, matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')));
@@ -130,6 +145,24 @@ void main() {
     expect(t.sessions, isEmpty);
     expect(t.sos.title, 'How can I help?');
   });
+}
+
+class _FlakyCommunity extends MockCommunityRepository {
+  bool offline = true;
+  final calls = <String>[];
+  @override
+  Future<int> hold(String id, bool on) async {
+    if (offline) throw ApiException(ErrorCode.network);
+    calls.add('hold $id $on');
+    if (id == 'gone') throw ApiException(ErrorCode.notFound);
+    return 1;
+  }
+
+  @override
+  Future<void> report(String id, {required String reason, bool block = false}) async {
+    if (offline) throw ApiException(ErrorCode.network);
+    calls.add('report $id $reason $block');
+  }
 }
 
 class _Offline extends MockCatalogRepository {

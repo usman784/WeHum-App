@@ -132,7 +132,7 @@ void main() {
     await t.tap(find.byKey(const Key('delete')));
     await settle(t);
     expect(find.text('Delete your account?'), findsOneWidget);
-    expect(find.textContaining('does not cancel your App Store subscription'), findsOneWidget);
+    expect(find.textContaining(RegExp('does not cancel your (App Store|Google Play) subscription')), findsOneWidget);
     await t.tap(find.text('Keep my account'));
     await settle(t);
     expect(e.me.deleted, false);

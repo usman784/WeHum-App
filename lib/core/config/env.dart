@@ -9,5 +9,7 @@ abstract final class Env {
   static const sentryDsn = String.fromEnvironment('SENTRY_DSN');
   static const rcAppleKey = String.fromEnvironment('RC_APPLE_KEY');
   static const rcGoogleKey = String.fromEnvironment('RC_GOOGLE_KEY');
+  /// Google Cloud project number for the Play Integrity API (Android only).
+  static const playIntegrityProject = String.fromEnvironment('PLAY_INTEGRITY_PROJECT');
   static const useMocks = bool.fromEnvironment('USE_MOCKS', defaultValue: false);
 }

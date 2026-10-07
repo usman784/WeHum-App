@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,6 +46,7 @@ class PaywallPage extends StatelessWidget {
         final offer = ctrl.offer;
         final a = offer?.annual, m = offer?.monthly;
         final f = ctrl.founding;
+        final online = Get.find<ConnectivityService>().online.value; // no purchase without a connection (spec §10)
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -68,7 +70,8 @@ class PaywallPage extends StatelessWidget {
               const SizedBox(height: 12),
               if (m != null) _PlanTile(key: const Key('plan-monthly'), selected: ctrl.selected.value == 'monthly', onTap: () => ctrl.selected.value = 'monthly', title: 'Monthly', price: m.priceString, per: '/month', note: '${m.trialDays} days free, then ${m.priceString}/month. Cancel anytime.'),
               const SizedBox(height: 20),
-              PrimaryButton('Start ${ctrl.plan?.trialDays ?? 7}-day free trial', loading: ctrl.busy.value, onPressed: ctrl.start),
+              PrimaryButton('Start ${ctrl.plan?.trialDays ?? 7}-day free trial', loading: ctrl.busy.value, onPressed: online ? ctrl.start : null),
+              if (!online) Padding(padding: const EdgeInsets.only(top: 10), child: Text('You’re offline. Connect to the internet to start your trial.', key: const Key('buy-offline'), style: AppText.bodySmall.copyWith(color: c.textSecondary))),
               if (ctrl.message.value != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(ctrl.message.value!, style: AppText.bodySmall.copyWith(color: c.dangerText))),
               const SizedBox(height: 10),
               Text('Payment is charged to your ${Platform.isIOS ? 'Apple ID' : 'Google Play account'} after the free trial. The subscription renews automatically unless cancelled at least 24 hours before the period ends. Manage or cancel in your store settings.',

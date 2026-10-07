@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/config/app_links.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
@@ -33,6 +34,7 @@ class StartPage extends StatelessWidget {
           final offer = ctrl.offer;
           final f = ctrl.founding;
           final a = offer?.annual, m = offer?.monthly;
+          final online = Get.find<ConnectivityService>().online.value; // no purchase without a connection (spec §10)
           return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('How do you want to start?', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 20),
@@ -52,14 +54,15 @@ class StartPage extends StatelessWidget {
                   Text('${a.trialDays} days free, then ${a.priceString}/year.', key: const Key('annual-line'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 20)),
                   Text('Renews automatically. Cancel anytime before the trial ends.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 16),
-                  PrimaryButton('Start ${a.trialDays}-day free trial', loading: ctrl.busy.value, onPressed: () => ctrl.startTrial(a)),
+                  PrimaryButton('Start ${a.trialDays}-day free trial', loading: ctrl.busy.value, onPressed: online ? () => ctrl.startTrial(a) : null),
+                  if (!online) Padding(padding: const EdgeInsets.only(top: 8), child: Text('You’re offline. Connect to the internet to start your trial.', key: const Key('buy-offline'), style: AppText.bodySmall.copyWith(color: c.textSecondary))),
                 ] else
                   _Unavailable(loading: ctrl.purchases.loading.value, onRetry: ctrl.purchases.loadOffer),
               ]),
             ),
             if (m != null) ...[
               const SizedBox(height: 12),
-              OutlineButton('Monthly · ${m.trialDays} days free, then ${m.priceString}/month', onPressed: ctrl.busy.value ? null : () => ctrl.startTrial(m)),
+              OutlineButton('Monthly · ${m.trialDays} days free, then ${m.priceString}/month', onPressed: ctrl.busy.value || !online ? null : () => ctrl.startTrial(m)),
               const SizedBox(height: 8),
               Center(child: Text('Full access. Renews monthly, cancel anytime before the trial ends.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textSecondary))),
             ],

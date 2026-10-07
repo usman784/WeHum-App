@@ -25,7 +25,7 @@ class DownloadKey {
 /// Offline downloads (spec §10, §12 #58): files per variant in the app's documents folder, index in drift,
 /// resumable, signed URL re-requested when it expires, auto-removed 7 days after the membership ends.
 class DownloadService extends GetxService implements LocalMedia {
-  DownloadService({required AppDatabase db, required MediaRepository media, required DownloadEngine engine, required Directory root, required AccessService access, AnalyticsService? analytics, StorageProbe? storage, this.maxRetries = 2})
+  DownloadService({required AppDatabase db, required MediaRepository media, required DownloadEngine engine, required Directory root, required AccessService access, AnalyticsService? analytics, StorageProbe? storage, this.maxRetries = 2, this.wifiOnly, this.onWifi})
       : _db = db, _media = media, _engine = engine, _root = root, _access = access, _analytics = analytics, _storage = storage ?? const NoStorageProbe();
   final AppDatabase _db;
   final MediaRepository _media;
@@ -35,6 +35,9 @@ class DownloadService extends GetxService implements LocalMedia {
   final AnalyticsService? _analytics;
   final StorageProbe _storage;
   final int maxRetries;
+  /// Settings switch and link check; both null = no restriction (tests).
+  final bool Function()? wifiOnly;
+  final Future<bool> Function()? onWifi;
 
   final items = <Download>[].obs;
   final progress = <String, double>{}.obs; // "id#variant" → 0..1
@@ -79,6 +82,10 @@ class DownloadService extends GetxService implements LocalMedia {
     final k = _k(key.id, key.variant);
     if (_cancels.containsKey(k)) return;
     errors.remove(k);
+    if ((wifiOnly?.call() ?? false) && !(await (onWifi?.call() ?? Future.value(true)))) {
+      errors[k] = 'Wi-Fi only is on. Connect to Wi-Fi to download.';
+      throw WifiRequired();
+    }
     final free = await _storage.freeBytes();
     if (free != null && estimatedBytes != null && free < estimatedBytes * 1.2) {
       errors[k] = 'Not enough space (needs ${(estimatedBytes / 1048576).ceil()} MB)';
