@@ -40,7 +40,7 @@ class CompletePage extends StatelessWidget {
         body: SafeArea(
           child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 24), children: [
                 const SizedBox(height: 8),
-                const WorldDotMap(hot: {'DE': 40, 'US': 80, 'JP': 25, 'BR': 30, 'IN': 50, 'AU': 20, 'GB': 35}, height: 130),
+                WorldDotMap(hot: ctrl.hot, height: 130), // where people are meditating right now (live), nothing when nobody is
                 const SizedBox(height: 16),
                 Text('You meditated ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 8),
@@ -100,7 +100,7 @@ class _DedicateCard extends StatelessWidget {
         else if (a == DedicateAccess.needsMembership) ...[
           Row(children: [Icon(Icons.lock_outline_rounded, size: 18, color: c.textTertiary), const SizedBox(width: 8), Expanded(child: Text('Members can write dedications. Anyone can read them.', style: AppText.bodySmall.copyWith(color: c.textTertiary)))]),
         ] else
-          Text('Dedications are limited for today.', style: AppText.bodySmall.copyWith(color: c.textTertiary)),
+          Text(ctrl.dedicateNote, key: const Key('dedicate-note'), style: AppText.bodySmall.copyWith(color: c.textTertiary)),
       ]),
     );
   }

@@ -202,7 +202,7 @@ class _TogetherLine extends StatelessWidget {
     final c = context.colors;
     final text = paused
         ? 'Live counts paused'
-        : (people <= 0 ? '' : (quiet ? 'You’re meditating · $meditatedToday meditated today' : 'Meditating with ${groupNumber(people)} people · $countries countries'));
+        : (people <= 0 ? '' : (quiet ? (meditatedToday > 0 ? 'You’re meditating · ${groupNumber(meditatedToday)} meditated today' : 'You’re meditating') : 'Meditating with ${groupNumber(people)} people · $countries countries'));
     if (text.isEmpty) return const SizedBox(height: 20);
     return Text(text, key: const Key('together-line'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: paused || quiet ? c.textTertiary : c.success, fontWeight: FontWeight.w600));
   }

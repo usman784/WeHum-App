@@ -48,10 +48,33 @@ class CompleteController extends GetxController {
   bool get canDedicate => (player.sessionId != null) && (result?.canDedicate ?? true) && args.counted;
   int get leftToday => result?.dedicationsLeftToday ?? 3;
 
+  /// Why the dedicate button is not there (the server decides: a finished, counted meditation and today's limit).
+  String get dedicateNote {
+    if (player.sessionId == null) return 'Dedications belong to the guided meditations in the library.';
+    if (!args.counted) return 'Dedications open after a meditation of three minutes or more.';
+    if (args.record?.completed == false) return 'Dedications open when you stay to the end of a meditation.';
+    if (result != null && leftToday <= 0) return 'You have used today’s dedications. More tomorrow.';
+    return 'Dedications are not open for this meditation.';
+  }
+
+  /// Live country counts for the small map (socket `live:agg`): empty while paused or when nobody is meditating.
+  Map<String, int> get hot => live.paused ? const {} : {for (final t in live.agg.value?.top ?? const <({String country, int n})>[]) t.country: t.n};
+
+  Worker? _answered;
+
   @override
   void onReady() {
     super.onReady();
+    live.acquireWorld(); // country counts for the map
     _loadStats();
+    // the numbers on this screen include this meditation once the server has recorded it (outbox → answer)
+    _answered = ever(sync.byId, (_) {
+      if (result != null) {
+        _answered?.dispose();
+        _answered = null;
+        _loadStats();
+      }
+    });
     // a finished program day moves the program forward (no rest days, no streaks)
     final pid = player.programId, day = player.programDay;
     if (pid != null && day != null && args.counted) {
@@ -66,6 +89,13 @@ class CompleteController extends GetxController {
       progress.value = await me.progress(Period.week);
       lifetime.value = await me.progress(Period.all);
     } catch (_) {/* offline: the screen keeps the local numbers */}
+  }
+
+  @override
+  void onClose() {
+    _answered?.dispose();
+    live.releaseWorld();
+    super.onClose();
   }
 
   void done() => Get.offAllNamed(access.isMember ? AppRoutes.todayMember : AppRoutes.todayFree);
