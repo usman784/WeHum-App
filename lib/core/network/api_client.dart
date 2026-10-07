@@ -85,6 +85,9 @@ class ApiClient {
     h.next(e);
   }
 
+  /// Refreshes the access token now (sockets use this). Concurrent callers share one call.
+  Future<bool> refreshAccessToken() => _refreshOnce();
+
   /// Concurrent TOKEN_EXPIRED responses share one refresh call.
   Future<bool> _refreshOnce() {
     if (_refreshing != null) return _refreshing!.future;
@@ -97,9 +100,14 @@ class ApiClient {
         final r = await dio.post('/v1/auth/refresh', data: {'refreshToken': rt}, options: Options(extra: {'noAuth': true}));
         await session.save(access: r.data['data']['accessToken'], refresh: r.data['data']['refreshToken']);
         c.complete(true);
-      } catch (_) {
-        await session.clear();
-        onSignedOut?.call(); // TOKEN_REUSED / invalid → new guest session
+      } catch (e) {
+        // Only a real rejection signs the user out (TOKEN_REUSED / TOKEN_INVALID → new guest). Being offline or a server
+        // error keeps the session: the next call tries again (spec §10).
+        final rejected = e is StateError || (e is DioException && const [400, 401, 403].contains(e.response?.statusCode));
+        if (rejected) {
+          await session.clear();
+          onSignedOut?.call();
+        }
         c.complete(false);
       } finally {
         _refreshing = null;

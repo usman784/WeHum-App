@@ -58,6 +58,22 @@ void main() {
       expect(store.accessToken, isNull);
     });
 
+    test('offline during refresh keeps the session (no sign-out); the next call tries again', () async {
+      final kv = MemoryKv()..map['refresh_token'] = 'r';
+      final store = SessionStore(kv)..accessToken = 'expired';
+      var signedOut = 0;
+      final a = FakeAdapter((o, n) async {
+        if (o.path == '/v1/auth/refresh') throw DioException(requestOptions: o, type: DioExceptionType.connectionError);
+        return apiError('TOKEN_EXPIRED', 401);
+      });
+      final c = await client(a, store: store, onSignedOut: () => signedOut++);
+      await expectLater(c.dio.get('/v1/x'), throwsA(isA<DioException>()));
+      expect(signedOut, 0);
+      expect(kv.map['refresh_token'], 'r');
+      expect(await c.refreshAccessToken(), false);
+      expect(c.refreshCalls, 2);
+    });
+
     test('a request is retried only once after refresh (no loop)', () async {
       final store = SessionStore(MemoryKv()..map['refresh_token'] = 'r')..accessToken = 'x';
       final a = FakeAdapter((o, n) async => o.path == '/v1/auth/refresh'
