@@ -24,6 +24,7 @@ import 'package:meditation/core/services/auth_service.dart';
 import 'package:meditation/core/services/social_auth_service.dart';
 import 'package:meditation/core/services/catalog_service.dart';
 import 'package:meditation/core/services/config_service.dart';
+import 'package:meditation/core/services/inbox_service.dart';
 import 'package:meditation/core/services/crash_service.dart';
 import 'package:meditation/core/services/notification_service.dart';
 import 'package:meditation/core/services/onboarding_store.dart';
@@ -157,12 +158,13 @@ class TestEnv {
     Get.put(LobbyService(e.socket, time));
     Get.put(CatalogService(Get.find(), e.db));
     Get.put(SyncService(Get.find(), e.db));
+    Get.put(InboxService(e.me, e.db));
     e.notifications = Get.put<NotificationService>(FakeNotifications(e.me, store, crash)) as FakeNotifications;
     Get.put(AppController(auth: auth, config: Get.find(), access: e.access, catalog: Get.find(), socket: e.socket, sync: Get.find(), notifications: e.notifications, me: e.me, crash: crash, session: store, purchases: purchases));
     e.social = FakeSocialAuth();
     Get.put<SocialAuth>(e.social);
     Get.put(AccountService(auth: auth, repo: e.authRepo, social: e.social, access: e.access, purchases: purchases, config: Get.find(), me: e.me, socket: e.socket, notifications: e.notifications, analytics: analytics));
-    Get.put(RealtimeCoordinator(e.socket, refreshBootstrap: () async {}, refreshCatalog: () async {}, onInbox: (_) {}, onEntitlement: e.access.onSocket));
+    Get.put(RealtimeCoordinator(e.socket, refreshBootstrap: () async {}, refreshCatalog: () async {}, onInbox: (i) => Get.find<InboxService>().onSocket(i), onEntitlement: e.access.onSocket));
     return e;
   }
 

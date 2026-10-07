@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import '../../features/system/views/placeholder_page.dart';
 import '../../features/account/views/account_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
+import '../../features/messages/views/messages_pages.dart';
+import '../../features/sos/sos_page.dart';
 import '../../features/onboarding/views/intro_pages.dart';
 import '../../features/today/views/today_pages.dart';
 import '../../features/together/views/together_pages.dart';
@@ -36,10 +38,10 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.motdRoom, page: () => const MotdRoomPage()),
     GetPage(name: AppRoutes.todayFree, page: () => const TodayFreePage()),
     GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const WorldPage()),
-    GetPage(name: AppRoutes.dailyMessage, page: () => const PlaceholderPage('dailyMessage')),
-    GetPage(name: AppRoutes.exploreArchive, page: () => const PlaceholderPage('exploreArchive')),
-    GetPage(name: AppRoutes.notifications, page: () => const PlaceholderPage('notifications')),
-    GetPage(name: AppRoutes.sosHowCanIHelp, page: () => const PlaceholderPage('sosHowCanIHelp')),
+    GetPage(name: AppRoutes.exploreArchive, page: () => const ArchivePage()),
+    GetPage(name: AppRoutes.dailyMessage, page: () => const DailyMessagePage()),
+    GetPage(name: AppRoutes.notifications, page: () => const NotificationsPage()),
+    GetPage(name: AppRoutes.sosHowCanIHelp, page: () => const SosPage()),
     GetPage(name: AppRoutes.library, page: () => const PlaceholderPage('library')),
     GetPage(name: AppRoutes.themePage, page: () => const PlaceholderPage('themePage')),
     GetPage(name: AppRoutes.search, page: () => const PlaceholderPage('search')),

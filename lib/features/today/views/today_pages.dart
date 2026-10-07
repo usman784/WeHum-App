@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../app/app_controller.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/data/models/today.dart';
-import '../../../core/services/access_service.dart';
+import '../../../core/services/inbox_service.dart';
+import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
@@ -20,11 +20,11 @@ import '../../player/player_args.dart';
 import '../controllers/today_controller.dart';
 import 'today_widgets.dart';
 
-TabHeader _header(BuildContext context) {
-  final app = Get.find<AppController>();
-  final access = Get.find<AccessService>();
-  return TabHeader(initials: Get.find<TodayController>().name.isEmpty ? '' : Get.find<TodayController>().name.substring(0, 1).toUpperCase(), unread: app.unread.value + (access.billingIssue ? 0 : 0));
-}
+/// Tab header with the avatar initial and the live unread count of the bell (`inbox:new`).
+Widget tabHeader() => Obx(() {
+      final name = Get.find<OnboardingStore>().name;
+      return TabHeader(initials: name.isEmpty ? '' : name.substring(0, 1).toUpperCase(), unread: Get.find<InboxService>().unread.value);
+    });
 
 /// 22 Today (member).
 class TodayPage extends StatelessWidget {
@@ -34,7 +34,7 @@ class TodayPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(TodayController());
     return Obx(() => AppScaffold(
-          header: _header(context),
+          header: tabHeader(),
           bottom: const AppBottomNav(current: AppTab.today),
           banner: ctrl.offline.value ? const OfflineBanner() : null,
           body: StateSwitcher(
@@ -190,7 +190,7 @@ class TodayFreePage extends StatelessWidget {
       final free = catalog?.sessions.where((s) => !s.isPremium).toList() ?? const <SessionSummary>[];
       final pick = d?.freePick;
       return AppScaffold(
-        header: _header(context), bottom: const AppBottomNav(current: AppTab.today), banner: ctrl.offline.value ? const OfflineBanner() : null,
+        header: tabHeader(), bottom: const AppBottomNav(current: AppTab.today), banner: ctrl.offline.value ? const OfflineBanner() : null,
         body: StateSwitcher(
           state: ctrl.state.value, onRetry: ctrl.load,
           content: () => Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [

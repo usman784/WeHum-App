@@ -24,6 +24,7 @@ import '../../core/services/analytics_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/catalog_service.dart';
 import '../../core/services/config_service.dart';
+import '../../core/services/inbox_service.dart';
 import '../../core/services/connectivity_service.dart';
 import '../../core/services/crash_service.dart';
 import '../../core/services/notification_service.dart';
@@ -101,6 +102,7 @@ class InitialBinding extends Bindings {
 
     // the DB opens asynchronously; services that need it are created lazily on first use
     Get.lazyPut<CatalogService>(() => CatalogService(Get.find(), Get.find<AppDatabase>()), fenix: true);
+    Get.lazyPut<InboxService>(() => InboxService(Get.find(), Get.find<AppDatabase>()), fenix: true);
     Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>()), fenix: true);
     Get.lazyPut<NotificationService>(
       () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId)),
@@ -130,7 +132,7 @@ class InitialBinding extends Bindings {
           access.setFromProfile(p);
         },
         refreshCatalog: () => Get.find<CatalogService>().refresh(),
-        onInbox: (_) => Get.find<AppController>().unread.value++,
+        onInbox: (item) => Get.find<InboxService>().onSocket(item),
         onEntitlement: access.onSocket,
       ),
       fenix: true,

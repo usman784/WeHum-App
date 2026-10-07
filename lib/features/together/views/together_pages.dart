@@ -18,6 +18,7 @@ import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../today/controllers/today_controller.dart';
+import '../../today/views/today_pages.dart' show tabHeader;
 import '../../today/views/today_widgets.dart';
 import '../controllers/together_controllers.dart';
 
@@ -153,7 +154,7 @@ class TogetherPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(TogetherController());
     return AppScaffold(
-      header: const TabHeader(), bottom: const AppBottomNav(current: AppTab.together),
+      header: tabHeader(), bottom: const AppBottomNav(current: AppTab.together),
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
