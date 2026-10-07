@@ -3,6 +3,7 @@ import '../../features/system/views/placeholder_page.dart';
 import '../../features/account/views/account_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
 import '../../features/onboarding/views/intro_pages.dart';
+import '../../features/today/views/today_pages.dart';
 import '../../features/onboarding/views/setup_pages.dart';
 import '../../features/onboarding/views/splash_page.dart';
 import '../../features/onboarding/views/start_page.dart';
@@ -30,9 +31,9 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.logIn, page: () => const LoginPage()),
     GetPage(name: AppRoutes.forgotPassword, page: () => const ForgotPasswordPage()),
     GetPage(name: AppRoutes.checkYourEmail, page: () => const CheckEmailPage()),
-    GetPage(name: AppRoutes.todayMember, page: () => const PlaceholderPage('todayMember')),
+    GetPage(name: AppRoutes.todayMember, page: () => const TodayPage()),
     GetPage(name: AppRoutes.motdRoom, page: () => const PlaceholderPage('motdRoom')),
-    GetPage(name: AppRoutes.todayFree, page: () => const PlaceholderPage('todayFree')),
+    GetPage(name: AppRoutes.todayFree, page: () => const TodayFreePage()),
     GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const PlaceholderPage('worldMapWorldVibration')),
     GetPage(name: AppRoutes.dailyMessage, page: () => const PlaceholderPage('dailyMessage')),
     GetPage(name: AppRoutes.exploreArchive, page: () => const PlaceholderPage('exploreArchive')),
