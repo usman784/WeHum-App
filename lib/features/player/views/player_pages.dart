@@ -252,7 +252,7 @@ class VideoPlayerPage extends StatelessWidget {
               TransportControls(ctrl: ctrl),
               if (Pip.supported) const Align(child: TextLink('Picture in picture', key: Key('pip'), onPressed: Pip.enter)),
               const SizedBox(height: 16),
-              if (ctrl.togetherRx.value != null) Text('${ctrl.togetherRx.value!.people} people in this session now', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              if (ctrl.togetherRx.value != null) Text('${ctrl.togetherRx.value!.people} ${ctrl.togetherRx.value!.people == 1 ? 'person' : 'people'} in this session now', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
               const SizedBox(height: 12),
               OutlineButton('End meditation', key: const Key('end'), onPressed: ctrl.endEarly),
             ]);
