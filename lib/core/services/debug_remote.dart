@@ -19,13 +19,14 @@ import '../../app/app_controller.dart';
 String file2text(String s) => s.replaceAll('_', ' ');
 
 abstract final class DebugRemote {
-  /// `type Sunday_morning` → fills the first text field on screen.
-  static void _type(String text) {
+  /// `type Sunday_morning` → fills the first text field on screen (`type@1 …` the second, and so on).
+  static void _type(String text, int nth) {
     var done = false;
+    var seen = 0;
     void visit(Element e) {
       if (done) return;
       final w = e.widget;
-      if (w is EditableText) {
+      if (w is EditableText && seen++ == nth) {
         w.controller.text = text;
         w.onChanged?.call(text); // as if typed
         done = true;
@@ -71,7 +72,7 @@ abstract final class DebugRemote {
       file.deleteSync();
       if (parts.isEmpty || parts.first.isEmpty) return;
       if (parts.first == 'back') return Get.back<void>();
-      if (parts.first == 'type') return _type(file2text(parts.skip(1).join(' ')));
+      if (parts.first.startsWith('type')) return _type(file2text(parts.skip(1).join(' ')), int.tryParse(parts.first.split('@').last) ?? 0);
       if (parts.first == 'tap') return _tap(file2text(parts.skip(1).join(' ')));
       if (parts.first == 'link' && parts.length > 1) return Get.find<AppController>().openLink(parts[1], notificationId: parts.length > 2 ? parts[2] : null); // same path as a tapped push
       final off = parts.first == 'off';

@@ -126,7 +126,7 @@ class PlayerFailure extends StatelessWidget {
     final unavailable = ctrl.phase.value == PlayerPhase.unavailable;
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      child: SizedBox(width: double.infinity, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(Icons.error_outline_rounded, size: 56, color: c.textTertiary),
         const SizedBox(height: 16),
         Text(unavailable ? 'Not available right now' : 'This session couldn’t load', textAlign: TextAlign.center, style: AppText.title.copyWith(color: c.textPrimary)),
@@ -136,7 +136,7 @@ class PlayerFailure extends StatelessWidget {
         if (!unavailable) PrimaryButton('Try again', fullWidth: false, onPressed: () => Get.offNamed(AppRoutes.playerPresenceRing, arguments: ctrl.args)),
         TextLink('Go to downloads', onPressed: () => Get.offNamed(AppRoutes.downloads), color: c.textSecondary),
         TextLink('Close', onPressed: () => Get.back<void>(), color: c.textSecondary),
-      ]),
+      ])),
     );
   }
 }

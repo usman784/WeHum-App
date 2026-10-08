@@ -75,7 +75,38 @@ class DownloadService extends GetxService implements LocalMedia {
     if (k == null) return null;
     final d = await _db.downloadFor(k.id, k.variant);
     if (d == null || d.status != 'done' || d.filePath == null) return null;
-    return await File(d.filePath!).exists() ? d.filePath : null;
+    if (!await File(d.filePath!).exists()) return null;
+    return _withExtension(k, d.filePath!);
+  }
+
+  /// AVPlayer decides how to open a local file from its extension; a bare `.media` fails with "format not supported".
+  /// The extension is taken from the file's own first bytes (works for files downloaded before this was added too).
+  Future<String> _withExtension(DownloadKey k, String path) async {
+    if (!path.endsWith('.media')) return path;
+    try {
+      final f = File(path);
+      final raf = await f.open();
+      final b = await raf.read(12);
+      await raf.close();
+      String? ext;
+      if (b.length >= 12 && b[4] == 0x66 && b[5] == 0x74 && b[6] == 0x79 && b[7] == 0x70) {
+        ext = (b[8] == 0x4d && b[9] == 0x34 && b[10] == 0x41) ? 'm4a' : 'mp4'; // 'ftyp' (+ 'M4A ' brand)
+      } else if (b.length >= 3 && b[0] == 0x49 && b[1] == 0x44 && b[2] == 0x33 || b.length >= 2 && b[0] == 0xff && (b[1] & 0xe0) == 0xe0) {
+        ext = 'mp3';
+      } else if (b.length >= 4 && b[0] == 0x52 && b[1] == 0x49 && b[2] == 0x46 && b[3] == 0x46) {
+        ext = 'wav';
+      } else if (b.length >= 4 && b[0] == 0x4f && b[1] == 0x67 && b[2] == 0x67 && b[3] == 0x53) {
+        ext = 'ogg';
+      }
+      if (ext == null) return path;
+      final to = '${path.substring(0, path.length - '.media'.length)}.$ext';
+      await f.rename(to);
+      await _db.upsertDownload(DownloadsCompanion(sessionId: Value(k.id), variant: Value(k.variant), filePath: Value(to), createdAt: Value(DateTime.now())));
+      await _reload();
+      return to;
+    } catch (_) {
+      return path;
+    }
   }
 
   Future<void> start(DownloadKey key, {required String title, int? estimatedBytes}) async {

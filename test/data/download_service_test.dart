@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/drift.dart' show driftRuntimeOptions, Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meditation/core/audio/download_engine.dart';
 import 'package:meditation/core/data/local/app_database.dart';
@@ -100,6 +100,31 @@ void main() {
     expect(s.usedBytes, 1000);
     expect(analytics.drain().map((e) => e['name']), containsAll(['download_start', 'download_complete']));
     expect(await s.pathFor(const PlaySession('other')), isNull);
+  });
+
+  test('the file gets the extension its bytes say (AVPlayer refuses a bare .media): mp4 → .mp4, mp3 → .mp3', () async {
+    final s = await make();
+    await s.start(const DownloadKey('s-deep'), title: 'Video');
+    await until(() => s.isDownloaded('s-deep'));
+    final raw = (await s.pathFor(const PlaySession('s-deep')))!; // fake bytes: unknown, stays as is
+    expect(raw.endsWith('.media'), true);
+    final f = File(raw);
+    final bytes = await f.readAsBytes();
+    bytes.setRange(0, 12, [0, 0, 0, 0x20, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]); // ....ftypisom
+    await f.writeAsBytes(bytes);
+    final p = (await s.pathFor(const PlaySession('s-deep')))!;
+    expect(p.endsWith('.mp4'), true);
+    expect(await File(p).exists(), true);
+    expect(await File(raw).exists(), false);
+    expect(await s.pathFor(const PlaySession('s-deep')), p); // stored, found again
+    final g = File(p.replaceAll('.mp4', '.media'));
+    await File(p).rename(g.path);
+    await db.upsertDownload(DownloadsCompanion(sessionId: const Value('s-deep'), filePath: Value(g.path), createdAt: Value(DateTime.now())));
+    final b2 = await g.readAsBytes();
+    b2.setRange(0, 3, [0x49, 0x44, 0x33]); // ID3
+    b2.setRange(4, 12, List.filled(8, 0));
+    await g.writeAsBytes(b2);
+    expect((await s.pathFor(const PlaySession('s-deep')))!.endsWith('.mp3'), true);
   });
 
   test('Wi-Fi only: refuses on mobile data, downloads on Wi-Fi, and is off when the switch is off', () async {
