@@ -60,17 +60,34 @@ class SyncService extends GetxService {
         final rows = await _db.outboxBatch();
         if (rows.isEmpty) break;
         final records = [for (final r in rows) MeditationRecord.fromJson(asJson(jsonDecode(r.payload)))];
-        List<MeditationResult> results;
+        // id → the server's answer, or null when the server refused that record for good
+        final answers = <String, MeditationResult?>{};
         try {
-          results = records.length == 1 ? [await _repo.record(records.first)] : await _repo.batch(records);
+          if (records.length == 1) {
+            answers[records.first.id] = await _one(records.first);
+          } else {
+            try {
+              final results = await _repo.batch(records);
+              for (final (i, res) in results.indexed) {
+                answers[records[i].id] = res.status == 'rejected' ? null : res;
+              }
+            } on ApiException catch (e) {
+              if (!_refused(e)) rethrow;
+              // one bad record makes the server refuse the whole batch: send them one by one, so a good
+              // meditation is never held back (or thrown away) because of a bad neighbour
+              for (final r in records) {
+                answers[r.id] = await _one(r);
+              }
+            }
+          }
         } on ApiException catch (e) {
           // offline / server down: keep everything and try again later
           for (final r in rows) {
-            await _db.outboxFailed(r.id, e.code.wire);
+            if (!answers.containsKey(r.id)) await _db.outboxFailed(r.id, e.code.wire);
           }
-          if (e.code == ErrorCode.validationFailed || e.code == ErrorCode.invalidState) {
-            // a rejected payload would block the queue forever: drop it after 5 attempts
-            await _db.outboxDone(rows.where((r) => r.attempts >= 4).map((r) => r.id));
+          await _db.outboxDone(answers.keys); // whatever was answered before the connection dropped is finished
+          for (final entry in answers.entries) {
+            if (entry.value != null) byId[entry.key] = entry.value!;
           }
           for (final w in _waiters.values) {
             if (!w.isCompleted) w.complete(null);
@@ -79,11 +96,11 @@ class SyncService extends GetxService {
           break;
         }
         final ok = <String>[];
-        for (final (i, res) in results.indexed) {
-          final id = records[i].id;
-          if (res.status != 'rejected') byId[id] = res;
-          ok.add(id); // created, duplicate or rejected by the server: none of them can succeed by retrying
-          final w = _waiters.remove(id);
+        for (final r in records) {
+          final res = answers[r.id];
+          if (res != null) byId[r.id] = res;
+          ok.add(r.id); // created, duplicate or refused by the server: none of them can succeed by retrying
+          final w = _waiters.remove(r.id);
           if (w != null && !w.isCompleted) w.complete(res);
         }
         await _db.outboxDone(ok);
@@ -116,6 +133,20 @@ class SyncService extends GetxService {
         // unreadable row: drop it
       }
       await _db.removePending(p.id);
+    }
+  }
+
+  /// A payload the server will never accept, however often it is sent.
+  static bool _refused(ApiException e) => e.code == ErrorCode.validationFailed || e.code == ErrorCode.invalidState;
+
+  /// One record on its own: the answer, or null when the server refuses it for good. Network errors are thrown.
+  Future<MeditationResult?> _one(MeditationRecord r) async {
+    try {
+      final res = await _repo.record(r);
+      return res.status == 'rejected' ? null : res;
+    } on ApiException catch (e) {
+      if (_refused(e)) return null;
+      rethrow;
     }
   }
 

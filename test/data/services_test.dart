@@ -27,6 +27,25 @@ class FlakyMeditations extends MockMeditationRepository {
   }
 }
 
+/// Like the real API: a batch with one invalid item is refused as a whole (400); single posts are judged alone.
+class _StrictMeditations extends MockMeditationRepository {
+  _StrictMeditations({required this.bad});
+  final Set<String> bad;
+  int batches = 0;
+  @override
+  Future<MeditationResult> record(MeditationRecord m) async {
+    if (bad.contains(m.id)) throw ApiException(ErrorCode.validationFailed);
+    return super.record(m);
+  }
+
+  @override
+  Future<List<MeditationResult>> batch(List<MeditationRecord> items) async {
+    batches++;
+    if (items.any((m) => bad.contains(m.id))) throw ApiException(ErrorCode.validationFailed);
+    return super.batch(items);
+  }
+}
+
 MeditationRecord med(String id, {int sec = 600}) =>
     MeditationRecord(id: id, kind: 'solo', sessionId: 's-motd', startedAt: DateTime.utc(2026, 10, 7, 8), endedAt: DateTime.utc(2026, 10, 7, 8, 10), durationSec: sec, completed: true);
 
@@ -85,6 +104,31 @@ void main() {
       expect(res!.togetherPeople, 412);
       expect(res.canDedicate, true);
       await sync.flush(); // wait until idle
+    });
+
+    test('one record the server refuses does not hold back or lose the good ones (batch refused → sent one by one)', () async {
+      final repo = _StrictMeditations(bad: {'bad00000-0000-7000-8000-000000000000'});
+      final sync = SyncService(repo, db);
+      for (final id in ['good0000-0000-7000-8000-000000000001', 'bad00000-0000-7000-8000-000000000000', 'good0000-0000-7000-8000-000000000002']) {
+        await db.enqueueMeditation(id, '{"id":"$id","kind":"solo","startedAt":"2026-10-07T08:00:00Z","endedAt":"2026-10-07T08:10:00Z","durationSec":600}');
+      }
+      await sync.flush();
+      expect(repo.recorded.map((m) => m.id), ['good0000-0000-7000-8000-000000000001', 'good0000-0000-7000-8000-000000000002']);
+      expect(sync.pending.value, 0); // the refused one is gone, it can never succeed
+      expect(sync.resultFor('good0000-0000-7000-8000-000000000002'), isNotNull);
+      expect(sync.resultFor('bad00000-0000-7000-8000-000000000000'), isNull);
+      expect(repo.batches, 1);
+    });
+
+    test('a single refused record is dropped at once and the next one goes through', () async {
+      final repo = _StrictMeditations(bad: {'bad00000-0000-7000-8000-000000000000'});
+      final sync = SyncService(repo, db);
+      await db.enqueueMeditation('bad00000-0000-7000-8000-000000000000', '{"id":"bad00000-0000-7000-8000-000000000000","kind":"solo","startedAt":"2026-10-07T08:00:00Z","endedAt":"2026-10-07T08:10:00Z","durationSec":600}');
+      await sync.flush();
+      expect(sync.pending.value, 0);
+      final r = await sync.record(med('33333333-3333-7333-8333-333333333333'));
+      expect(r, isNotNull);
+      await sync.flush();
     });
 
     test('a run in progress is not started twice', () async {
