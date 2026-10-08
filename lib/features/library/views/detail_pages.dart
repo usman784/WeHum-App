@@ -165,19 +165,43 @@ class ProgramDetailPage extends StatelessWidget {
 }
 
 /// 37 Teacher bio.
-class TeacherPage extends StatelessWidget {
+class TeacherPage extends StatefulWidget {
   const TeacherPage({super.key});
   @override
+  State<TeacherPage> createState() => _TeacherPageState();
+}
+
+class _TeacherPageState extends State<TeacherPage> {
+  final id = ((Get.arguments as Map?)?['id'] ?? Get.parameters['id'] ?? '') as String;
+  late Future<Teacher> _teacher = Get.find<CatalogRepository>().teacher(id);
+  Worker? _catalog;
+
+  @override
+  void initState() {
+    super.initState();
+    // the CMS changed something (socket `catalog:changed` → new catalog): show it without leaving the screen
+    _catalog = ever(Get.find<CatalogService>().catalog, (_) {
+      if (mounted) setState(() => _teacher = Get.find<CatalogRepository>().teacher(id));
+    });
+  }
+
+  @override
+  void dispose() {
+    _catalog?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final id = ((Get.arguments as Map?)?['id'] ?? Get.parameters['id'] ?? '') as String;
     final c = context.colors;
     return AppScaffold(
       title: 'Teacher',
       body: FutureBuilder<Teacher>(
-        future: Get.find<CatalogRepository>().teacher(id),
+        future: _teacher,
         builder: (ctx, snap) {
-          if (snap.connectionState != ConnectionState.done) return const SkeletonList(rows: 3);
-          if (snap.hasError || snap.data == null) return ErrorState(offline: true, onRetry: () => Get.forceAppUpdate());
+          // keep what is on screen while a refresh is on its way (no flash back to the skeleton)
+          if (snap.data == null && snap.connectionState != ConnectionState.done) return const SkeletonList(rows: 3);
+          if (snap.data == null) return ErrorState(offline: true, onRetry: () => setState(() => _teacher = Get.find<CatalogRepository>().teacher(id)));
           final t = snap.data!;
           return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
             Center(child: ThumbImage(t.photoUrl, seed: t.id, width: 120, height: 120, radius: 60)),

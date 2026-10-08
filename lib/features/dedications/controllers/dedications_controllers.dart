@@ -116,6 +116,7 @@ class DedicationsController extends GetxController {
     _subs.add(_socket.on(SocketEvents.dedicationRemoved, (j) => j).listen((j) {
       items.removeWhere((d) => d.id == j['id']);
       total.value = items.length;
+      if (items.isEmpty) state.value = ViewState.empty; // the last one was taken down: the empty state, not "0 dedications"
     }));
   }
 

@@ -51,7 +51,11 @@ class SessionDetailController extends GetxController {
     super.onInit();
     live.acquireSession(id);
     load();
+    // edited in the CMS while this screen is open (socket `catalog:changed`): show the new title, cover, length
+    _catalogChanged = ever(catalog.catalog, (_) => load());
   }
+
+  Worker? _catalogChanged;
 
   Future<void> load() async {
     // the catalog already knows the title: show it at once, fill in the rest from the API
@@ -74,6 +78,7 @@ class SessionDetailController extends GetxController {
 
   @override
   void onClose() {
+    _catalogChanged?.dispose();
     live.releaseSession(id);
     super.onClose();
   }
