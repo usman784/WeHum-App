@@ -21,6 +21,7 @@ import '../core/services/crash_service.dart';
 import '../core/services/download_service.dart';
 import '../core/services/deep_links.dart';
 import '../core/services/inbox_service.dart';
+import '../core/services/logger.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/purchase_service.dart';
 import '../core/services/sync_service.dart';
@@ -166,6 +167,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
   ({String? link, String? id})? _pendingLink;
 
   void openLink(String? link, {String? notificationId}) {
+    logd('link', 'open $link (routed=$routed, notification=$notificationId)');
     if (!routed) {
       _pendingLink = (link: link, id: notificationId);
       return;

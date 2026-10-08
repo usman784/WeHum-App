@@ -58,14 +58,20 @@ class NotificationService extends GetxService {
     await _local.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
         const AndroidNotificationChannel('wehum_default', 'WeHum', description: 'Reminders and group meditations', importance: Importance.high)); // background pushes name this channel
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    logd('push', 'permission ${settings.authorizationStatus}');
     permission.value = switch (settings.authorizationStatus) {
       AuthorizationStatus.authorized || AuthorizationStatus.provisional => PushPermission.granted,
       AuthorizationStatus.denied => PushPermission.denied,
       _ => PushPermission.unknown,
     };
     _fgSub = FirebaseMessaging.onMessage.listen((m) {
+      logd('push', 'foreground message ${m.messageId} link=${m.data['deepLink']}');
       final n = m.notification;
-      if (n != null) _local.show(id: m.hashCode & 0x7fffffff, title: n.title, body: n.body, notificationDetails: _details, payload: jsonEncode({'l': m.data['deepLink'], 'n': m.data['notificationId']}));
+      if (n != null) {
+        _local
+            .show(id: m.hashCode & 0x7fffffff, title: n.title, body: n.body, notificationDetails: _details, payload: jsonEncode({'l': m.data['deepLink'], 'n': m.data['notificationId']}))
+            .then((_) => logd('push', 'shown in the foreground'), onError: (Object e) => logd('push', 'show failed: $e'));
+      }
       onInbox?.call();
     });
     _openSub = FirebaseMessaging.onMessageOpenedApp.listen((m) => onOpenLink(m.data['deepLink'] as String?, notificationId: m.data['notificationId'] as String?));
@@ -81,6 +87,7 @@ class NotificationService extends GetxService {
 
   /// Payloads are either a plain deep link (local reminders) or `{"l": link, "n": notificationId}` (shown pushes).
   void _open(String? payload) {
+    logd('push', 'opened from notification: $payload');
     if (payload != null && payload.startsWith('{')) {
       try {
         final m = jsonDecode(payload) as Map;
