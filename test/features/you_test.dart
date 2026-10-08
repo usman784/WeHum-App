@@ -136,10 +136,16 @@ void main() {
     await t.tap(find.text('Keep my account'));
     await settle(t);
     expect(e.me.deleted, false);
+    final before = Map.of(e.prefs.map);
+    expect(before['first_name'], 'Marcus');
     final ok = await t.runAsync(() => Get.find<PrivacyController>().deleteAccount());
     expect(ok, true);
     expect(e.me.deleted, true);
-    expect(e.prefs.map, isEmpty); // local choices wiped
+    // local choices wiped: nothing of the deleted person is left (name, reminder, theme, onboarding state).
+    // The only thing that may be written afterwards is which fresh guest the (now empty) name belongs to.
+    expect(e.prefs.map.keys.toSet().difference({'first_name_owner'}), isEmpty);
+    expect(e.prefs.map['first_name'], isNull);
+    expect(e.prefs.map['first_name_owner'], isNot(before['first_name_owner']));
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

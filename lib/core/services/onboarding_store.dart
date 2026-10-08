@@ -40,6 +40,23 @@ class OnboardingStore extends GetxService {
   String get name => _box.read<String>('first_name') ?? '';
   set name(String v) => _box.write('first_name', v);
 
+  /// Whose name that is. The first name on this phone must follow the signed-in person (login, sign-out, merge).
+  String get nameOwner => _box.read<String>('first_name_owner') ?? '';
+  set nameOwner(String v) => _box.write('first_name_owner', v);
+
+  /// Called whenever the session's person is known. Same person: the server's name wins when it has one.
+  /// A different person (logged in as someone else, or signed out to a new guest): never keep the old name.
+  void adoptName({required String userId, String? serverName}) {
+    if (userId.isEmpty) return;
+    final server = (serverName ?? '').trim();
+    if (nameOwner.isEmpty || nameOwner == userId) {
+      if (server.isNotEmpty) name = server;
+    } else {
+      name = server;
+    }
+    nameOwner = userId;
+  }
+
   /// 24-hour `HH:mm`, local time.
   String get reminderTime => _box.read<String>('reminder_time') ?? '07:00';
   set reminderTime(String v) => _box.write('reminder_time', v);

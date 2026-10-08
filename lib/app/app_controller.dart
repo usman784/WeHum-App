@@ -3,6 +3,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
+import '../core/services/onboarding_store.dart';
 import '../core/realtime/realtime_coordinator.dart';
 import '../core/config/env.dart';
 import '../core/theme/theme_controller.dart';
@@ -47,13 +48,16 @@ class AppController extends GetxService with WidgetsBindingObserver {
   String? _lastTz;
   bool started = false;
   StreamSubscription<Uri>? _links;
-  Worker? _reconnected;
+  Worker? _reconnected, _person;
 
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     // the socket coming (back) up is the best "we're online" signal: send whatever was queued offline
+    _person = ever(auth.me, (m) {
+      if (m != null && Get.isRegistered<OnboardingStore>()) Get.find<OnboardingStore>().adoptName(userId: m.id, serverName: m.firstName);
+    });
     _reconnected = ever(socket.state, (s) {
       if (s == SocketState.connected) unawaited(sync.flush());
     });
@@ -165,6 +169,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _links?.cancel();
     _reconnected?.dispose();
+    _person?.dispose();
     super.onClose();
   }
 }
