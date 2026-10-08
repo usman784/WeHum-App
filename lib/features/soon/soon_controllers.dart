@@ -19,6 +19,31 @@ mixin FeatureGate on GetxController {
   bool get featureOn => Get.find<ConfigService>().feature(flag);
   final off = false.obs;
 
+  /// Loads the screen for the flag's current state (teaser or the real thing).
+  Future<void> load();
+
+  Worker? _flagWatch;
+  bool? _flagWas;
+
+  /// The flag can flip while the screen is open (CMS → `config:changed` → new bootstrap): switch right away.
+  @override
+  void onInit() {
+    super.onInit();
+    _flagWas = featureOn;
+    _flagWatch = ever(Get.find<ConfigService>().current, (_) {
+      final on = featureOn;
+      if (on == _flagWas) return;
+      _flagWas = on;
+      load();
+    });
+  }
+
+  @override
+  void onClose() {
+    _flagWatch?.dispose();
+    super.onClose();
+  }
+
   ViewState stateFor(Object e) {
     final f = ViewState.fromError(e);
     if (f.error?.code == ErrorCode.featureOff) {
@@ -48,6 +73,7 @@ class ChallengesController extends GetxController with FeatureGate {
     load();
   }
 
+  @override
   Future<void> load() async {
     if (!featureOn) {
       off.value = true;
@@ -140,6 +166,7 @@ class GratitudeController extends GetxController with FeatureGate {
     await load();
   }
 
+  @override
   Future<void> load() async {
     if (!featureOn) {
       off.value = true;
@@ -213,6 +240,7 @@ class BreathworkController extends GetxController with FeatureGate {
     load();
   }
 
+  @override
   Future<void> load() async {
     if (!featureOn) {
       off.value = true;
@@ -248,6 +276,10 @@ class PatternDesignerController extends GetxController with FeatureGate {
   final inhale = 4.obs, hold1 = 4.obs, exhale = 4.obs, hold2 = 4.obs, rounds = 10.obs;
   final busy = false.obs;
   final message = RxnString();
+
+  /// Nothing to fetch here: the designer only follows the flag.
+  @override
+  Future<void> load() async => off.value = !featureOn;
 
   BreathPattern get pattern => BreathPattern(name: name.value.trim().isEmpty ? 'My pattern' : name.value.trim(), inhaleSec: inhale.value, hold1Sec: hold1.value, exhaleSec: exhale.value, hold2Sec: hold2.value, rounds: rounds.value);
   String get summary => '${pattern.beats} · ${pattern.rounds} rounds · ${(pattern.totalSec / 60).toStringAsFixed(1)} min';
@@ -353,6 +385,7 @@ class MilestonesController extends GetxController with FeatureGate {
     load();
   }
 
+  @override
   Future<void> load() async {
     if (!featureOn) {
       off.value = true;

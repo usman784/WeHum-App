@@ -181,7 +181,12 @@ class _TeacherPageState extends State<TeacherPage> {
     super.initState();
     // the CMS changed something (socket `catalog:changed` → new catalog): show it without leaving the screen
     _catalog = ever(Get.find<CatalogService>().catalog, (_) {
-      if (mounted) setState(() => _teacher = Get.find<CatalogRepository>().teacher(id));
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _teacher = Get.find<CatalogRepository>().teacher(id);
+      });
     });
   }
 
@@ -201,7 +206,11 @@ class _TeacherPageState extends State<TeacherPage> {
         builder: (ctx, snap) {
           // keep what is on screen while a refresh is on its way (no flash back to the skeleton)
           if (snap.data == null && snap.connectionState != ConnectionState.done) return const SkeletonList(rows: 3);
-          if (snap.data == null) return ErrorState(offline: true, onRetry: () => setState(() => _teacher = Get.find<CatalogRepository>().teacher(id)));
+          if (snap.data == null) {
+            return ErrorState(offline: true, onRetry: () => setState(() {
+              _teacher = Get.find<CatalogRepository>().teacher(id);
+            }));
+          }
           final t = snap.data!;
           return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
             Center(child: ThumbImage(t.photoUrl, seed: t.id, width: 120, height: 120, radius: 60)),
