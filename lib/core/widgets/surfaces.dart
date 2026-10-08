@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'painters.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
@@ -29,15 +30,16 @@ class AppCard extends StatelessWidget {
 
 /// Image with a blurhash placeholder; bundled `assets/…` paths and network URLs both work.
 class ThumbImage extends StatelessWidget {
-  const ThumbImage(this.src, {super.key, this.blurHash, this.width, this.height, this.radius = 0, this.fit = BoxFit.cover});
+  const ThumbImage(this.src, {super.key, this.blurHash, this.width, this.height, this.radius = 0, this.fit = BoxFit.cover, this.seed});
+  /// Picks the generated cover shown when there is no picture (use the content's id or title).
+  final String? seed;
   final String? src, blurHash;
   final double? width, height, radius;
   final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    final fallback = ColoredBox(color: c.surfaceAlt);
+    final fallback = GeneratedCover(seed: seed ?? src ?? ''); // never an empty box
     Widget img;
     if (src == null || src!.isEmpty) {
       img = fallback;
@@ -56,8 +58,8 @@ class ThumbImage extends StatelessWidget {
 
 /// Image + gradient + content (Today hero, MOTD room, program cards).
 class HeroImageCard extends StatelessWidget {
-  const HeroImageCard({super.key, required this.image, required this.child, this.height, this.onTap, this.radius = Radii.cardLarge, this.blurHash});
-  final String? image, blurHash;
+  const HeroImageCard({super.key, required this.image, required this.child, this.height, this.onTap, this.radius = Radii.cardLarge, this.blurHash, this.seed});
+  final String? image, blurHash, seed;
   final Widget child;
   final double? height;
   final VoidCallback? onTap;
@@ -68,7 +70,7 @@ class HeroImageCard extends StatelessWidget {
     final body = ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Stack(children: [
-        Positioned.fill(child: ThumbImage(image, blurHash: blurHash)),
+        Positioned.fill(child: ThumbImage(image, blurHash: blurHash, seed: seed)),
         const Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(gradient: AppColors.imageGradient))),
         Padding(padding: const EdgeInsets.all(Gap.x20), child: ConstrainedBox(constraints: BoxConstraints(minHeight: ((height ?? 0) - 2 * Gap.x20).clamp(0.0, double.infinity)), child: child)),
       ]),

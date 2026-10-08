@@ -103,7 +103,7 @@ class _ProgramCard extends StatelessWidget {
       child: AppCard(
         key: Key('program-${p.id}'), onTap: () => Get.toNamed('/program/${p.id}', arguments: {'id': p.id}),
         child: Row(children: [
-          ThumbImage(p.cover?.url, width: 64, height: 64, radius: 14),
+          ThumbImage(p.cover?.url, seed: p.id, width: 64, height: 64, radius: 14),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Overline('${p.days.length} days'),
@@ -180,7 +180,7 @@ class TeacherPage extends StatelessWidget {
           if (snap.hasError || snap.data == null) return ErrorState(offline: true, onRetry: () => Get.forceAppUpdate());
           final t = snap.data!;
           return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
-            Center(child: ThumbImage(t.photoUrl, width: 120, height: 120, radius: 60)),
+            Center(child: ThumbImage(t.photoUrl, seed: t.id, width: 120, height: 120, radius: 60)),
             const SizedBox(height: 14),
             Center(child: Text(t.name, style: AppText.heroTitle.copyWith(color: c.textPrimary))),
             if (t.role != null) Center(child: Text(t.role!, style: AppText.bodyLarge.copyWith(color: c.textSecondary))),

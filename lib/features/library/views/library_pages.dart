@@ -37,7 +37,7 @@ class SessionRow extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(children: [
-          ThumbImage(s.cover?.url, blurHash: s.cover?.blurhash, width: 60, height: 60, radius: 14),
+          ThumbImage(s.cover?.url, blurHash: s.cover?.blurhash, seed: s.id, width: 60, height: 60, radius: 14),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

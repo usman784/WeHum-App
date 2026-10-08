@@ -168,7 +168,17 @@ class PlayerPage extends StatelessWidget {
               child: Column(children: [
                 const Align(alignment: Alignment.centerRight, child: SosPill()),
                 const Spacer(),
-                PresenceRing(people: people, size: 280), // one dot per person the server reports, never a made-up crowd
+                // one dot per person the server reports, never a made-up crowd; the session's own art sits in the core
+                PresenceRing(
+                  people: people, size: 290,
+                  center: Container(
+                    width: 150, height: 150,
+                    decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Color(0x80000000), blurRadius: 30, offset: Offset(0, 12))]),
+                    child: ClipOval(child: ThumbImage(args.coverUrl, key: const Key('player-art'), seed: args.sessionId ?? args.title, width: 150, height: 150)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const BreathCue(),
                 const Spacer(),
                 const Overline('Now playing'),
                 const SizedBox(height: 8),

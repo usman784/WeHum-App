@@ -46,7 +46,7 @@ class _PresenceRingState extends State<PresenceRing> with SingleTickerProviderSt
             // 4 s in, 6 s out (spec §5)
             final t = _c.value;
             final k = t < .4 ? Curves.easeInOut.transform(t / .4) : 1 - Curves.easeInOut.transform((t - .4) / .6);
-            return CustomPaint(painter: _RingPainter(c.ember, c.tealText, c.track, (_reduce ?? false) ? .5 : k, widget.people), child: child);
+            return CustomPaint(painter: _RingPainter(c.ember, c.tealText, c.track, (_reduce ?? false) ? .5 : k, (_reduce ?? false) ? 0 : t, widget.people), child: child);
           },
           child: Center(child: widget.center),
         ),
@@ -55,28 +55,183 @@ class _PresenceRingState extends State<PresenceRing> with SingleTickerProviderSt
   }
 }
 
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.ember, this.dot, this.track, this.k, this.people);
-  final Color ember, dot, track;
-  final double k;
-  final int people;
+/// "Breathe in" / "Breathe out" in step with [PresenceRing] (4 s in, 6 s out). Shown for sighted users only: the
+/// ring is decoration, and a screen reader announcing it every few seconds would disturb the meditation.
+class BreathCue extends StatefulWidget {
+  const BreathCue({super.key});
   @override
-  void paint(Canvas canvas, Size s) {
-    final ctr = s.center(Offset.zero), r = s.width / 2;
-    canvas.drawCircle(ctr, r * (.62 + .1 * k), Paint()..color = ember.withValues(alpha: .10 + .08 * k));
-    canvas.drawCircle(ctr, r * (.70 + .08 * k), Paint()..style = PaintingStyle.stroke..strokeWidth = 3 ..color = ember.withValues(alpha: .85));
-    canvas.drawCircle(ctr, r * .94, Paint()..style = PaintingStyle.stroke..strokeWidth = 1..color = track);
-    // dot clusters: count is small on purpose (spec: numbers small), capped at 48
-    final n = people.clamp(0, 48);
-    final rnd = math.Random(7);
-    for (var i = 0; i < n; i++) {
-      final a = rnd.nextDouble() * math.pi * 2, rr = r * (.82 + rnd.nextDouble() * .14);
-      canvas.drawCircle(ctr + Offset(math.cos(a), math.sin(a)) * rr, 2.4, Paint()..color = dot.withValues(alpha: .55 + .4 * rnd.nextDouble()));
+  State<BreathCue> createState() => _BreathCueState();
+}
+
+class _BreathCueState extends State<BreathCue> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: Motion.breatheIn + Motion.breatheOut);
+  bool? _reduce;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final r = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (r != _reduce) {
+      _reduce = r;
+      r ? _c.stop() : _c.repeat();
     }
   }
 
   @override
-  bool shouldRepaint(_RingPainter o) => o.k != k || o.people != people;
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    if (_reduce ?? false) return const SizedBox(height: 18);
+    return ExcludeSemantics(
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (_, __) {
+          final inhale = _c.value < .4;
+          // fade the words out around the turn of the breath
+          final edge = inhale ? (_c.value / .4) : ((_c.value - .4) / .6);
+          final alpha = (math.sin(edge * math.pi)).clamp(0.0, 1.0);
+          return SizedBox(height: 18, child: Text(inhale ? 'Breathe in' : 'Breathe out', key: const Key('breath-cue'), style: AppText.caption.copyWith(color: c.textSecondary.withValues(alpha: .35 + .65 * alpha), letterSpacing: .6)));
+        },
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  _RingPainter(this.ember, this.dot, this.track, this.k, this.t, this.people);
+  final Color ember, dot, track;
+  /// Breath 0..1 (in → out) and the raw cycle position 0..1 (for the ripples that travel outwards).
+  final double k, t;
+  final int people;
+
+  static const _teal = Color(0xFF9FE3D6), _tealDeep = Color(0xFF123C3A);
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final ctr = s.center(Offset.zero), r = s.width / 2;
+    final ringR = r * (.66 + .07 * k);
+
+    // 1. the breathing aura behind everything (spec §3.2 `presenceRing`: teal light fading to nothing)
+    final aura = Rect.fromCircle(center: ctr, radius: r * (.86 + .12 * k));
+    canvas.drawCircle(ctr, aura.width / 2, Paint()
+      ..shader = RadialGradient(colors: [_teal.withValues(alpha: .16 + .14 * k), _tealDeep.withValues(alpha: .34 + .18 * k), _tealDeep.withValues(alpha: 0)], stops: const [.0, .62, 1]).createShader(aura));
+
+    // 2. two ripples that leave the ring and fade, like a breath going out into the room
+    for (final phase in const [0.0, .5]) {
+      final p = (t + phase) % 1.0;
+      canvas.drawCircle(ctr, ringR + (r * .98 - ringR) * p, Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4
+        ..color = ember.withValues(alpha: .34 * (1 - p)));
+    }
+
+    // 3. a fine dial of ticks on the outer track (decoration, not people)
+    final tick = Paint()..strokeWidth = 1..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 72; i++) {
+      final a = i * math.pi * 2 / 72, long = i % 6 == 0;
+      final dir = Offset(math.cos(a), math.sin(a));
+      tick.color = track.withValues(alpha: long ? .9 : .5);
+      canvas.drawLine(ctr + dir * r * (long ? .955 : .965), ctr + dir * r * .985, tick);
+    }
+
+    // 4. the warm core: lit from the top, deeper at the edge
+    final core = Rect.fromCircle(center: ctr, radius: ringR - 5);
+    canvas.drawCircle(ctr, core.width / 2, Paint()
+      ..shader = RadialGradient(center: const Alignment(-.25, -.35), radius: 1.05, colors: [Color.lerp(const Color(0xFF6B3A24), ember, .18 + .14 * k)!, const Color(0xFF3A1D12), const Color(0xFF1B0F0A)], stops: const [0, .58, 1]).createShader(core));
+
+    // 5. the ember ring itself: a soft glow under a bright arc that slowly turns
+    canvas.drawCircle(ctr, ringR, Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 9
+      ..color = ember.withValues(alpha: .20 + .22 * k)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9));
+    final ringRect = Rect.fromCircle(center: ctr, radius: ringR);
+    canvas.drawCircle(ctr, ringR, Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..shader = SweepGradient(transform: GradientRotation(t * math.pi * 2), colors: [ember, const Color(0xFFFFB99A), ember, ember.withValues(alpha: .55), ember], stops: const [0, .18, .4, .72, 1]).createShader(ringRect));
+
+    // 6. one dot per person the server reports (small on purpose, capped at 48), drifting gently with the breath
+    final n = people.clamp(0, 48);
+    final rnd = math.Random(7);
+    for (var i = 0; i < n; i++) {
+      final a = rnd.nextDouble() * math.pi * 2 + t * .35, rr = r * (.80 + rnd.nextDouble() * .12) + 3 * k;
+      final at = ctr + Offset(math.cos(a), math.sin(a)) * rr;
+      final alpha = .55 + .4 * rnd.nextDouble();
+      canvas.drawCircle(at, 5, Paint()..color = dot.withValues(alpha: alpha * .22)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
+      canvas.drawCircle(at, 2.6, Paint()..color = dot.withValues(alpha: alpha));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter o) => o.k != k || o.t != t || o.people != people;
+}
+
+/// A cover drawn by the app for content that has no picture (or whose picture did not load): a calm gradient from the
+/// brand palette, picked by [seed] so the same session always gets the same one, with soft rings. Never an empty box.
+class GeneratedCover extends StatelessWidget {
+  const GeneratedCover({super.key, this.seed = ''});
+  final String seed;
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(child: CustomPaint(painter: _CoverPainter(seed), child: const SizedBox.expand()));
+}
+
+class _CoverPainter extends CustomPainter {
+  _CoverPainter(this.seed);
+  final String seed;
+
+  // (top, bottom, accent): dusk ember, deep teal, night blue, lilac, forest, dawn
+  static const _palettes = [
+    (Color(0xFF5A2C1B), Color(0xFF14100E), Color(0xFFFF9B70)),
+    (Color(0xFF16504C), Color(0xFF0B1716), Color(0xFF9FE3D6)),
+    (Color(0xFF233A5A), Color(0xFF0B1018), Color(0xFFA9C4E8)),
+    (Color(0xFF43305A), Color(0xFF120E18), Color(0xFFCDB6E6)),
+    (Color(0xFF2C4A30), Color(0xFF0C140D), Color(0xFFB7E3A8)),
+    (Color(0xFF6A4A22), Color(0xFF16110A), Color(0xFFF2D08A)),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    var h = 0;
+    for (final u in seed.codeUnits) {
+      h = (h * 31 + u) & 0x7fffffff;
+    }
+    final (top, bottom, accent) = _palettes[h % _palettes.length];
+    final rect = Offset.zero & s;
+    canvas.save();
+    canvas.clipRect(rect);
+    canvas.drawRect(rect, Paint()..shader = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [top, bottom]).createShader(rect));
+    // a low sun / moon and its rings, placed by the seed so covers differ
+    final cx = s.width * (.28 + (h % 5) * .11), cy = s.height * (.34 + ((h ~/ 7) % 4) * .07);
+    final base = math.min(s.width, s.height);
+    final c = Offset(cx, cy);
+    canvas.drawCircle(c, base * .55, Paint()..shader = RadialGradient(colors: [accent.withValues(alpha: .30), accent.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: c, radius: base * .55)));
+    for (var i = 1; i <= 4; i++) {
+      canvas.drawCircle(c, base * (.12 + i * .13), Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(1, base * .008)
+        ..color = accent.withValues(alpha: .26 - i * .045));
+    }
+    canvas.drawCircle(c, base * .10, Paint()..color = accent.withValues(alpha: .85));
+    // soft hills at the bottom
+    final hills = Path()
+      ..moveTo(0, s.height)
+      ..lineTo(0, s.height * .78)
+      ..quadraticBezierTo(s.width * .28, s.height * (.62 + (h % 3) * .04), s.width * .55, s.height * .80)
+      ..quadraticBezierTo(s.width * .80, s.height * .94, s.width, s.height * .72)
+      ..lineTo(s.width, s.height)
+      ..close();
+    canvas.drawPath(hills, Paint()..color = bottom.withValues(alpha: .72));
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_CoverPainter o) => o.seed != seed;
 }
 
 /// Dotted world map from country aggregates (no GPS). [hot] maps ISO-2 → people.

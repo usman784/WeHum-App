@@ -46,7 +46,7 @@ class FreeItemRow extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(children: [
-          ThumbImage(s.cover?.url, blurHash: s.cover?.blurhash, width: 56, height: 56, radius: 12),
+          ThumbImage(s.cover?.url, blurHash: s.cover?.blurhash, seed: s.id, width: 56, height: 56, radius: 12),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
