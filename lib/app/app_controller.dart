@@ -20,9 +20,11 @@ import '../core/services/config_service.dart';
 import '../core/services/crash_service.dart';
 import '../core/services/download_service.dart';
 import '../core/services/deep_links.dart';
+import '../core/services/inbox_service.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/purchase_service.dart';
 import '../core/services/sync_service.dart';
+import '../features/system/views/update_sheet.dart';
 import 'routes/app_routes.dart';
 
 /// Owns startup order and app lifecycle (spec §6.2, §6.3, §10):
@@ -159,9 +161,41 @@ class AppController extends GetxService with WidgetsBindingObserver {
     Get.offAllNamed(AppRoutes.splash);
   }
 
+  /// Links that arrive before the first screen exists (a push that cold-started the app, a launch link) wait here.
+  bool routed = false;
+  ({String? link, String? id})? _pendingLink;
+
   void openLink(String? link, {String? notificationId}) {
+    if (!routed) {
+      _pendingLink = (link: link, id: notificationId);
+      return;
+    }
+    if (notificationId != null && notificationId.isNotEmpty) {
+      Get.find<AnalyticsService>().track('push_open', {'notification_id': notificationId});
+      if (Get.isRegistered<InboxService>()) Get.find<InboxService>().markReadId(notificationId);
+    }
     final t = DeepLinks.parse(link);
     Get.toNamed(t.route, arguments: t.args);
+  }
+
+  /// "A new version is available": once per version, never blocks (the blocking case is the update-required screen).
+  void promptUpdate() {
+    final u = lastBootstrap?.update;
+    final store = Get.find<OnboardingStore>();
+    if (u == null || !u.available || u.latest == null || store.dismissedUpdate == u.latest) return;
+    Future.delayed(const Duration(milliseconds: 900), () {
+      final ctx = Get.context;
+      if (ctx == null || !ctx.mounted) return;
+      showUpdateSheet(ctx, u, onLater: () => store.dismissedUpdate = u.latest!);
+    });
+  }
+
+  /// Called once the first real screen is up: opens the link that was waiting, if any.
+  void markRouted() {
+    routed = true;
+    final p = _pendingLink;
+    _pendingLink = null;
+    if (p != null) Future.delayed(const Duration(milliseconds: 400), () => openLink(p.link, notificationId: p.id));
   }
 
   @override

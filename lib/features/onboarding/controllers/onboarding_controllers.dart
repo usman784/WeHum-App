@@ -47,6 +47,8 @@ class SplashController extends GetxController {
       Get.find<AnalyticsService>().track('app_open', {'source': 'cold'});
       Get.offAllNamed(firstRoute(onboardingDone: Get.find<OnboardingStore>().done, member: Get.find<AccessService>().isMember));
       Get.find<PerfService>().results['cold_start'] = appStartWatch.elapsed; // target < 2.0 s on a mid Android
+      app.markRouted();
+      app.promptUpdate();
     }
   }
 }

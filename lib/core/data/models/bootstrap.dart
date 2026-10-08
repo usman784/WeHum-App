@@ -5,6 +5,7 @@ class Bootstrap {
   const Bootstrap({
     required this.serverTime,
     required this.updateRequired,
+    this.update = const AppUpdate(),
     required this.maintenance,
     required this.features,
     required this.catalogVersion,
@@ -15,6 +16,7 @@ class Bootstrap {
 
   final DateTime serverTime;
   final bool updateRequired;
+  final AppUpdate update;
   final bool maintenance;
   final Map<String, bool> features;
   final int catalogVersion;
@@ -27,6 +29,7 @@ class Bootstrap {
   factory Bootstrap.fromJson(Map<String, dynamic> j) => Bootstrap(
         serverTime: DateTime.fromMillisecondsSinceEpoch((j['serverTime'] as num).toInt(), isUtc: true),
         updateRequired: j['updateRequired'] as bool? ?? false,
+        update: j['update'] is Map ? AppUpdate.fromJson((j['update'] as Map).cast<String, dynamic>()) : const AppUpdate(),
         maintenance: j['maintenance'] as bool? ?? false,
         features: {for (final e in ((j['features'] as Map?) ?? const {}).entries) e.key as String: e.value == true},
         catalogVersion: (j['catalogVersion'] as num?)?.toInt() ?? 0,
@@ -42,4 +45,12 @@ class Founding {
   final bool open;
   final int left, cap;
   factory Founding.fromJson(Map<String, dynamic> j) => Founding(open: j['open'] == true, left: (j['left'] as num?)?.toInt() ?? 0, cap: (j['cap'] as num?)?.toInt() ?? 0);
+}
+
+/// `bootstrap.update`: a newer build exists (`available`, can be dismissed) or this one is too old (`required`).
+class AppUpdate {
+  const AppUpdate({this.required = false, this.available = false, this.latest, this.storeUrl});
+  final bool required, available;
+  final String? latest, storeUrl;
+  factory AppUpdate.fromJson(Map<String, dynamic> j) => AppUpdate(required: j['required'] == true, available: j['available'] == true, latest: j['latest'] as String?, storeUrl: j['storeUrl'] as String?);
 }

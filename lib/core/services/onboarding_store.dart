@@ -81,5 +81,9 @@ class OnboardingStore extends GetxService {
   bool get wifiOnlyDownloads => _box.read<bool>('wifi_only') ?? true;
   set wifiOnlyDownloads(bool v) => _box.write('wifi_only', v);
 
+  /// The newer app version the person already said "Later" to (the prompt comes back for the next one).
+  String get dismissedUpdate => _box.read<String>('dismissed_update') ?? '';
+  set dismissedUpdate(String v) => _box.write('dismissed_update', v);
+
   Future<void> reset() => _box.erase();
 }

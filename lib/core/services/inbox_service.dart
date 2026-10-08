@@ -72,6 +72,15 @@ class InboxService extends GetxService {
     } catch (_) {/* shown as read here; the server catches up on the next open */}
   }
 
+  /// A tapped push says which inbox item it was; mark it read without opening the inbox.
+  Future<void> markReadId(String id) async {
+    final i = items.firstWhereOrNull((x) => x.id == id);
+    if (i != null) return markRead(i);
+    try {
+      await _repo.markRead(ids: [id]);
+    } catch (_) {}
+  }
+
   Future<void> markAllRead() async {
     for (var k = 0; k < items.length; k++) {
       items[k] = items[k].asRead();

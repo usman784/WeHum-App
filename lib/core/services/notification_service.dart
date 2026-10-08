@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -51,9 +52,11 @@ class NotificationService extends GetxService {
       logd('push', 'timezone init failed: $e');
     }
     await _local.initialize(
-      settings: const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher'), iOS: DarwinInitializationSettings(requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false)),
-      onDidReceiveNotificationResponse: (r) => onOpenLink(r.payload),
+      settings: const InitializationSettings(android: AndroidInitializationSettings('ic_stat_wehum'), iOS: DarwinInitializationSettings(requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false)),
+      onDidReceiveNotificationResponse: (r) => _open(r.payload),
     );
+    await _local.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
+        const AndroidNotificationChannel('wehum_default', 'WeHum', description: 'Reminders and group meditations', importance: Importance.high)); // background pushes name this channel
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
     permission.value = switch (settings.authorizationStatus) {
       AuthorizationStatus.authorized || AuthorizationStatus.provisional => PushPermission.granted,
@@ -62,16 +65,29 @@ class NotificationService extends GetxService {
     };
     _fgSub = FirebaseMessaging.onMessage.listen((m) {
       final n = m.notification;
-      if (n != null) _local.show(id: m.hashCode & 0x7fffffff, title: n.title, body: n.body, notificationDetails: _details, payload: m.data['deepLink'] as String?);
+      if (n != null) _local.show(id: m.hashCode & 0x7fffffff, title: n.title, body: n.body, notificationDetails: _details, payload: jsonEncode({'l': m.data['deepLink'], 'n': m.data['notificationId']}));
       onInbox?.call();
     });
     _openSub = FirebaseMessaging.onMessageOpenedApp.listen((m) => onOpenLink(m.data['deepLink'] as String?, notificationId: m.data['notificationId'] as String?));
+    final launch = await _local.getNotificationAppLaunchDetails(); // a local reminder tapped while the app was closed
+    if (launch?.didNotificationLaunchApp == true) _open(launch!.notificationResponse?.payload);
     final initial = await FirebaseMessaging.instance.getInitialMessage(); // app opened from a terminated state by a push
     if (initial != null) onOpenLink(initial.data['deepLink'] as String?, notificationId: initial.data['notificationId'] as String?);
     _tokenSub = FirebaseMessaging.instance.onTokenRefresh.listen((t) {
       _token = t;
       registerDevice();
     });
+  }
+
+  /// Payloads are either a plain deep link (local reminders) or `{"l": link, "n": notificationId}` (shown pushes).
+  void _open(String? payload) {
+    if (payload != null && payload.startsWith('{')) {
+      try {
+        final m = jsonDecode(payload) as Map;
+        return onOpenLink(m['l'] as String?, notificationId: m['n'] as String?);
+      } catch (_) {}
+    }
+    onOpenLink(payload);
   }
 
   /// Shows the OS dialog (iOS) / Android 13 permission. Never blocks the flow when denied (spec #08).

@@ -62,6 +62,10 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
+        <!-- Pushes shown by the system while the app is closed: our channel, icon and colour. -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="wehum_default" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_wehum" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/notification_ember" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
