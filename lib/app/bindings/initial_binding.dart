@@ -83,10 +83,10 @@ class InitialBinding extends Bindings {
     final media = CachingMediaRepository(mocks ? MockMediaRepository() : MediaApi(api));
     Get.put<CachingMediaRepository>(media, permanent: true);
     Get.put<MediaRepository>(media, permanent: true);
-    Get.put<AudioEngineFactory>(() => JustAudioEngine(), permanent: true);
-    Get.put<RecipeEngineFactory>(() => RecipeEngine(clipFactory: () => JustClipPlayer()), permanent: true);
-    Get.put<VideoEngineFactory>(() => VideoEngine(), permanent: true);
-    Get.put<YoutubeEngineFactory>(() => YoutubeEngine(), permanent: true);
+    Get.put<PlayerEngines>(
+      PlayerEngines(audio: () => JustAudioEngine(), recipe: () => RecipeEngine(clipFactory: () => JustClipPlayer()), video: () => VideoEngine(), youtube: () => YoutubeEngine()),
+      permanent: true,
+    );
     Get.put<MeditationRepository>(mocks ? MockMeditationRepository() : MeditationApi(api), permanent: true);
     Get.put<MeRepository>(mocks ? MockMeRepository() : MeApi(api), permanent: true);
     Get.put<CommunityRepository>(mocks ? MockCommunityRepository() : CommunityApi(api), permanent: true);

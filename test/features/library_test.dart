@@ -167,6 +167,7 @@ void main() {
       await settle(t);
       expect(Get.currentRoute, AppRoutes.playerPresenceRing);
       expect(((Get.arguments as PlayerArgs).target as PlaySession).id, 's-sleep');
+      expect(e.enginesAsked.last, 'audio');
       await t.pumpWidget(const SizedBox());
       Get.delete<PlayerController>(tag: 's-sleep', force: true);
       await e.dispose();
@@ -190,6 +191,7 @@ void main() {
       await settle(t);
       expect(Get.currentRoute, AppRoutes.freePlayer);
       expect((Get.arguments as PlayerArgs).youtubeId, 'dQw4w9WgXcQ');
+      expect(e.enginesAsked.last, 'youtube'); // the YouTube engine, not the audio one
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });

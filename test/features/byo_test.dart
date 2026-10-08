@@ -43,6 +43,7 @@ void main() {
     await t.tap(find.byKey(const Key('byo-build')));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.playerPresenceRing);
+    expect(e.enginesAsked.last, 'recipe'); // the recipe engine builds the timeline; the plain audio engine cannot
     final a = Get.arguments as PlayerArgs;
     expect(a.kind, 'custom');
     expect(a.recipe!.lengthMin, 30);

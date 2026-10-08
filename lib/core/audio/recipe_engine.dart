@@ -13,7 +13,6 @@ abstract class ClipPlayer {
   Future<void> dispose();
 }
 
-typedef RecipeEngineFactory = AudioEngine Function();
 
 /// The bundled bell (`asset:` URLs play from the app bundle).
 const bundledBell = 'asset:assets/audio/bell.wav';

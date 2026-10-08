@@ -58,7 +58,13 @@ abstract class AudioEngine {
   Future<void> dispose();
 }
 
-typedef AudioEngineFactory = AudioEngine Function();
+/// Which engine plays what. One object with four named makers, registered once.
+/// (Four `typedef X = AudioEngine Function()` aliases are one and the same type to the dependency container: only
+/// the first registration survived, so video, YouTube and "Build your own" all got the plain audio engine.)
+class PlayerEngines {
+  const PlayerEngines({required this.audio, required this.recipe, required this.video, required this.youtube});
+  final AudioEngine Function() audio, recipe, video, youtube;
+}
 
 /// just_audio + audio_session: speech category, pause on interruption, resume only if it was playing, unplug → pause.
 class JustAudioEngine implements AudioEngine {

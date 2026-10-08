@@ -8,7 +8,6 @@ import '../../../core/audio/audio_engine.dart';
 import '../../../core/audio/engines.dart';
 import '../../../core/audio/local_media.dart';
 import '../../../core/audio/media_session.dart';
-import '../../../core/audio/recipe_engine.dart' show RecipeEngineFactory;
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/presence_service.dart';
@@ -148,7 +147,7 @@ class PlayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = _args();
-    final ctrl = _make(args, args.recipe != null ? Get.find<RecipeEngineFactory>()() : Get.find<AudioEngineFactory>()());
+    final ctrl = _make(args, args.recipe != null ? Get.find<PlayerEngines>().recipe() : Get.find<PlayerEngines>().audio());
     final live = Get.find<LiveService>();
     final c = context.colors;
     return PopScope(
@@ -224,7 +223,7 @@ class VideoPlayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = _args();
-    final engine = Get.find<VideoEngineFactory>()();
+    final engine = Get.find<PlayerEngines>().video();
     final ctrl = _make(args, engine);
     final c = context.colors;
     return PopScope(
@@ -270,7 +269,7 @@ class FreePlayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = _args();
-    final engine = Get.find<YoutubeEngineFactory>()();
+    final engine = Get.find<PlayerEngines>().youtube();
     final ctrl = _make(args, engine);
     final access = Get.find<AccessService>();
     final c = context.colors;

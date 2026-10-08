@@ -8,8 +8,6 @@ import 'package:meditation/app/app_controller.dart';
 import 'package:meditation/app/routes/app_pages.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/audio/audio_engine.dart';
-import 'package:meditation/core/audio/engines.dart';
-import 'package:meditation/core/audio/recipe_engine.dart';
 import 'package:meditation/core/audio/download_engine.dart';
 import 'package:meditation/core/audio/local_media.dart';
 import 'package:meditation/core/audio/media_session.dart';
@@ -128,6 +126,8 @@ class FakeSocialAuth implements SocialAuth {
 class TestEnv {
   TestEnv._();
   late FakeTransport socketServer;
+  /// Which engine each player screen asked for, in order: 'audio' | 'recipe' | 'video' | 'youtube'.
+  final enginesAsked = <String>[];
   late AppDatabase db;
   late MockTodayRepository today;
   late MockMeRepository me;
@@ -181,11 +181,13 @@ class TestEnv {
     Get.put<CachingMediaRepository>(cachingMedia);
     Get.put<MediaRepository>(cachingMedia);
     e.engine = FakeAudioEngine();
-    Get.put<AudioEngineFactory>(() => e.engine);
     Get.put<MediaSessionPort>(const NoMediaSession());
-    Get.put<RecipeEngineFactory>(() => e.engine);
-    Get.put<VideoEngineFactory>(() => e.engine);
-    Get.put<YoutubeEngineFactory>(() => e.engine);
+    AudioEngine make(String kind) {
+      e.enginesAsked.add(kind);
+      return e.engine;
+    }
+
+    Get.put<PlayerEngines>(PlayerEngines(audio: () => make('audio'), recipe: () => make('recipe'), video: () => make('video'), youtube: () => make('youtube')));
     e.dlDir = Directory.systemTemp.createTempSync('wehum-test-dl'); // sync: real async IO never completes inside a widget test
     e.downloads = DownloadService(db: e.db, media: Get.find<MediaRepository>(), engine: FakeDownloadEngine(), root: e.dlDir, access: AccessService(), analytics: null);
     Get.put<DownloadService>(e.downloads);

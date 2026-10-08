@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
+import '../../../core/services/logger.dart';
 import '../../../core/audio/audio_engine.dart';
 import '../../../core/audio/local_media.dart';
 import '../../../core/audio/media_session.dart';
@@ -125,6 +126,7 @@ class PlayerController extends GetxController {
       // presence: you are counted live; the ack carries the "together" numbers (not for non-catalog free items)
       await _presence.start(meditationId: recorder.id, sessionId: args.sessionId, kind: args.kind, lengthMin: args.lengthMin, mode: args.mode);
     } on ApiException catch (e) {
+      logd('player', 'could not start ${args.kind} ${args.sessionId ?? ''}: ${e.code.wire} (target ${args.target}, youtube ${args.youtubeId})');
       errorCode.value = e.code;
       if (e.code == ErrorCode.premiumRequired) {
         _nav.toPaywall();
@@ -132,7 +134,8 @@ class PlayerController extends GetxController {
         if (e.code == ErrorCode.notFound) _analytics.track('media_unavailable', {'session_id': args.sessionId ?? ''});
         phase.value = e.code == ErrorCode.notFound ? PlayerPhase.unavailable : PlayerPhase.error;
       }
-    } catch (e) {
+    } catch (e, st) {
+      logd('player', 'could not start ${args.kind} ${args.sessionId ?? ''}: $e\n${st.toString().split('\n').take(6).join('\n')}');
       errorCode.value = ErrorCode.internal;
       _analytics.track('media_unavailable', {'session_id': args.sessionId ?? ''});
       phase.value = PlayerPhase.unavailable;

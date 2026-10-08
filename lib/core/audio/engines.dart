@@ -1,11 +1,10 @@
+import '../services/logger.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:video_player/video_player.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yt;
 import 'audio_engine.dart';
 
-typedef VideoEngineFactory = AudioEngine Function();
-typedef YoutubeEngineFactory = AudioEngine Function();
 
 /// Premium video meditations (spec #43) on `video_player`. Same engine contract as audio, so presence, counting,
 /// stall handling and recording are shared.
@@ -132,7 +131,9 @@ class YoutubeEngine implements AudioEngine {
   @override
   Future<Duration?> open(EngineSource src, {Duration start = Duration.zero}) async {
     final id = (src as YoutubeSource).videoId;
-    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: false, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true));
+    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: false, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true,
+            // without an origin YouTube refuses the embed inside an app web view (player error 153)
+            origin: 'https://www.youtube-nocookie.com'));
     _s1 = controller!.videoStateStream.listen((s) {
       _p = s.position;
       _pos.add(s.position);
@@ -155,7 +156,10 @@ class YoutubeEngine implements AudioEngine {
         default:
           break;
       }
-      if (v.error != yt.YoutubeError.none) _errors.add(v.error); // removed / region-blocked → "Not available right now"
+      if (v.error != yt.YoutubeError.none) {
+        logd('youtube', 'player error ${v.error} for $id');
+        _errors.add(v.error); // removed / region-blocked → "Not available right now"
+      }
     });
     return null;
   }
