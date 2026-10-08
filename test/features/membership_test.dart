@@ -162,6 +162,22 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('62 trial ending: the number of days comes from the entitlement, never a fixed "2"', (t) async {
+    phone(t);
+    final e = await TestEnv.create(member: true);
+    e.access.entitlement.value = Entitlement(active: true, periodType: 'trial', productId: 'wehum_annual', expiresAt: DateTime.now().toUtc().add(const Duration(days: 2, hours: 6)));
+    await t.pumpWidget(e.app(initial: AppRoutes.trialEnding));
+    await settle(t);
+    expect(find.text('Your free trial ends in 2 days'), findsOneWidget);
+    e.access.entitlement.value = Entitlement(active: true, periodType: 'trial', productId: 'wehum_annual', expiresAt: DateTime.now().toUtc().add(const Duration(days: 1, hours: 6)));
+    await t.pumpWidget(const SizedBox());
+    await t.pumpWidget(e.app(initial: AppRoutes.trialEnding));
+    await settle(t);
+    expect(find.text('Your free trial ends tomorrow'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('64 ended: states what stays free and what is locked', (t) async {
     phone(t);
     final e = await TestEnv.create();

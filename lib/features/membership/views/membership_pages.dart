@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -304,7 +305,7 @@ class _Banner extends StatelessWidget {
       );
 }
 
-/// 62 Trial ends in 2 days (push on day 5 + in-app).
+/// 62 Trial ending (push 2 days before + in-app); the number of days comes from the entitlement.
 class TrialEndingPage extends StatelessWidget {
   const TrialEndingPage({super.key});
   @override
@@ -313,11 +314,13 @@ class TrialEndingPage extends StatelessWidget {
     final c = context.colors;
     final offer = Get.find<PurchaseService>().offer.value;
     final price = (ctrl.ent.productId ?? '').contains('monthly') ? offer?.monthly?.priceString : offer?.annual?.priceString;
+    final left = ctrl.ent.expiresAt?.difference(clock.now().toUtc()).inDays; // whole days to the first charge
+    final title = left == null ? 'Your free trial is ending soon' : left <= 0 ? 'Your free trial ends today' : left == 1 ? 'Your free trial ends tomorrow' : 'Your free trial ends in $left days';
     return AppScaffold(
       title: 'Your trial',
       body: FlexScroll(padding: const EdgeInsets.all(Gap.gutterOnboarding), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: 16),
-          Text('Your free trial ends in 2 days', key: const Key('trial-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+          Text(title, key: const Key('trial-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
           const SizedBox(height: 12),
           Text('${ctrl.ent.expiresAt == null ? 'Soon' : 'On ${formatDate(ctrl.ent.expiresAt)}'} your ${(ctrl.ent.productId ?? '').contains('monthly') ? 'monthly' : 'annual'} plan starts${price == null ? '' : ' at $price'}. Do nothing to keep it. To stop, cancel in your ${Platform.isIOS ? 'App Store' : 'Google Play'} subscriptions before then.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
           const Spacer(),
