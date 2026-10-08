@@ -1,3 +1,4 @@
+import '../services/logger.dart';
 import 'dart:async';
 import 'package:get/get.dart';
 import 'socket_events.dart';
@@ -38,7 +39,8 @@ class RealtimeCoordinator extends GetxService {
       refreshes++;
       refreshBootstrap();
     }));
-    subs.add(_socket.on(SocketEvents.catalogChanged, (j) => j).listen((_) {
+    subs.add(_socket.on(SocketEvents.catalogChanged, (j) => j).listen((j) {
+      logd('socket', 'catalog:changed $j → refresh in ${catalogDebounce.inSeconds}s');
       _catalogTimer?.cancel(); // debounced: a CMS bulk edit sends many events
       _catalogTimer = Timer(catalogDebounce, () {
         catalogRefreshes++;

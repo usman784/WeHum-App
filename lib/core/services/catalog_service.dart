@@ -1,3 +1,4 @@
+import 'logger.dart';
 import 'dart:convert';
 import 'package:get/get.dart';
 import '../data/contracts/repositories.dart';
@@ -37,10 +38,12 @@ class CatalogService extends GetxService {
     syncing.value = true;
     try {
       final fresh = await _repo.catalog(knownVersion: catalog.value?.version);
+      logd('catalog', fresh == null ? 'nothing newer than version ${catalog.value?.version}' : 'version ${catalog.value?.version} → ${fresh.version}');
       if (fresh != null) await _store(fresh);
       lastError = null;
     } catch (e) {
       lastError = e; // keep the stored copy; the library stays usable offline
+      logd('catalog', 'refresh failed (still on version ${catalog.value?.version}): $e');
     } finally {
       syncing.value = false;
     }

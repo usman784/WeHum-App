@@ -3,6 +3,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
+import '../core/realtime/realtime_coordinator.dart';
 import '../core/config/env.dart';
 import '../core/theme/theme_controller.dart';
 import '../core/data/contracts/repositories.dart';
@@ -112,7 +113,13 @@ class AppController extends GetxService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> connectRealtime() => socket.connect();
+  /// The coordinator holds the listeners for `entitlement:changed`, `config:changed`, `catalog:changed`, `inbox:new`
+  /// and `force:logout`. It is registered lazily, so it must be created here, before the socket can deliver anything:
+  /// nothing else ever asks for it, and without this line those events arrive and nobody hears them.
+  Future<void> connectRealtime() {
+    if (Get.isRegistered<RealtimeCoordinator>()) Get.find<RealtimeCoordinator>();
+    return socket.connect();
+  }
 
   // ───────────── lifecycle
   @override
