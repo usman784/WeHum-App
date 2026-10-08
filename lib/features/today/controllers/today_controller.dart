@@ -57,7 +57,7 @@ class TodayController extends GetxController {
   String _date = localDate();
 
   String get date => _date;
-  String get name => Get.find<OnboardingStore>().name.isNotEmpty ? Get.find<OnboardingStore>().name : (access.isGuest.value ? '' : '');
+  String get name => Get.find<OnboardingStore>().nameRx.value;
 
   String? get liveText => liveLineText(agg: live.agg.value, snapshot: data.value?.live, paused: live.paused);
   bool get liveQuiet => live.agg.value?.quiet ?? data.value?.live?.quiet ?? false;

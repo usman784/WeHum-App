@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:meditation/core/services/onboarding_store.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/data/models/today.dart';
@@ -122,6 +123,22 @@ void main() {
     await t.tap(find.text('Steady Under Pressure'));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.motdRoom);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('the avatar initial in the header follows the signed-in person (it used to keep the previous user\'s letter)', (t) async {
+    final e = await openToday(t);
+    expect(find.text('M'), findsWidgets); // Marcus
+    final store = Get.find<OnboardingStore>();
+    store.adoptName(userId: 'someone-else', serverName: 'Demo'); // logged in as another person
+    await t.pump();
+    expect(find.text('D'), findsWidgets);
+    expect(find.text('M'), findsNothing);
+    store.adoptName(userId: 'new-guest', serverName: null); // signed out: a new guest with no name
+    await t.pump();
+    expect(find.text('D'), findsNothing);
+    expect(find.text('·'), findsWidgets);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

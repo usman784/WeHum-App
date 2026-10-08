@@ -63,3 +63,73 @@ class FreeItemRow extends StatelessWidget {
 
 /// Opens the paywall from a lock. [source] feeds the `paywall_view` event.
 void openPaywall(String source) => Get.toNamed(AppRoutes.membershipPaywall, arguments: {'source': source});
+
+/// The two ways into the Meditation of the Day, on the hero: one clear primary action, and the group as a slim glass
+/// strip underneath (not a second big button). Primary: play icon, label, length chip. Strip: when it starts.
+class HeroActions extends StatelessWidget {
+  const HeroActions({super.key, required this.minutes, required this.onMeditate, this.group});
+  final int minutes;
+  final VoidCallback onMeditate;
+  final ({String time, bool live, String countdown, VoidCallback onTap})? group;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final g = group;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Semantics(
+        button: true, label: 'Meditate now, $minutes minutes, on your own',
+        child: Material(
+          key: const Key('meditate-now'), color: c.ember, shape: const StadiumBorder(),
+          child: InkWell(
+            customBorder: const StadiumBorder(), onTap: onMeditate,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 14, 6),
+                child: ExcludeSemantics(
+                  child: Row(children: [
+                    Container(width: 38, height: 38, decoration: BoxDecoration(color: c.onEmber.withValues(alpha: .14), shape: BoxShape.circle), child: Icon(Icons.play_arrow_rounded, color: c.onEmber, size: 26)),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text('Meditate now', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.button.copyWith(color: c.onEmber))),
+                    const SizedBox(width: 8),
+                    Text('on your own', style: AppText.caption.copyWith(color: c.onEmber.withValues(alpha: .75), fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      if (g != null) ...[
+        const SizedBox(height: 8),
+        Semantics(
+          button: true, label: 'Wait for the group, ${g.time}, ${g.live ? 'started' : 'starts in ${g.countdown}'}',
+          child: Material(
+            key: const Key('wait-group'), color: Colors.white.withValues(alpha: .10), shape: StadiumBorder(side: BorderSide(color: Colors.white.withValues(alpha: .20))),
+            child: InkWell(
+              customBorder: const StadiumBorder(), onTap: g.onTap,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ExcludeSemantics(
+                    child: Row(children: [
+                      const Icon(Icons.groups_2_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text('Wait for the group', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600))),
+                      const SizedBox(width: 8),
+                      Text(g.live ? '${g.time} · started' : '${g.time} · in ${g.countdown}', style: AppText.caption.copyWith(color: Colors.white70, fontFeatures: AppText.tabular)),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 18),
+                    ]),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ]);
+  }
+}

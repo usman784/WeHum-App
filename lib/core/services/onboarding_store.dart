@@ -31,14 +31,22 @@ class MemoryBox implements PrefsBox {
 
 /// Local choices made during setup (name, reminder time, whether onboarding is finished). Small prefs → get_storage.
 class OnboardingStore extends GetxService {
-  OnboardingStore([PrefsBox? box]) : _box = box ?? GetStorageBox();
+  OnboardingStore([PrefsBox? box]) : _box = box ?? GetStorageBox() {
+    nameRx.value = name;
+  }
   final PrefsBox _box;
+
+  /// The first name as something screens can watch (the avatar initial must change the moment the person does).
+  final nameRx = ''.obs;
 
   bool get done => _box.read<bool>('onboarding_done') ?? false;
   set done(bool v) => _box.write('onboarding_done', v);
 
   String get name => _box.read<String>('first_name') ?? '';
-  set name(String v) => _box.write('first_name', v);
+  set name(String v) {
+    _box.write('first_name', v);
+    nameRx.value = v;
+  }
 
   /// Whose name that is. The first name on this phone must follow the signed-in person (login, sign-out, merge).
   String get nameOwner => _box.read<String>('first_name_owner') ?? '';

@@ -22,7 +22,7 @@ import 'today_widgets.dart';
 
 /// Tab header with the avatar initial and the live unread count of the bell (`inbox:new`).
 Widget tabHeader() => Obx(() {
-      final name = Get.find<OnboardingStore>().name;
+      final name = Get.find<OnboardingStore>().nameRx.value;
       return TabHeader(initials: name.isEmpty ? '' : name.substring(0, 1).toUpperCase(), unread: Get.find<InboxService>().unread.value);
     });
 
@@ -99,17 +99,10 @@ class _MotdHero extends StatelessWidget {
         const SizedBox(height: 14),
         if (m.lengths.isNotEmpty) SegmentedControl<int>(options: m.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
         const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: PrimaryButton('Meditate now', key: const Key('meditate-now'), sub: '${ctrl.length.value} min · on your own', onPressed: ctrl.meditateNow)),
-          if (g != null && ctrl.groupOpen) ...[
-            const SizedBox(width: 10),
-            Expanded(
-              child: OutlineButton(
-                'Wait for the group', key: const Key('wait-group'), height: Sizes.primaryButton, onPressed: ctrl.waitForGroup,
-                sub: g.state == GroupPhase.live ? '${ctrl.groupTime} · started' : '${ctrl.groupTime} · in ${formatCountdown(ctrl.untilGroup)}'),
-            ),
-          ],
-        ]),
+        HeroActions(
+          minutes: ctrl.length.value, onMeditate: ctrl.meditateNow,
+          group: g != null && ctrl.groupOpen ? (time: ctrl.groupTime, live: g.state == GroupPhase.live, countdown: formatCountdown(ctrl.untilGroup), onTap: ctrl.waitForGroup) : null,
+        ),
       ]),
     );
   }
