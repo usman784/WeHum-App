@@ -116,11 +116,10 @@ class HeroActions extends StatelessWidget {
                   child: ExcludeSemantics(
                     child: Row(children: [
                       const Icon(Icons.groups_2_rounded, color: Colors.white, size: 20),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(child: Text('Wait for the group', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600))),
                       const SizedBox(width: 8),
-                      Text(g.live ? '${g.time} · started' : '${g.time} · in ${g.countdown}', style: AppText.caption.copyWith(color: Colors.white70, fontFeatures: AppText.tabular)),
-                      const SizedBox(width: 2),
+                      Text(g.live ? '${g.time} · started' : '${g.time} · ${g.countdown}', style: AppText.caption.copyWith(color: Colors.white70, fontFeatures: AppText.tabular)),
                       const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 18),
                     ]),
                   ),
