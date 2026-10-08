@@ -108,6 +108,10 @@ class YoutubeEngine implements AudioEngine {
   StreamSubscription<yt.YoutubePlayerValue>? _s2;
   Duration _p = Duration.zero;
   bool _isPlaying = false;
+  yt.YoutubeError? _lastError;
+
+  /// YouTube's "cannot be played here" answers: 100/105 not found or private, 101/150/152 embedding not allowed.
+  static const unplayable = {yt.YoutubeError.videoNotFound, yt.YoutubeError.cannotFindVideo, yt.YoutubeError.notEmbeddable, yt.YoutubeError.sameAsNotEmbeddable, yt.YoutubeError.sameAsNotEmbeddable2};
 
   @override
   Stream<Duration> get position => _pos.stream;
@@ -131,9 +135,7 @@ class YoutubeEngine implements AudioEngine {
   @override
   Future<Duration?> open(EngineSource src, {Duration start = Duration.zero}) async {
     final id = (src as YoutubeSource).videoId;
-    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: false, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true,
-            // without an origin YouTube refuses the embed inside an app web view (player error 153)
-            origin: 'https://www.youtube-nocookie.com'));
+    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: false, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true)); // the package sets the embed's base URL itself; an extra `origin` makes YouTube answer invalidParam
     _s1 = controller!.videoStateStream.listen((s) {
       _p = s.position;
       _pos.add(s.position);
@@ -156,9 +158,12 @@ class YoutubeEngine implements AudioEngine {
         default:
           break;
       }
-      if (v.error != yt.YoutubeError.none) {
+      if (v.error != yt.YoutubeError.none && v.error != _lastError) {
+        _lastError = v.error;
         logd('youtube', 'player error ${v.error} for $id');
-        _errors.add(v.error); // removed / region-blocked → "Not available right now"
+        // only "this video cannot be shown" ends the session (removed, private, embedding off, region-blocked);
+        // the player also reports harmless ones (e.g. invalidParam while it is still cueing) and keeps playing
+        if (unplayable.contains(v.error)) _errors.add(v.error);
       }
     });
     return null;

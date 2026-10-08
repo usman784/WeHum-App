@@ -245,7 +245,16 @@ class PlayerController extends GetxController {
 
   /// Signed URL expired or the stream failed: ask for a fresh one and continue from where we were (spec §10).
   Future<void> _onError(Object e) async {
-    if (_finished || offlinePlayback.value || args.target == null) return; // YouTube and recipes handle their own errors
+    if (_finished) return;
+    if (args.target == null && args.youtubeId != null) {
+      // the YouTube engine only reports "this video cannot be shown here" (removed, private, embedding off, blocked)
+      _analytics.track('media_unavailable', {'session_id': args.sessionId ?? ''});
+      errorCode.value = ErrorCode.notFound;
+      phase.value = PlayerPhase.unavailable;
+      unawaited(_presence.stop());
+      return;
+    }
+    if (offlinePlayback.value || args.target == null) return; // recipes handle their own errors
     _analytics.track('error_shown', {'code': 'playback', 'screen': 'player'});
     await _reopenAt(position.value);
   }

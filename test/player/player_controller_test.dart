@@ -141,6 +141,22 @@ void main() {
     expect(motdVariant(a('motd', 12)), isNull);
   });
 
+  test('a free (YouTube) video that cannot be shown ends in "Not available right now", presence stops, the event is tracked', () async {
+    final r = Rig(const PlayerArgs(kind: 'free', title: 'Free one', sessionId: sid, youtubeId: 'bp-2_tAO3NY', durationSec: 828));
+    await r.connect();
+    r.ctrl.onInit();
+    await r.flush();
+    await r.flush();
+    expect(r.ctrl.phase.value, PlayerPhase.playing);
+    expect(r.transport.sentData('presence:start'), hasLength(1));
+    r.engine.fail('videoNotFound'); // the engine only forwards "cannot be shown here"
+    await r.flush();
+    expect(r.ctrl.phase.value, PlayerPhase.unavailable);
+    expect(r.transport.sentData('presence:stop'), hasLength(1));
+    expect(r.analytics.drain().map((e) => e['name']), contains('media_unavailable'));
+    expect(r.media.urls, 0); // never asks for a signed URL for a YouTube item
+  });
+
   test('presence starts even when the engine\'s play() lasts as long as the track (real players do that)', () async {
     final r = Rig(motd(mode: 'solo', kind: 'motd'));
     await r.connect();
