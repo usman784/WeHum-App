@@ -131,6 +131,16 @@ void main() {
     expect(SessionRecorder(kind: 'x', now: () => now).build(completed: true), isNull);
   });
 
+  test('lengthVariant is only the MOTD length (10/30/45): an ordinary session never sends its own minutes (server would answer 400)', () {
+    PlayerArgs a(String kind, int? min, {PlayTarget? target}) => PlayerArgs(kind: kind, title: 't', sessionId: sid, lengthMin: min, target: target, durationSec: (min ?? 1) * 60);
+    expect(motdVariant(a('sos', 4, target: const PlaySession('x'))), isNull);
+    expect(motdVariant(a('solo', 20, target: const PlaySession('x'))), isNull);
+    expect(motdVariant(a('solo', 30, target: const PlaySession('x'))), isNull); // 30 only looks valid
+    expect(motdVariant(a('motd', 30, target: const PlayMotd('2026-10-08', 30))), 30);
+    expect(motdVariant(a('group', 45)), 45);
+    expect(motdVariant(a('motd', 12)), isNull);
+  });
+
   test('presence starts even when the engine\'s play() lasts as long as the track (real players do that)', () async {
     final r = Rig(motd(mode: 'solo', kind: 'motd'));
     await r.connect();

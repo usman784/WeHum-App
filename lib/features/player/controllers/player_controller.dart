@@ -49,6 +49,13 @@ class CompleteArgs {
 /// 42 Audio player. One controller per meditation: loads the source (download first, else a signed URL), starts presence
 /// over the socket, counts real listening time, survives interruptions / lost connection / expired URLs, records the
 /// meditation in the outbox and hands over to the completion screen (spec §6.3, §10, §13).
+/// `lengthVariant` is the Meditation-of-the-Day length (10, 30 or 45) and nothing else: the server rejects any other
+/// number, so an ordinary 4- or 20-minute session must not send its own length there.
+int? motdVariant(PlayerArgs a) {
+  final v = a.target is PlayMotd ? (a.target as PlayMotd).lengthMin : (a.kind == 'motd' || a.kind == 'group' ? a.lengthMin : null);
+  return const {10, 30, 45}.contains(v) ? v : null;
+}
+
 class PlayerController extends GetxController {
   PlayerController(this.args, {
     required AudioEngine engine, required MediaRepository media, required PresenceService presence, required SyncService sync, required AnalyticsService analytics,
@@ -71,7 +78,7 @@ class PlayerController extends GetxController {
   final Duration stallGrace;
 
   late final SessionRecorder recorder = SessionRecorder(
-      kind: args.kind, sessionId: args.sessionId, recipeId: args.recipe?.id, lengthVariant: args.target is PlayMotd ? (args.target as PlayMotd).lengthMin : args.lengthMin,
+      kind: args.kind, sessionId: args.sessionId, recipeId: args.recipe?.id, lengthVariant: motdVariant(args),
       plannedSec: args.durationSec, now: _now);
 
   final phase = PlayerPhase.loading.obs;

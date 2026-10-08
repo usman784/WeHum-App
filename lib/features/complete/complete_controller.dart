@@ -45,7 +45,8 @@ class CompleteController extends GetxController {
       ? DedicateAccess.needsAccount
       : (access.isMember ? DedicateAccess.allowed : DedicateAccess.needsMembership);
 
-  bool get canDedicate => (player.sessionId != null) && (result?.canDedicate ?? true) && args.counted;
+  /// Only once the server has recorded this meditation and says yes (it checks membership, the account and today's limit).
+  bool get canDedicate => (player.sessionId != null) && (result?.canDedicate ?? false) && args.counted;
   int get leftToday => result?.dedicationsLeftToday ?? 3;
 
   /// Why the dedicate button is not there (the server decides: a finished, counted meditation and today's limit).
@@ -53,6 +54,7 @@ class CompleteController extends GetxController {
     if (player.sessionId == null) return 'Dedications belong to the guided meditations in the library.';
     if (!args.counted) return 'Dedications open after a meditation of three minutes or more.';
     if (args.record?.completed == false) return 'Dedications open when you stay to the end of a meditation.';
+    if (result == null) return 'Saving your meditation… dedications open in a moment.';
     if (result != null && leftToday <= 0) return 'You have used today’s dedications. More tomorrow.';
     return 'Dedications are not open for this meditation.';
   }
