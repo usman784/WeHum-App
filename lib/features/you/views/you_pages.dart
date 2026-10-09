@@ -56,7 +56,7 @@ class YouPage extends StatelessWidget {
             ),
           if (guest) const SizedBox(height: 16),
           AdaptiveGrid(baseExtent: 92, children: [
-            _Tile('${ctrl.daysThisWeek}', 'days this week'),
+            _Tile('${ctrl.daysThisWeek}', ctrl.daysThisWeek == 1 ? 'day this week' : 'days this week'),
             _Tile('${ctrl.lifetime.value?.minutes ?? 0}', 'minutes'),
             _Tile('${ctrl.lifetime.value?.meditations ?? 0}', 'meditations'),
             _Tile('${ctrl.lifetime.value?.together ?? 0}', 'together'),

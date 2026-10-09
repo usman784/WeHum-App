@@ -44,7 +44,7 @@ class WorldController extends GetxController {
   String get sub => paused || agg == null ? 'We don’t show old numbers as if they were live.' : (quiet ? 'people meditated today' : 'people meditating now · ${agg!.countries} countries');
   int get vibration => agg?.vibration ?? 0;
   String get vibrationWord => vibration >= 66 ? 'Strong' : (vibration >= 33 ? 'Rising' : 'Quiet');
-  Map<String, int> get hot => {for (final t in agg?.top ?? const <({String country, int n})>[]) t.country: t.n};
+  Map<String, int> get hot => agg?.where ?? const {};
 
   void openInfo() => Get.find<AnalyticsService>().track('vibration_info_open');
 }

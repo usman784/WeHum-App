@@ -53,10 +53,22 @@ class Ack {
 int _i(dynamic v) => (v as num?)?.toInt() ?? 0;
 
 class LiveAgg {
-  const LiveAgg({required this.total, required this.countries, required this.top, required this.quiet, required this.meditatedToday, required this.vibration, required this.at});
+  const LiveAgg({required this.total, required this.countries, required this.top, this.todayTop = const [], required this.quiet, required this.meditatedToday, required this.vibration, required this.at});
   final int total, countries, meditatedToday, vibration, at;
   final bool quiet;
   final List<({String country, int n})> top;
+
+  /// Where people meditated today (country → people): the map lights these up even when nobody is live right now.
+  final List<({String country, int n})> todayTop;
+
+  /// Countries for the map: everyone live now plus everyone who meditated today.
+  Map<String, int> get where {
+    final m = <String, int>{for (final t in todayTop) t.country: t.n};
+    for (final t in top) {
+      m[t.country] = (m[t.country] ?? 0) + t.n;
+    }
+    return m;
+  }
 
   /// The one number the UI shows: people meditating now, or — when the room is quiet — people who meditated today.
   int get headline => quiet ? meditatedToday : total;
@@ -65,6 +77,7 @@ class LiveAgg {
         total: _i(j['total']), countries: _i(j['countries']), quiet: j['quiet'] == true, meditatedToday: _i(j['meditatedToday']),
         vibration: _i(j['vibration']), at: _i(j['at']),
         top: [for (final t in ((j['top'] as List?) ?? const [])) (country: (t as Map)['c'] as String, n: _i(t['n']))],
+        todayTop: [for (final t in ((j['todayTop'] as List?) ?? const [])) (country: (t as Map)['c'] as String, n: _i(t['n']))],
       );
 }
 

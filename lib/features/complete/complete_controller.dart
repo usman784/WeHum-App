@@ -60,7 +60,7 @@ class CompleteController extends GetxController {
   }
 
   /// Live country counts for the small map (socket `live:agg`): empty while paused or when nobody is meditating.
-  Map<String, int> get hot => live.paused ? const {} : {for (final t in live.agg.value?.top ?? const <({String country, int n})>[]) t.country: t.n};
+  Map<String, int> get hot => live.paused ? const {} : (live.agg.value?.where ?? const {});
 
   Worker? _answered;
 

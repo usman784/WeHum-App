@@ -300,11 +300,13 @@ class _SharePageState extends State<SharePage> {
     final story = format == '9x16';
     return AppScaffold(
       title: 'Share your meditation',
-      body: ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
-        SegmentedControl<String>(options: const ['9x16', '1x1'], value: format, onChanged: (v) => setState(() => format = v), labelOf: (v) => v == '9x16' ? 'Story' : 'Post'),
-        const SizedBox(height: 16),
-        Center(
-          child: RepaintBoundary(
+      body: Column(children: [
+        Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: SegmentedControl<String>(options: const ['9x16', '1x1'], value: format, onChanged: (v) => setState(() => format = v), labelOf: (v) => v == '9x16' ? 'Story' : 'Post')),
+        const SizedBox(height: 12),
+        Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: Center(
+          child: FittedBox( // a narrow phone shrinks the preview; the saved image is still 360 wide
+            fit: BoxFit.scaleDown,
+            child: RepaintBoundary(
             key: _key,
             child: Container(
               width: 360, height: story ? 640 : 360, padding: const EdgeInsets.all(28),
@@ -316,7 +318,7 @@ class _SharePageState extends State<SharePage> {
                 const SizedBox(height: 10),
                 if (complete.togetherLine != null) Text(complete.togetherLine!.replaceFirst('You meditated', 'I meditated'), style: AppText.bodyLarge.copyWith(color: Colors.white70)),
                 const SizedBox(height: 12),
-                Text('${complete.daysThisWeek} days this week', style: AppText.navTitle.copyWith(color: Colors.white)),
+                Text('${complete.daysThisWeek} ${complete.daysThisWeek == 1 ? 'day' : 'days'} this week', style: AppText.navTitle.copyWith(color: Colors.white)),
                 const SizedBox(height: 12),
                 Text(complete.player.title, style: AppText.title.copyWith(color: Colors.white)),
                 const Spacer(),
@@ -324,13 +326,16 @@ class _SharePageState extends State<SharePage> {
               ]),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
+          ),
+        ))),
+        const SizedBox(height: 12),
+        Padding(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 20), child: Column(children: [
         Row(children: [Expanded(child: Text('Show my dedication', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: showDedication, onChanged: (v) => setState(() => showDedication = v), label: 'Show my dedication')]),
         const SizedBox(height: 8),
         PrimaryButton('Share to Stories or WhatsApp', key: const Key('share-btn'), loading: busy, onPressed: share),
         const SizedBox(height: 8),
         OutlineButton('Save image', key: const Key('save-btn'), onPressed: busy ? null : save),
+        ])),
       ]),
     );
   }

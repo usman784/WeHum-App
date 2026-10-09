@@ -1,3 +1,4 @@
+import '../../../core/widgets/flex_scroll.dart';
 import '../../../core/services/pip.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -162,7 +163,7 @@ class PlayerPage extends StatelessWidget {
             final t = ctrl.togetherRx.value;
             final quiet = live.agg.value?.quiet ?? false;
             final people = t?.people ?? 0;
-            return Padding(
+            return FlexScroll( // the spacers shrink first; a small phone or a big text size scrolls instead of overflowing
               padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 16),
               child: Column(children: [
                 const Align(alignment: Alignment.centerRight, child: SosPill()),
