@@ -1000,3 +1000,25 @@ Status: ✅ done / ⚠️ blocked
 ```
 
 _(No phases completed yet.)_
+
+### Phase S — Stitch redesign (S1–S7)
+Date: 2026-10-12
+
+Built (map: `../stitch-export/SCREEN_MAP.md`; design copies in `design/stitch/`):
+- **S1** Today (streak, regions, daily-message note, continue last, silence now), sit-time reminder with members-at count.
+- **S2** Library A/B merged, session player with phases, 30 s preview sheet, downloads manager with quota.
+- **S3** Silence Room (setup, active dimmed sit, quiet variant, interval chime), scheduled lobby, next-sit countdown with intentions, daily message + transcript, end-of-session payoff (quiet and busy, kudos).
+- **S4** World gauge, privacy and data export, crisis directory, SoS with duration and sound beds field, paywall copy.
+- **S5** Build-your-own blueprint, Together feed with dedications, dedication composer (city / worldwide).
+- **S7** You (forgiving streak, weekly, lifetime), challenge detail, story share.
+- Copy: "sit" wording and "Disciplines" (D1, D6).
+
+Tests run: `flutter test` → 253 passed; `flutter analyze` clean. New: `test/features/stitch_screens_test.dart`, widget tests for the changed pages; 200 % text scale checked on the setup screens.
+
+Decisions / deviations (not built):
+- Intent and first-sit onboarding (excluded by the client, D4).
+- iOS Live Activity (needs a native extension; lock-screen controls use the existing media session).
+- Sound-bed picker in the app (`sos.soundBeds` is delivered by the API and ignored for now).
+- Real Apple Health / Health Connect reading: only the flag and the field exist (`features.heartRate`, default off).
+
+Status: ✅ done, with the items above open
