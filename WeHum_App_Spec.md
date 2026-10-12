@@ -1022,3 +1022,21 @@ Decisions / deviations (not built):
 - Real Apple Health / Health Connect reading: only the flag and the field exist (`features.heartRate`, default off).
 
 Status: ✅ done, with the items above open
+
+
+### Phase S2 — Username and profile, branding, motion, Stitch fidelity (Oct 12)
+Built:
+- **Bottom navigation** switches tabs without the right-to-left slide (`Transition.noTransition` on Today, Library, Together, You). Other pages use the iOS slide.
+- **Username**: sign-up with e-mail suggests a free name from the first name (editable, live "free / taken" check, tappable alternatives like Instagram); social sign-in creates one from the e-mail. **Edit profile**: photo (library or camera, cut to 512 px, remove), first name, last name, username (locked with the next date for 7 days after a change), e-mail shown with a lock (cannot change). Google photo and name arrive with the sign-in.
+- **Branding**: the name and logo from the CMS replace "WeHum" in the headers and in the copy (`brandName()`); the splash remembers the last name.
+- **Motion**: staggered entrances on every main screen, press response on buttons and cards, pulsing live dots, counting numbers, animated gauge, bars and rings; all skipped with Reduce Motion.
+- **Stitch fidelity pass** (compared side by side with renders of the Stitch HTML): Silence Room (ring, belts, duration grid, acoustic rows), Today (live strip, hero, heatmap, streak strip, accelerators), Library, You (dashboard), scheduled lobby, next sit, SoS, crisis directory, world, downloads, privacy, build your own, paywall, payoff, Together, setup progress.
+- Review tool: `flutter test --update-goldens tool/shots_test.dart` renders screens to `test/tool/shots/`; `integration_test/` has the simulator tour and the sign-up/profile flow (`flutter drive --flavor dev …`).
+
+Tests run: `flutter test` → 256 passed; `flutter analyze` clean; simulator tour against the local backend.
+
+Decisions / deviations:
+- The player keeps its ring layout; Stitch's BPM and "acoustic balance" numbers are not shown (no real source, rule D10).
+- Library no longer has the four tiles: Silence Room and Build your own live on Today, challenges in the cohort cards.
+
+Status: ✅ done
