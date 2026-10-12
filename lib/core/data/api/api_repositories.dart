@@ -154,10 +154,10 @@ class MeApi extends ApiBase implements MeRepository {
   @override
   Future<String> startExport() async => (await call('POST', '/v1/me/export'))['jobId'] as String;
   @override
-  Future<({String status, String? jsonUrl, String? csvUrl})> exportStatus(String jobId) async {
+  Future<({String status, String? jsonUrl, String? csvUrl, String? zipUrl})> exportStatus(String jobId) async {
     final j = await getJson('/v1/me/export/$jobId');
     final r = asJson(j['result']);
-    return (status: j['status'] as String, jsonUrl: asStr(r['json']), csvUrl: asStr(r['csv']));
+    return (status: j['status'] as String, jsonUrl: asStr(r['json']), csvUrl: asStr(r['csv']), zipUrl: asStr(r['zip']));
   }
 
   @override

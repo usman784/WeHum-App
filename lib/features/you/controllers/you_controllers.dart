@@ -284,6 +284,29 @@ class PrivacyController extends GetxController {
     } catch (_) {}
   }
 
+  /// Offline audio on this phone (MB) for the "Purge offline cache" row; refreshed after a purge.
+  int get cacheBytes => Get.find<DownloadService>().usedBytes;
+
+  final purged = false.obs;
+  Future<void> purgeCache() async {
+    Get.find<AnalyticsService>().track('privacy_purge_cache', {'bytes': cacheBytes});
+    await Get.find<DownloadService>().clearAll();
+    purged.value = true;
+  }
+
+  /// Removes the name and place from every dedication this person wrote. Returns how many posts changed (null = failed).
+  final anonymized = RxnInt();
+  final anonymizeFailed = false.obs;
+  Future<void> anonymize() async {
+    anonymizeFailed.value = false;
+    try {
+      anonymized.value = await Get.find<CommunityRepository>().anonymize();
+      Get.find<AnalyticsService>().track('privacy_anonymize', {'count': anonymized.value ?? 0});
+    } catch (_) {
+      anonymizeFailed.value = true;
+    }
+  }
+
   Future<void> exportData() async {
     exportState.value = 'working';
     try {
@@ -291,7 +314,7 @@ class PrivacyController extends GetxController {
       for (var i = 0; i < 30; i++) {
         final s = await _me.exportStatus(id);
         if (s.status == 'done') {
-          exportUrl.value = s.jsonUrl;
+          exportUrl.value = s.zipUrl ?? s.jsonUrl;
           exportState.value = 'done';
           return;
         }

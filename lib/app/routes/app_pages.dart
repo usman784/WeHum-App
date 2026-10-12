@@ -14,6 +14,7 @@ import '../../features/messages/views/messages_pages.dart';
 import '../../features/player/views/player_pages.dart';
 import '../../features/silence/silence_pages.dart';
 import '../../features/library/preview_page.dart';
+import '../../features/sos/crisis_directory_page.dart';
 import '../../features/soon/challenge_detail.dart';
 import '../../features/soon/soon_pages.dart';
 import '../../features/sos/sos_page.dart';
@@ -77,6 +78,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const MembersOnly(title: 'Silence Room', child: SilenceRunPage())),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
+    GetPage(name: AppRoutes.crisisDirectory, page: () => const CrisisDirectoryPage()),
     GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next sit', child: NextSitPage())),
     GetPage(name: AppRoutes.you, page: () => const YouPage()),
     GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),

@@ -9,6 +9,7 @@ import '../../core/services/access_service.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/services/catalog_service.dart';
 import '../../core/data/models/activity.dart';
+import '../../core/data/models/soon.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/tokens.dart';
@@ -72,8 +73,22 @@ class SosPage extends StatelessWidget {
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
                 Text(s.title, key: const Key('sos-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 6),
-                Text('Short sessions for hard moments. Pick one and Raphael’s voice starts right away.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 16),
+                Text('Select what you are feeling. Raphael’s voice begins within two seconds: no intro, no build-up.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+                const SizedBox(height: 14),
+                AppCard(
+                  key: const Key('sos-breath'), onTap: () => Get.toNamed(AppRoutes.breathRun, arguments: const BreathPattern(name: 'Sync breath', inhaleSec: 4, exhaleSec: 6, rounds: 24)),
+                  semanticLabel: 'Sync breath right now, four minutes',
+                  child: Row(children: [
+                    const IconTile(Icons.air_rounded),
+                    const SizedBox(width: 14),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('Sync breath right now', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text('4 s in · 6 s out · 4 min, no audio needed', style: AppText.caption.copyWith(color: c.textSecondary)),
+                    ])),
+                    Icon(Icons.play_circle_outline_rounded, color: c.emberText),
+                  ]),
+                ),
+                const SizedBox(height: 14),
                 AdaptiveGrid(
                   baseExtent: 108,
                   children: [
@@ -81,13 +96,29 @@ class SosPage extends StatelessWidget {
                       AppCard(
                         key: Key('sos-${t.feeling}'), onTap: () => ctrl.tap(t),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Row(children: [Text(t.durationSec == null ? '' : '${(t.durationSec! / 60).round()} min', style: AppText.caption.copyWith(color: c.textSecondary)), const Spacer(), if (t.access == Access.premium && !ctrl.access.isMember) Icon(Icons.lock_outline_rounded, size: 16, color: c.textTertiary)]),
+                          Row(children: [Text(t.durationSec == null ? '' : '${t.minutes} min', style: AppText.caption.copyWith(color: c.textSecondary)), const Spacer(), if (t.access == Access.premium && !ctrl.access.isMember) Icon(Icons.lock_outline_rounded, size: 16, color: c.textTertiary)]),
                           Text(t.feeling, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary)),
                         ]),
                       ),
                   ],
                 ),
                 const SizedBox(height: 20),
+                AppCard(
+                  key: const Key('sos-crisis'), onTap: () => Get.toNamed(AppRoutes.crisisDirectory),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Icon(Icons.support_agent_rounded, color: c.dangerText),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text('Need immediate human support?', style: AppText.navTitle.copyWith(color: c.textPrimary))),
+                      Icon(Icons.chevron_right_rounded, color: c.textSecondary),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text('If you are in crisis, you are not alone. Professional help is free, confidential and available 24/7.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                    const SizedBox(height: 8),
+                    Text('Open the crisis directory', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+                const SizedBox(height: 12),
                 AppCard(
                   key: const Key('sos-help'),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

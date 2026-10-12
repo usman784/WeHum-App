@@ -3,6 +3,7 @@ import '../../app/routes/app_routes.dart';
 import '../../core/data/contracts/repositories.dart';
 import '../../core/data/models/activity.dart';
 import '../../core/data/models/content.dart';
+import '../../core/data/models/stitch.dart';
 import '../../core/realtime/live_service.dart';
 import '../../core/services/access_service.dart';
 import '../../core/services/analytics_service.dart';
@@ -24,6 +25,11 @@ class CompleteController extends GetxController {
   late final AccessService access = Get.find();
   final progress = Rxn<ProgressData>();
   final lifetime = Rxn<ProgressData>();
+  /// "Send kudos to all": sent once per sit.
+  final kudosSent = false.obs;
+  final kudosBusy = false.obs;
+  /// The text the person just dedicated (shown on the share card when they allow it).
+  String? lastDedication;
 
   PlayerArgs get player => args.player;
   String get meditationId => args.record?.id ?? uuid7();
@@ -31,12 +37,12 @@ class CompleteController extends GetxController {
 
   MeditationResult? get result => sync.byId[args.record?.id];
 
-  /// "You meditated with 412 people in 37 countries." — from the server's answer, else the last live numbers; omitted when quiet or unknown.
+  /// "You sat with 412 people across 37 countries." — from the server's answer, else the last live numbers; omitted when quiet or unknown.
   String? get togetherLine {
     final r = result;
-    if (r != null && r.togetherPeople > 1) return 'You meditated with ${groupNumberOf(r.togetherPeople)} people in ${r.togetherCountries} countries.';
+    if (r != null && r.togetherPeople > 1) return 'You sat with ${groupNumberOf(r.togetherPeople)} people across ${r.togetherCountries} countries.';
     final a = live.agg.value;
-    if (a != null && !a.quiet && a.total > 1 && !live.paused) return 'You meditated with ${groupNumberOf(a.total)} people in ${a.countries} countries.';
+    if (a != null && !a.quiet && a.total > 1 && !live.paused) return 'You sat with ${groupNumberOf(a.total)} people across ${a.countries} countries.';
     return null;
   }
 
@@ -57,6 +63,29 @@ class CompleteController extends GetxController {
     if (result == null) return 'Saving your meditation… dedications open in a moment.';
     if (result != null && leftToday <= 0) return 'You have used today’s dedications. More tomorrow.';
     return 'Dedications are not open for this meditation.';
+  }
+
+  /// A busy room (the heat-map variant) or a quiet one (the compact summary).
+  bool get busy => (result?.togetherPeople ?? live.agg.value?.total ?? 0) > 1;
+  StreakInfo? get streak => result?.streak;
+  bool get streakExtended => result?.streakExtended ?? false;
+  int get finishers => result?.finishers ?? 0;
+  Belts get belts => result?.belts ?? const Belts();
+  int get minutesToday => result?.minutesToday ?? 0;
+  int? get hrDelta => result?.hrDeltaBpm;
+
+  /// Kudos are for the people who finished the same meditation (catalog sessions with a counted, completed sit).
+  bool get canKudos => player.sessionId != null && args.counted && (args.record?.completed ?? false) && finishers > 1;
+
+  Future<void> sendKudos() async {
+    if (kudosSent.value || kudosBusy.value || player.sessionId == null) return;
+    kudosBusy.value = true;
+    try {
+      await Get.find<MeditationRepository>().kudos(player.sessionId!);
+      kudosSent.value = true;
+      Get.find<AnalyticsService>().track('kudos_sent', {'session_id': player.sessionId!, 'count': finishers});
+    } catch (_) {/* a refused or offline kudos is simply not sent; the button stays */}
+    kudosBusy.value = false;
   }
 
   /// Live country counts for the small map (socket `live:agg`): empty while paused or when nobody is meditating.

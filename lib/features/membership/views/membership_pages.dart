@@ -51,8 +51,17 @@ class PaywallPage extends StatelessWidget {
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('WeHum membership', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+            Text('Get the complete practice library.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 12),
+            AppCard(
+              key: const Key('paywall-quote'), outlined: true,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('“We built WeHum to be a daily sanctuary, not an algorithmic ad trap. If it helps you stay steady, join us.”', style: AppText.body.copyWith(color: c.textBody, fontStyle: FontStyle.italic)),
+                const SizedBox(height: 6),
+                Text('Raphael Reiter', style: AppText.caption.copyWith(color: c.textSecondary, fontWeight: FontWeight.w700)),
+              ]),
+            ),
+            const SizedBox(height: 14),
             for (final p in perks) Benefit(p),
             const SizedBox(height: 16),
             if (offer == null || offer.isEmpty)
@@ -66,6 +75,14 @@ class PaywallPage extends StatelessWidget {
                       OutlineButton('Try again', onPressed: ctrl.purchases.loadOffer),
                     ]))
             else ...[
+              if (f.open && (a?.isFounding ?? false) && f.cap > 0) ...[
+                Row(children: [
+                  Expanded(child: Text('${f.left} of ${f.cap} founding spots remaining', key: const Key('founding-left'), style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700))),
+                ]),
+                const SizedBox(height: 6),
+                AppProgressBar((f.cap - f.left) / f.cap),
+                const SizedBox(height: 12),
+              ],
               if (a != null) _PlanTile(key: const Key('plan-annual'), selected: ctrl.selected.value == 'annual', onTap: () => ctrl.selected.value = 'annual', title: 'Annual', price: a.priceString, per: '/year',
                   banner: f.open && a.isFounding ? 'FOUNDING 1,000 · ${a.priceString}/YEAR · ${f.left} SPOTS LEFT' : null, note: '${a.trialDays} days free, then ${a.priceString}/year. Cancel anytime.'),
               const SizedBox(height: 12),
@@ -74,6 +91,12 @@ class PaywallPage extends StatelessWidget {
               PrimaryButton('Start ${ctrl.plan?.trialDays ?? 7}-day free trial', loading: ctrl.busy.value, onPressed: online ? ctrl.start : null),
               if (!online) Padding(padding: const EdgeInsets.only(top: 10), child: Text('You’re offline. Connect to the internet to start your trial.', key: const Key('buy-offline'), style: AppText.bodySmall.copyWith(color: c.textSecondary))),
               if (ctrl.message.value != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(ctrl.message.value!, style: AppText.bodySmall.copyWith(color: c.dangerText))),
+              const SizedBox(height: 10),
+              Row(children: [
+                Icon(Icons.mail_outline_rounded, size: 16, color: c.textSecondary),
+                const SizedBox(width: 8),
+                Expanded(child: Text('We remind you two days before the trial ends. Cancel any time in your store account.', style: AppText.caption.copyWith(color: c.textSecondary))),
+              ]),
               const SizedBox(height: 10),
               Text('Payment is charged to your ${Platform.isIOS ? 'Apple ID' : 'Google Play account'} after the free trial. The subscription renews automatically unless cancelled at least 24 hours before the period ends. Manage or cancel in your store settings.',
                   style: AppText.caption.copyWith(color: c.textSecondary)),

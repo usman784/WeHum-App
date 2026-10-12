@@ -15,6 +15,7 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
+import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../onboarding/views/setup_pages.dart' show TimeWheel;
 import '../../today/views/today_pages.dart' show tabHeader;
@@ -253,34 +254,69 @@ class PushPreviewPage extends StatelessWidget {
   }
 }
 
-/// 59 Privacy & data.
+/// 59 Privacy & data (Stitch "data sovereignty"): what is kept and where, export, cache purge, anonymise, delete.
 class PrivacyPage extends StatelessWidget {
   const PrivacyPage({super.key});
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final ctrl = Get.put(PrivacyController());
-    const collect = [('Your first name', 'To greet you and sign your dedications.'), ('Your country', 'To show where meditations happen, never your exact location.'), ('Your meditations', 'To show your progress and count the world together.'), ('Your email (optional)', 'To sign in and send links. Never shown to others.')];
+    const matrix = [
+      (Icons.timer_outlined, 'Practice history', 'Your sits, minutes and streak. Kept on our servers, linked to your account, so they follow you to a new phone.'),
+      (Icons.groups_outlined, 'Collective presence', 'Only your country, and only while you sit. No GPS, no device fingerprint. Switch it off below.'),
+      (Icons.volunteer_activism_outlined, 'Dedications', 'Your first name and, if you chose it, your city. You can strip both from every past post here.'),
+      (Icons.favorite_border_rounded, 'Heart rate (optional)', 'Read on your phone from Apple Health or Health Connect. Only one number per sit leaves the phone, and only if you allow it.'),
+    ];
+    String mb(int b) => '${(b / 1048576).round()} MB';
     return AppScaffold(
       title: 'Privacy & data',
-      body: Obx(() => ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
-            Text('What we collect', style: AppText.title.copyWith(color: c.textPrimary)),
-            for (final (t, why) in collect) Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text(why, style: AppText.bodySmall.copyWith(color: c.textSecondary))])),
-            const SizedBox(height: 12),
-            Text('Your choices', style: AppText.title.copyWith(color: c.textPrimary)),
-            Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “meditating now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
-            const SizedBox(height: 12),
-            Text('What we never do', style: AppText.title.copyWith(color: c.textPrimary)),
-            for (final t in ['Sell your data', 'Track your exact location', 'Show your email to other people']) Text('· $t', style: AppText.body.copyWith(color: c.textSecondary)),
-            const SizedBox(height: 20),
-            OutlineButton(ctrl.exportState.value == 'working' ? 'Preparing your data…' : (ctrl.exportState.value == 'done' ? 'Your data is ready' : 'Download my data'), key: const Key('export'), loading: ctrl.exportState.value == 'working', onPressed: ctrl.exportData),
-            if (ctrl.exportState.value == 'done') Padding(padding: const EdgeInsets.only(top: 8), child: TextLink('Open the file (valid 24 hours)', onPressed: () => launchUrl(Uri.parse(ctrl.exportUrl.value!), mode: LaunchMode.externalApplication))),
-            if (ctrl.exportState.value == 'failed') Text('Couldn’t prepare your data. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
-            const SizedBox(height: 10),
-            DangerButton('Delete my account', key: const Key('delete'), onPressed: () => _confirmDelete(context, ctrl)),
-            const SizedBox(height: 12),
-            Center(child: TextLink('Read the full privacy policy', onPressed: () => launchUrl(Uri.parse(AppLinks.privacy), mode: LaunchMode.externalApplication), color: c.textSecondary)),
-          ])),
+      body: Obx(() {
+        final bytes = ctrl.cacheBytes;
+        return ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
+          Text('Your practice belongs to you.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+          const SizedBox(height: 6),
+          Text('No advertising trackers. No data brokers. Your email is never shown to other people.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+          const SizedBox(height: 18),
+          const SectionLabel('What we keep, and where'),
+          const SizedBox(height: 8),
+          for (final (icon, t, why) in matrix)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(icon, color: c.emberText, size: 22),
+                const SizedBox(width: 14),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text(why, style: AppText.bodySmall.copyWith(color: c.textSecondary))])),
+              ]),
+            ),
+          const SizedBox(height: 12),
+          Text('Your choices', style: AppText.title.copyWith(color: c.textPrimary)),
+          Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “sitting now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
+          const SizedBox(height: 18),
+          const SectionLabel('Portability'),
+          const SizedBox(height: 8),
+          Text('A structured archive of your practice: telemetry.json and clean CSV tables, sent as a ZIP link to your email.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+          const SizedBox(height: 10),
+          OutlineButton(ctrl.exportState.value == 'working' ? 'Preparing your archive…' : (ctrl.exportState.value == 'done' ? 'Your archive is ready' : 'Request my archive (.zip)'), key: const Key('export'), loading: ctrl.exportState.value == 'working', onPressed: ctrl.exportData),
+          if (ctrl.exportState.value == 'done') Padding(padding: const EdgeInsets.only(top: 8), child: TextLink('Open the archive (valid 24 hours)', onPressed: () => launchUrl(Uri.parse(ctrl.exportUrl.value!), mode: LaunchMode.externalApplication))),
+          if (ctrl.exportState.value == 'failed') Text('Couldn’t prepare your data. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
+          const SizedBox(height: 20),
+          const SectionLabel('Control'),
+          const SizedBox(height: 8),
+          ListRow(
+            key: const Key('purge-cache'), title: 'Purge offline audio', subtitle: ctrl.purged.value ? 'Cleared' : 'Frees ${mb(bytes)} on this phone', showChevron: false,
+            leading: const IconTile(Icons.cleaning_services_outlined),
+            trailing: TextLink(ctrl.purged.value ? 'Done' : 'Purge ${mb(bytes)}', onPressed: ctrl.purged.value || bytes == 0 ? null : ctrl.purgeCache, color: c.emberText)),
+          ListRow(
+            key: const Key('anonymize'), title: 'Anonymise past dedications', subtitle: ctrl.anonymized.value == null ? 'Remove your name and place from everything you posted' : '${ctrl.anonymized.value} ${ctrl.anonymized.value == 1 ? 'post' : 'posts'} anonymised', showChevron: false,
+            leading: const IconTile(Icons.visibility_off_outlined),
+            trailing: TextLink('Anonymise', onPressed: ctrl.anonymized.value != null ? null : ctrl.anonymize, color: c.emberText)),
+          if (ctrl.anonymizeFailed.value) Text('Couldn’t anonymise right now. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
+          const SizedBox(height: 20),
+          DangerButton('Delete my account', key: const Key('delete'), onPressed: () => _confirmDelete(context, ctrl)),
+          const SizedBox(height: 12),
+          Center(child: TextLink('Read the full privacy policy', onPressed: () => launchUrl(Uri.parse(AppLinks.privacy), mode: LaunchMode.externalApplication), color: c.textSecondary)),
+        ]);
+      }),
     );
   }
 

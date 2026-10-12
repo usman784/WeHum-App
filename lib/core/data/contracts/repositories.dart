@@ -73,7 +73,7 @@ abstract class MeRepository {
   Future<void> markRead({List<String>? ids, bool all = false});
   Future<void> syncEntitlement();
   Future<String> startExport();
-  Future<({String status, String? jsonUrl, String? csvUrl})> exportStatus(String jobId);
+  Future<({String status, String? jsonUrl, String? csvUrl, String? zipUrl})> exportStatus(String jobId);
   Future<void> deleteAccount();
 }
 

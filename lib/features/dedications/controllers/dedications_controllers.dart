@@ -25,6 +25,8 @@ class DedicationComposerController extends GetxController {
   DedicationComposerController({required this.meditationId, required this.sessionId, required this.leftToday});
   final String meditationId, sessionId;
   final text = ''.obs;
+  /// "Location display": show city and country, or just "Worldwide" (the default).
+  final showPlace = false.obs;
   final int leftToday;
   final busy = false.obs;
   final error = RxnString();
@@ -49,7 +51,7 @@ class DedicationComposerController extends GetxController {
     busy.value = true;
     error.value = null;
     try {
-      final r = await Get.find<CommunityRepository>().post(meditationId: meditationId, text: text.value.trim());
+      final r = await Get.find<CommunityRepository>().post(meditationId: meditationId, text: text.value.trim(), showPlace: showPlace.value);
       left.value = r.leftToday;
       showHelp.value = r.showHelp;
       Get.find<AnalyticsService>().track('dedication_post', {'session_id': sessionId});

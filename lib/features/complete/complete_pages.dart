@@ -8,6 +8,7 @@ import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../app/routes/app_routes.dart';
 import '../../core/data/models/content.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -19,6 +20,7 @@ import '../../core/widgets/controls.dart';
 import '../../core/widgets/painters.dart';
 import '../../core/widgets/sheets.dart';
 import '../../core/widgets/states.dart';
+import '../../core/widgets/stitch.dart';
 import '../../core/widgets/surfaces.dart';
 import '../account/views/account_pages.dart';
 import '../dedications/controllers/dedications_controllers.dart';
@@ -26,7 +28,8 @@ import '../player/controllers/player_controller.dart';
 import '../today/views/today_widgets.dart';
 import 'complete_controller.dart';
 
-/// 45 Meditation complete · payoff.
+/// 45 Meditation complete · payoff (Stitch). Busy room: presence heat-map, belts, finishers and kudos. Quiet room or
+/// solo: the compact summary. Streak and heart-rate cards only when there is real data.
 class CompletePage extends StatelessWidget {
   const CompletePage({super.key});
   @override
@@ -38,28 +41,76 @@ class CompletePage extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: SafeArea(
-          child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 24), children: [
-                const SizedBox(height: 8),
-                WorldDotMap(hot: ctrl.hot, height: 130), // where people are meditating right now (live), nothing when nobody is
-                const SizedBox(height: 16),
-                Text('You meditated ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-                const SizedBox(height: 8),
-                if (ctrl.togetherLine != null) Text(ctrl.togetherLine!, key: const Key('complete-together'), style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 20),
-                Row(children: [
-                  Expanded(child: _Stat(value: '${ctrl.daysThisWeek} ${ctrl.daysThisWeek == 1 ? 'day' : 'days'}', label: 'This week')),
-                  const SizedBox(width: 12),
-                  Expanded(child: _Stat(value: '${ctrl.totalMinutes}', label: 'Total minutes')),
-                ]),
-                const SizedBox(height: 20),
-                _DedicateCard(ctrl: ctrl),
+          child: Obx(() {
+            final busy = ctrl.busy;
+            final st = ctrl.streak;
+            final hr = ctrl.hrDelta;
+            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 24), children: [
+              const SizedBox(height: 8),
+              if (busy) WorldDotMap(hot: ctrl.hot, height: 130), // where people are meditating right now (live), nothing when nobody is
+              if (busy) const SizedBox(height: 16),
+              Text('SIT COMPLETE', style: AppText.overline.copyWith(color: c.emberText)),
+              const SizedBox(height: 6),
+              Text('You sat ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+              const SizedBox(height: 8),
+              if (ctrl.togetherLine != null) Text(ctrl.togetherLine!, key: const Key('complete-together'), style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+              if (busy && !ctrl.belts.isEmpty) ...[const SizedBox(height: 14), AppCard(key: const Key('complete-belts'), child: BeltCounts(belts: ctrl.belts))],
+              if (busy && ctrl.minutesToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupedInt(ctrl.minutesToday)} minutes sat by everyone today', key: const Key('complete-collective'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
+              const SizedBox(height: 20),
+              Row(children: [
+                Expanded(child: _Stat(value: '${ctrl.daysThisWeek} ${ctrl.daysThisWeek == 1 ? 'day' : 'days'}', label: 'This week')),
+                const SizedBox(width: 12),
+                Expanded(child: _Stat(value: '${ctrl.totalMinutes}', label: 'Total minutes')),
+              ]),
+              if (st != null) ...[
                 const SizedBox(height: 12),
-                if (ctrl.player.sessionId != null) OutlineButton('Read today’s dedications', key: const Key('read-dedications'), onPressed: ctrl.readDedications),
+                AppCard(
+                  key: const Key('complete-streak'),
+                  child: Row(children: [
+                    Icon(Icons.local_fire_department_rounded, color: c.emberText, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('${st.current}-day streak${ctrl.streakExtended ? ' · +1 today' : ''}', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text(st.record > st.current ? 'Record ${st.record} days · ${st.goalLine}' : (st.record > 0 ? 'Your record · ${st.goalLine}' : st.goalLine), style: AppText.caption.copyWith(color: c.textSecondary)),
+                    ])),
+                  ]),
+                ),
+              ],
+              if (hr != null) ...[
                 const SizedBox(height: 12),
-                PrimaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
-                const SizedBox(height: 8),
-                Center(child: TextLink('Share your meditation', onPressed: ctrl.share, color: c.textSecondary)),
-              ])),
+                AppCard(
+                  key: const Key('complete-hr'),
+                  child: Row(children: [
+                    Icon(Icons.favorite_border_rounded, color: c.emberText),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text('Heart rate shift', style: AppText.navTitle.copyWith(color: c.textPrimary))),
+                    Text('${hr > 0 ? '+' : ''}$hr bpm', style: AppText.title.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+                  ]),
+                ),
+              ],
+              if (busy && ctrl.finishers > 1) ...[
+                const SizedBox(height: 12),
+                AppCard(
+                  key: const Key('complete-finishers'),
+                  child: Row(children: [
+                    Icon(Icons.groups_2_outlined, color: c.textSecondary),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text('${groupedInt(ctrl.finishers)} finished this sit today', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16, fontFeatures: AppText.tabular))),
+                    if (ctrl.canKudos)
+                      TextLink(ctrl.kudosSent.value ? 'Kudos sent' : 'Send kudos', key: const Key('send-kudos'), onPressed: ctrl.kudosSent.value ? null : ctrl.sendKudos, color: ctrl.kudosSent.value ? c.textTertiary : c.emberText),
+                  ]),
+                ),
+              ],
+              const SizedBox(height: 20),
+              _DedicateCard(ctrl: ctrl),
+              const SizedBox(height: 12),
+              if (ctrl.player.sessionId != null) OutlineButton('Read today’s dedications', key: const Key('read-dedications'), onPressed: ctrl.readDedications),
+              const SizedBox(height: 12),
+              PrimaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
+              const SizedBox(height: 8),
+              Center(child: TextLink('Share your sit', onPressed: ctrl.share, color: c.textSecondary)),
+            ]);
+          }),
         ),
       ),
     );
@@ -112,9 +163,11 @@ Future<void> showDedicationSheet(BuildContext context, CompleteController comple
   await showAppSheet<void>(context, title: 'Write a dedication', builder: (ctx) {
     final c = ctx.colors;
     return Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const Overline('Dedicate your meditation'),
+          Overline('Sit complete · ${complete.minutes} min${complete.result != null && complete.result!.togetherPeople > 1 ? ' · ${groupedInt(complete.result!.togetherPeople)} sat with you' : ''}'),
           const SizedBox(height: 8),
-          Text('Who or what do you dedicate this meditation to?', style: AppText.body.copyWith(color: c.textBody)),
+          Text('Who or what do you dedicate your practice to today?', style: AppText.title.copyWith(color: c.textPrimary)),
+          const SizedBox(height: 4),
+          Text('A family member, a colleague under pressure, or your own quiet resolve. Keep it honest and brief.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
           const SizedBox(height: 12),
           TextField(
             key: const Key('dedication-field'), maxLines: 3, onChanged: (v) => ctrl.text.value = v, controller: TextEditingController.fromValue(TextEditingValue(text: ctrl.text.value, selection: TextSelection.collapsed(offset: ctrl.text.value.length))),
@@ -126,8 +179,21 @@ Future<void> showDedicationSheet(BuildContext context, CompleteController comple
           const SizedBox(height: 10),
           if (ctrl.inlineError != null) Text(ctrl.inlineError!, key: const Key('dedication-error'), style: AppText.bodySmall.copyWith(color: c.dangerText)),
           if (ctrl.showHelp.value) Padding(padding: const EdgeInsets.only(top: 8), child: Text('If you or someone you know is in danger, please contact local emergency services.', style: AppText.bodySmall.copyWith(color: c.textBody))),
+          const SizedBox(height: 10),
+          Row(children: [
+            Icon(Icons.person_outline_rounded, size: 18, color: c.textSecondary),
+            const SizedBox(width: 8),
+            Expanded(child: Text('Shown with your real first name only.', style: AppText.caption.copyWith(color: c.textSecondary))),
+          ]),
           const SizedBox(height: 6),
-          Text('Shown with your first name and country under this session. Text only, no links. ${ctrl.left.value} of 3 dedications left today.', style: AppText.caption.copyWith(color: c.textSecondary)),
+          Row(children: [
+            Icon(ctrl.showPlace.value ? Icons.near_me_rounded : Icons.public_off_rounded, size: 18, color: c.textSecondary),
+            const SizedBox(width: 8),
+            Expanded(child: Text(ctrl.showPlace.value ? 'Show my city and country' : 'Worldwide: no place shown', key: const Key('location-line'), style: AppText.bodyLarge.copyWith(color: c.textPrimary))),
+            AppToggle(key: const Key('location-toggle'), value: ctrl.showPlace.value, onChanged: (v) => ctrl.showPlace.value = v, label: 'Show my city and country'),
+          ]),
+          const SizedBox(height: 6),
+          Text('Text only · monitored for safety and respect · no links or self-promotion. ${ctrl.left.value} of 3 dedications left today.', style: AppText.caption.copyWith(color: c.textSecondary)),
           const SizedBox(height: 14),
           PrimaryButton('Post dedication', key: const Key('post-dedication'), loading: ctrl.busy.value, onPressed: ctrl.valid
               ? () async {
@@ -135,6 +201,7 @@ Future<void> showDedicationSheet(BuildContext context, CompleteController comple
                   final out = await ctrl.post();
                   switch (out) {
                     case PostOutcome.posted || PostOutcome.pending:
+                      complete.lastDedication = ctrl.text.value.trim();
                       nav.pop();
                       Get.toNamed('/dedications/${complete.player.sessionId}', arguments: {'sessionId': complete.player.sessionId, 'compose': true});
                     case PostOutcome.accountRequired:
@@ -148,7 +215,10 @@ Future<void> showDedicationSheet(BuildContext context, CompleteController comple
                   }
                 }
               : null),
-          Center(child: TextLink('Not now', onPressed: () => Navigator.of(ctx).pop(), color: c.textSecondary)),
+          Center(child: TextLink('Skip and view feed', key: const Key('dedication-skip'), onPressed: () {
+            Navigator.of(ctx).pop();
+            Get.toNamed(AppRoutes.together);
+          }, color: c.textSecondary)),
         ]));
   });
 }
@@ -251,6 +321,8 @@ class _SharePageState extends State<SharePage> {
   final _key = GlobalKey();
   String format = '9x16';
   bool showDedication = true;
+  /// Include the heart-rate shift (only offered when the phone supplied one).
+  bool includeHr = false;
   bool busy = false;
   late final CompleteController complete = Get.arguments as CompleteController;
 
@@ -299,7 +371,7 @@ class _SharePageState extends State<SharePage> {
     final c = context.colors;
     final story = format == '9x16';
     return AppScaffold(
-      title: 'Share your meditation',
+      title: 'Share your sit',
       body: Column(children: [
         Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: SegmentedControl<String>(options: const ['9x16', '1x1'], value: format, onChanged: (v) => setState(() => format = v), labelOf: (v) => v == '9x16' ? 'Story' : 'Post')),
         const SizedBox(height: 12),
@@ -314,13 +386,21 @@ class _SharePageState extends State<SharePage> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('WEHUM', style: AppText.overline.copyWith(color: const Color(0xFFFF9B70), fontSize: 13)),
                 const Spacer(),
-                Text('I meditated ${complete.minutes} ${complete.minutes == 1 ? 'minute' : 'minutes'} today.', key: const Key('share-minutes'), style: AppText.heroTitle.copyWith(color: Colors.white, fontSize: story ? 30 : 26)),
+                Text('I sat ${complete.minutes} ${complete.minutes == 1 ? 'minute' : 'minutes'} today.', key: const Key('share-minutes'), style: AppText.heroTitle.copyWith(color: Colors.white, fontSize: story ? 30 : 26)),
                 const SizedBox(height: 10),
-                if (complete.togetherLine != null) Text(complete.togetherLine!.replaceFirst('You meditated', 'I meditated'), style: AppText.bodyLarge.copyWith(color: Colors.white70)),
+                if (complete.togetherLine != null) Text(complete.togetherLine!.replaceFirst('You sat', 'I sat'), style: AppText.bodyLarge.copyWith(color: Colors.white70)),
                 const SizedBox(height: 12),
-                Text('${complete.daysThisWeek} ${complete.daysThisWeek == 1 ? 'day' : 'days'} this week', style: AppText.navTitle.copyWith(color: Colors.white)),
+                Wrap(spacing: 16, runSpacing: 6, children: [
+                  Text('${complete.daysThisWeek} ${complete.daysThisWeek == 1 ? 'day' : 'days'} this week', style: AppText.navTitle.copyWith(color: Colors.white)),
+                  if (complete.streak != null && complete.streak!.current > 1) Text('${complete.streak!.current}-day streak', key: const Key('share-streak'), style: AppText.navTitle.copyWith(color: const Color(0xFFFF9B70))),
+                  if (includeHr && complete.hrDelta != null) Text('${complete.hrDelta! > 0 ? '+' : ''}${complete.hrDelta} bpm', key: const Key('share-hr'), style: AppText.navTitle.copyWith(color: Colors.white)),
+                ]),
                 const SizedBox(height: 12),
                 Text(complete.player.title, style: AppText.title.copyWith(color: Colors.white)),
+                if (showDedication && complete.lastDedication != null) ...[
+                  const SizedBox(height: 14),
+                  Text('“${complete.lastDedication}”', key: const Key('share-dedication'), style: AppText.body.copyWith(color: Colors.white70, fontStyle: FontStyle.italic)),
+                ],
                 const Spacer(),
                 Text('wehum.app', style: AppText.bodySmall.copyWith(color: Colors.white54)),
               ]),
@@ -330,7 +410,8 @@ class _SharePageState extends State<SharePage> {
         ))),
         const SizedBox(height: 12),
         Padding(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 20), child: Column(children: [
-        Row(children: [Expanded(child: Text('Show my dedication', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: showDedication, onChanged: (v) => setState(() => showDedication = v), label: 'Show my dedication')]),
+        if (complete.lastDedication != null) Row(children: [Expanded(child: Text('Show my dedication', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(key: const Key('toggle-dedication'), value: showDedication, onChanged: (v) => setState(() => showDedication = v), label: 'Show my dedication')]),
+        if (complete.hrDelta != null) Row(children: [Expanded(child: Text('Include heart-rate shift', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(key: const Key('toggle-hr'), value: includeHr, onChanged: (v) => setState(() => includeHr = v), label: 'Include heart-rate shift')]),
         const SizedBox(height: 8),
         PrimaryButton('Share to Stories or WhatsApp', key: const Key('share-btn'), loading: busy, onPressed: share),
         const SizedBox(height: 8),

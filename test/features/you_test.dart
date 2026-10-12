@@ -126,7 +126,14 @@ void main() {
     await t.runAsync(() => Get.find<PrivacyController>().exportData());
     await settle(t);
     expect(Get.find<PrivacyController>().exportState.value, 'done');
-    expect(find.text('Your data is ready'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('export')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Your archive is ready'), findsOneWidget);
+    expect(Get.find<PrivacyController>().exportUrl.value, 'https://example.com/e.zip');
+    await t.scrollUntilVisible(find.byKey(const Key('anonymize')), 200, scrollable: find.byType(Scrollable).first);
+    await t.tap(find.text('Anonymise'));
+    await settle(t);
+    expect(e.community.anonymized, 1);
+    expect(find.text('1 post anonymised'), findsOneWidget);
 
     await t.scrollUntilVisible(find.byKey(const Key('delete')), 300, scrollable: find.byType(Scrollable).first);
     await t.tap(find.byKey(const Key('delete')));

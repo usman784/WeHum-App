@@ -232,7 +232,7 @@ class MockMeRepository implements MeRepository {
   @override
   Future<String> startExport() async => 'job-1';
   @override
-  Future<({String status, String? jsonUrl, String? csvUrl})> exportStatus(String jobId) async => (status: 'done', jsonUrl: 'https://example.com/e.json', csvUrl: 'https://example.com/e.csv');
+  Future<({String status, String? jsonUrl, String? csvUrl, String? zipUrl})> exportStatus(String jobId) async => (status: 'done', jsonUrl: 'https://example.com/e.json', csvUrl: 'https://example.com/e.csv', zipUrl: 'https://example.com/e.zip');
   bool deleted = false;
   @override
   Future<void> deleteAccount() async => deleted = true;
