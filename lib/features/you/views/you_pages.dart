@@ -519,60 +519,110 @@ class PrivacyPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(PrivacyController());
     const matrix = [
-      (Icons.timer_outlined, 'Practice history', 'Your sits, minutes and streak. Kept on our servers, linked to your account, so they follow you to a new phone.'),
-      (Icons.groups_outlined, 'Collective presence', 'Only your country, and only while you sit. No GPS, no device fingerprint. Switch it off below.'),
-      (Icons.volunteer_activism_outlined, 'Dedications', 'Your first name and, if you chose it, your city. You can strip both from every past post here.'),
-      (Icons.favorite_border_rounded, 'Heart rate (optional)', 'Read on your phone from Apple Health or Health Connect. Only one number per sit leaves the phone, and only if you allow it.'),
+      (Icons.timer_outlined, 'Practice history', 'Your sits, minutes and streak. Kept on our servers, linked to your account, so they follow you to a new phone.', 'ACCOUNT'),
+      (Icons.groups_outlined, 'Collective presence', 'Only your country, and only while you sit. No GPS, no device fingerprint. Switch it off below.', 'EPHEMERAL'),
+      (Icons.volunteer_activism_outlined, 'Dedications', 'Your first name and, if you chose it, your city. You can strip both from every past post here.', 'YOU DECIDE'),
+      (Icons.favorite_border_rounded, 'Heart rate (optional)', 'Read on your phone from Apple Health or Health Connect. Only one number per sit leaves the phone, and only if you allow it.', 'DEVICE ONLY'),
     ];
     String mb(int b) => '${(b / 1048576).round()} MB';
     return AppScaffold(
-      title: 'Privacy & data',
+      title: 'Privacy & data', stitch: true,
       body: Obx(() {
         final bytes = ctrl.cacheBytes;
-        return ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
-          Text('Your practice belongs to you.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-          const SizedBox(height: 6),
-          Text('No advertising trackers. No data brokers. Your email is never shown to other people.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-          const SizedBox(height: 18),
-          const SectionLabel('What we keep, and where'),
-          const SizedBox(height: 8),
-          for (final (icon, t, why) in matrix)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Icon(icon, color: c.emberText, size: 22),
-                const SizedBox(width: 14),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text(why, style: AppText.bodySmall.copyWith(color: c.textSecondary))])),
+        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 6, Gap.gutter, 28), children: staggered([
+          AppCard(
+            padding: const EdgeInsets.all(16),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(width: 44, height: 44, decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(12)), child: Icon(Icons.shield_outlined, color: c.emberText)),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Text('PROTOCOL ACTIVE', style: AppText.overline.copyWith(color: c.success, fontSize: 10))]),
+                const SizedBox(height: 4),
+                Text('Your practice belongs to you.', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                const SizedBox(height: 6),
+                Text('No advertising trackers. No data brokers. Your email is never shown to other people.', style: AppText.bodySmall.copyWith(color: c.textSecondary, height: 1.45)),
+              ])),
+            ]),
+          ),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('AUDIT REGISTRY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+            const SizedBox(height: 4),
+            Text('What we keep, and where', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+            const SizedBox(height: 12),
+            for (final (icon, t, why, tag) in matrix)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: AppCard(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Icon(icon, color: c.emberText, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(t, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16))),
+                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Text(tag, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5))),
+                    ]),
+                    const SizedBox(height: 8),
+                    Text(why, style: AppText.bodySmall.copyWith(color: c.textSecondary, height: 1.45)),
+                  ]),
+                ),
+              ),
+          ]),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Your choices', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+            const SizedBox(height: 8),
+            AppCard(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+              child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “sitting now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
+            ),
+          ]),
+          AppCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('PORTABILITY RIGHTS', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
+              const SizedBox(height: 4),
+              Text('Complete practice archive', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17)),
+              const SizedBox(height: 6),
+              Text('A structured archive of your practice: telemetry.json and clean CSV tables, sent as a ZIP link to your email.', style: AppText.bodySmall.copyWith(color: c.textSecondary, height: 1.45)),
+              const SizedBox(height: 12),
+              Row(children: [
+                Expanded(child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(10)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('SCHEMA', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5)), Text('telemetry.json', style: AppText.caption.copyWith(color: c.textPrimary, fontWeight: FontWeight.w700))]))),
+                const SizedBox(width: 8),
+                Expanded(child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(10)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('RECORDS', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5)), Text('sits_history.csv', style: AppText.caption.copyWith(color: c.textPrimary, fontWeight: FontWeight.w700))]))),
+              ]),
+              const SizedBox(height: 14),
+              PrimaryButton(ctrl.exportState.value == 'working' ? 'Preparing your archive…' : (ctrl.exportState.value == 'done' ? 'Your archive is ready' : 'Request my archive (.zip)'), key: const Key('export'), icon: Icons.send_outlined, loading: ctrl.exportState.value == 'working', onPressed: ctrl.exportData),
+              if (ctrl.exportState.value == 'done') Padding(padding: const EdgeInsets.only(top: 8), child: TextLink('Open the archive (valid 24 hours)', onPressed: () => launchUrl(Uri.parse(ctrl.exportUrl.value!), mode: LaunchMode.externalApplication))),
+              if (ctrl.exportState.value == 'failed') Text('Couldn’t prepare your data. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
+            ]),
+          ),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('ACCOUNT CONTROL', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+            const SizedBox(height: 4),
+            Text('Data erasure & sovereignty', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+            const SizedBox(height: 10),
+            AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Column(children: [
+                ListRow(
+                  key: const Key('purge-cache'), title: 'Purge offline audio', subtitle: ctrl.purged.value ? 'Cleared' : 'Frees ${mb(bytes)} on this phone', showChevron: false,
+                  leading: const IconTile(Icons.cleaning_services_outlined),
+                  trailing: TextLink(ctrl.purged.value ? 'Done' : 'Purge ${mb(bytes)}', onPressed: ctrl.purged.value || bytes == 0 ? null : ctrl.purgeCache, color: c.emberText)),
+                ListRow(
+                  key: const Key('anonymize'), title: 'Anonymise past dedications', subtitle: ctrl.anonymized.value == null ? 'Remove your name and place from everything you posted' : '${ctrl.anonymized.value} ${ctrl.anonymized.value == 1 ? 'post' : 'posts'} anonymised', showChevron: false,
+                  leading: const IconTile(Icons.visibility_off_outlined),
+                  trailing: TextLink('Anonymise', onPressed: ctrl.anonymized.value != null ? null : ctrl.anonymize, color: c.emberText)),
               ]),
             ),
-          const SizedBox(height: 12),
-          Text('Your choices', style: AppText.title.copyWith(color: c.textPrimary)),
-          Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “sitting now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
-          const SizedBox(height: 18),
-          const SectionLabel('Portability'),
-          const SizedBox(height: 8),
-          Text('A structured archive of your practice: telemetry.json and clean CSV tables, sent as a ZIP link to your email.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-          const SizedBox(height: 10),
-          OutlineButton(ctrl.exportState.value == 'working' ? 'Preparing your archive…' : (ctrl.exportState.value == 'done' ? 'Your archive is ready' : 'Request my archive (.zip)'), key: const Key('export'), loading: ctrl.exportState.value == 'working', onPressed: ctrl.exportData),
-          if (ctrl.exportState.value == 'done') Padding(padding: const EdgeInsets.only(top: 8), child: TextLink('Open the archive (valid 24 hours)', onPressed: () => launchUrl(Uri.parse(ctrl.exportUrl.value!), mode: LaunchMode.externalApplication))),
-          if (ctrl.exportState.value == 'failed') Text('Couldn’t prepare your data. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
-          const SizedBox(height: 20),
-          const SectionLabel('Control'),
-          const SizedBox(height: 8),
-          ListRow(
-            key: const Key('purge-cache'), title: 'Purge offline audio', subtitle: ctrl.purged.value ? 'Cleared' : 'Frees ${mb(bytes)} on this phone', showChevron: false,
-            leading: const IconTile(Icons.cleaning_services_outlined),
-            trailing: TextLink(ctrl.purged.value ? 'Done' : 'Purge ${mb(bytes)}', onPressed: ctrl.purged.value || bytes == 0 ? null : ctrl.purgeCache, color: c.emberText)),
-          ListRow(
-            key: const Key('anonymize'), title: 'Anonymise past dedications', subtitle: ctrl.anonymized.value == null ? 'Remove your name and place from everything you posted' : '${ctrl.anonymized.value} ${ctrl.anonymized.value == 1 ? 'post' : 'posts'} anonymised', showChevron: false,
-            leading: const IconTile(Icons.visibility_off_outlined),
-            trailing: TextLink('Anonymise', onPressed: ctrl.anonymized.value != null ? null : ctrl.anonymize, color: c.emberText)),
-          if (ctrl.anonymizeFailed.value) Text('Couldn’t anonymise right now. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
-          const SizedBox(height: 20),
-          DangerButton('Delete my account', key: const Key('delete'), onPressed: () => _confirmDelete(context, ctrl)),
-          const SizedBox(height: 12),
-          Center(child: TextLink('Read the full privacy policy', onPressed: () => launchUrl(Uri.parse(AppLinks.privacy), mode: LaunchMode.externalApplication), color: c.textSecondary)),
-        ]);
+            if (ctrl.anonymizeFailed.value) Text('Couldn’t anonymise right now. Try again later.', style: AppText.bodySmall.copyWith(color: c.dangerText)),
+          ]),
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('DESTRUCTIVE OPERATION', style: AppText.overline.copyWith(color: c.dangerText, fontSize: 10)),
+            const SizedBox(height: 8),
+            DangerButton('Delete my account', key: const Key('delete'), onPressed: () => _confirmDelete(context, ctrl)),
+            const SizedBox(height: 12),
+            Center(child: TextLink('Read the full privacy policy', onPressed: () => launchUrl(Uri.parse(AppLinks.privacy), mode: LaunchMode.externalApplication), color: c.textSecondary)),
+          ]),
+        ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 16), child: w)).toList()));
       }),
     );
   }

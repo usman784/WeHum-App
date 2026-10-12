@@ -166,6 +166,9 @@ void main() {
 
   testWidgets('59 privacy: presence toggle, data export, delete needs confirmation and wipes this phone', (t) async {
     final e = await open(t, AppRoutes.privacyData);
+    await t.scrollUntilVisible(find.byKey(const Key('sw-presence')), 200, scrollable: find.byType(Scrollable).first);
+    await t.ensureVisible(find.byKey(const Key('sw-presence')));
+    await t.pump();
     await t.tap(find.byKey(const Key('sw-presence')));
     await settle(t);
     expect(e.me.profile.showCountry, false);

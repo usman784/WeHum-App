@@ -35,18 +35,20 @@ class ByoPage extends StatelessWidget {
         if (didPop) Get.delete<ByoController>(force: true);
       },
       child: AppScaffold(
-        title: 'Build your own',
+        title: 'Build your own', stitch: true,
         body: Obx(() => StateSwitcher(
               state: ctrl.state.value, onRetry: () => Get.back<void>(),
               content: () => Column(children: [
                 Expanded(
                   child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 16), children: staggered([
+                        Row(children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 8), Expanded(child: Text('CUSTOM RIG · STUDIO MODE', style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5))), Icon(Icons.tune_rounded, size: 14, color: c.textSecondary), const SizedBox(width: 4), Text('READY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))]),
+                        const SizedBox(height: 12),
                         _Blueprint(ctrl: ctrl),
-                        const _Step('1 · PRACTICE LENGTH'),
+                        _Step('1 · PRACTICE LENGTH', icon: Icons.timer_outlined, tag: '${ctrl.length.value} MIN'),
                         PillGroup<int>(options: ByoController.lengths, selected: {ctrl.length.value}, onToggle: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
-                        const _Step('2 · OPENING GUIDE'),
+                        const _Step('2 · OPENING GUIDE', icon: Icons.record_voice_over_outlined, tag: 'VOCAL LEAD'),
                         if (ctrl.openings.isEmpty) const _Missing('Openings are not available yet.') else PillGroup<String?>(options: [null, ...ctrl.openings.map((b) => b.id)], selected: {ctrl.openingId.value}, onToggle: (v) => ctrl.openingId.value = v, labelOf: (id) => id == null ? 'None' : ctrl.block(id)?.name ?? ''),
-                        const _Step('3 · BACKGROUND AMBIENCE'),
+                        const _Step('3 · BACKGROUND AMBIENCE', icon: Icons.waves_rounded, tag: 'SIMPLE LAYER'),
                         if (ctrl.sounds.isEmpty) const _Missing('Background sounds are not available yet.') else ...[
                           PillGroup<String?>(options: [null, ...ctrl.sounds.map((b) => b.id)], selected: {ctrl.soundId.value}, onToggle: (v) => ctrl.soundId.value = v, labelOf: (id) => id == null ? 'Silence' : ctrl.block(id)?.name ?? ''),
                           if (ctrl.soundId.value != null) ...[
@@ -55,9 +57,12 @@ class ByoPage extends StatelessWidget {
                             SegmentedControl<String>(options: const ['simple', 'rich'], value: ctrl.texture.value, onChanged: (v) => ctrl.texture.value = v, labelOf: (v) => '${v[0].toUpperCase()}${v.substring(1)}'),
                           ],
                         ],
-                        const _Step('4 · BELLS & CHIMES'),
-                        Row(children: [Expanded(child: Text('Opening chime', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellStart.value, onChanged: (v) => ctrl.bellStart.value = v, label: 'Bell at the start')]),
-                        Row(children: [Expanded(child: Text('Closing chime', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellEnd.value, onChanged: (v) => ctrl.bellEnd.value = v, label: 'Bell at the end')]),
+                        const _Step('4 · BELLS & CHIMES', icon: Icons.notifications_active_outlined, tag: 'MARKERS'),
+                        AppCard(padding: const EdgeInsets.fromLTRB(16, 4, 8, 4), child: Column(children: [
+                          Row(children: [Expanded(child: Text('Opening chime', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellStart.value, onChanged: (v) => ctrl.bellStart.value = v, label: 'Bell at the start')]),
+                          Row(children: [Expanded(child: Text('Closing chime', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellEnd.value, onChanged: (v) => ctrl.bellEnd.value = v, label: 'Bell at the end')]),
+                        ])),
+                        const SizedBox(height: 10),
                         PillGroup<int>(options: ByoController.intervals, selected: {ctrl.bellInterval.value}, onToggle: (v) => ctrl.bellInterval.value = v, labelOf: (v) => v == 0 ? 'No interval bell' : 'Every $v min'),
                         const SizedBox(height: 20),
                         AppCard(key: const Key('advanced'), onTap: () => Get.toNamed(AppRoutes.buildYourOwnAdvanced), child: const ListRow(title: 'Advanced builder', subtitle: 'Several blocks, OM and mantra loops, share by link', leading: IconTile(Icons.tune_rounded))),
@@ -90,7 +95,7 @@ class _Blueprint extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const SectionLabel('Session blueprint'),
         const SizedBox(height: 8),
-        Text('${ctrl.length.value} min', key: const Key('blueprint-title'), style: AppText.title.copyWith(color: c.textPrimary)),
+        Text('${ctrl.length.value} min', key: const Key('blueprint-title'), style: AppText.title.copyWith(color: c.textPrimary, fontSize: 22)),
         const SizedBox(height: 12),
         Row(children: [if (opening > 0) seg(opening, c.ember), seg(core, c.tealText), if (closing > 0) seg(closing, c.emberText)]),
         const SizedBox(height: 8),
@@ -101,10 +106,23 @@ class _Blueprint extends StatelessWidget {
 }
 
 class _Step extends StatelessWidget {
-  const _Step(this.text);
+  const _Step(this.text, {this.icon, this.tag});
   final String text;
+  final IconData? icon;
+  final String? tag;
   @override
-  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.only(top: 18, bottom: 8), child: Text(text, style: AppText.overline.copyWith(color: context.colors.textTertiary)));
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final label = text.contains(' · ') ? text.split(' · ').last : text;
+    return Padding(
+      padding: const EdgeInsets.only(top: 22, bottom: 10),
+      child: Row(children: [
+        if (icon != null) ...[Icon(icon, size: 20, color: c.emberText), const SizedBox(width: 8)],
+        Expanded(child: Text(label[0] + label.substring(1).toLowerCase(), style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17))),
+        if (tag != null) Text(tag!, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
+      ]),
+    );
+  }
 }
 
 class _Missing extends StatelessWidget {
@@ -132,7 +150,7 @@ class _Footer extends StatelessWidget {
               Row(children: [
                 Expanded(child: OutlineButton('Save', key: const Key('byo-save'), loading: ctrl.busy.value, onPressed: () => _askName(context, ctrl))),
                 const SizedBox(width: 10),
-                Expanded(flex: 2, child: PrimaryButton('Build & sit now', key: const Key('byo-build'), onPressed: ctrl.build)),
+                Expanded(flex: 2, child: PrimaryButton('Build & sit now', key: const Key('byo-build'), icon: Icons.play_arrow_rounded, onPressed: ctrl.build)),
               ]),
             ])),
       ),

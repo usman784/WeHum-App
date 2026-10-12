@@ -25,7 +25,6 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
-import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../player/player_args.dart';
 import '../../together/views/together_pages.dart' show DedicationLine;
@@ -195,13 +194,10 @@ class DownloadsPage extends StatelessWidget {
     final dl = Get.find<DownloadService>();
     final online = Get.find<ConnectivityService>().online;
     return AppScaffold(
-      title: 'Downloads',
+      title: 'Downloads', stitch: true,
       banner: Obx(() => online.value ? const SizedBox.shrink() : const OfflineBanner()),
       body: Obx(() {
         final items = dl.items.toList();
-        if (items.isEmpty) {
-          return EmptyState(title: 'No downloads yet', body: 'Download a session to listen without internet. Look for the download button on any session.', icon: Icons.download_for_offline_outlined, ctaLabel: 'Browse the library', onCta: () => Get.offAllNamed(AppRoutes.library));
-        }
         final cat = Get.find<CatalogService>().catalog.value;
         final quotaMb = Get.isRegistered<ConfigService>() ? (Get.find<ConfigService>().current.value?.downloadQuotaMb ?? 2400) : 2400;
         final quota = quotaMb * 1024 * 1024;
@@ -217,14 +213,31 @@ class DownloadsPage extends StatelessWidget {
         final store = Get.find<OnboardingStore>();
         return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: [
           AppCard(
-            key: const Key('storage-card'),
+            key: const Key('storage-card'), padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const SectionLabel('Local storage'),
-              const SizedBox(height: 8),
-              Text(formatBytes(used), key: const Key('used'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 34)),
-              Text('used of ${formatBytes(quota)} · $done ${done == 1 ? 'session' : 'sessions'} saved', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              Row(children: [
+                Icon(Icons.cloud_download_outlined, size: 20, color: c.emberText),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Local storage', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17))),
+                Text(used > quota * .9 ? 'FULL SOON' : 'OPTIMAL', style: AppText.overline.copyWith(color: used > quota * .9 ? c.dangerText : c.success, fontSize: 10)),
+              ]),
+              const SizedBox(height: 12),
+              Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                Text(formatBytes(used), key: const Key('used'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 30, fontFeatures: AppText.tabular)),
+                const SizedBox(width: 6),
+                Text('USED', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
+                const Spacer(),
+                Flexible(child: Text('${formatBytes(quota)} allocated limit', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))),
+              ]),
               const SizedBox(height: 12),
               AppProgressBar(quota == 0 ? 0 : used / quota),
+              const SizedBox(height: 10),
+              Row(children: [
+                Container(width: 6, height: 6, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                Expanded(child: Text('$done ${done == 1 ? 'session' : 'sessions'} saved', style: AppText.caption.copyWith(color: c.textSecondary))),
+                Text('${formatBytes((quota - used).clamp(0, quota))} free', style: AppText.caption.copyWith(color: c.textSecondary)),
+              ]),
             ]),
           ),
           const SizedBox(height: 12),
@@ -240,6 +253,7 @@ class DownloadsPage extends StatelessWidget {
                 ]),
               )),
           const SizedBox(height: 18),
+          if (items.isEmpty) const EmptyState(title: 'No downloads yet', body: 'Download a session to listen without internet. Look for the download button on any session.', icon: Icons.download_for_offline_outlined),
           for (final g in groups.entries) ...[
             Text('${g.key.toUpperCase()} · ${g.value.length} ${g.value.length == 1 ? 'SESSION' : 'SESSIONS'}', style: AppText.overline.copyWith(color: c.textSecondary)),
             const SizedBox(height: 4),
@@ -269,11 +283,15 @@ class DownloadsPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text('Sits you finish offline are saved on this phone and sync when you reconnect.', style: AppText.caption.copyWith(color: c.textTertiary)),
           const SizedBox(height: 16),
-          OutlineButton('Browse library for more', key: const Key('browse-library'), onPressed: () => Get.offAllNamed(AppRoutes.library)),
-          const SizedBox(height: 12),
-          DangerButton('Clear all downloads', key: const Key('clear-all'), onPressed: () async {
-            if (await _confirm(context, 'Delete all downloads?')) await dl.clearAll();
-          }),
+          PrimaryButton('Browse library for more', key: const Key('browse-library'), icon: Icons.explore_outlined, onPressed: () => Get.offAllNamed(AppRoutes.library)),
+          const SizedBox(height: 10),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Text('Offline vault active & ready', style: AppText.caption.copyWith(color: c.textSecondary))]),
+          if (items.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            DangerButton('Clear all downloads', key: const Key('clear-all'), onPressed: () async {
+              if (await _confirm(context, 'Delete all downloads?')) await dl.clearAll();
+            }),
+          ],
         ]);
       }),
     );
