@@ -9,6 +9,7 @@ import '../models/content.dart';
 import '../models/json.dart';
 import '../models/session.dart';
 import '../models/soon.dart';
+import '../models/stitch.dart';
 import '../models/today.dart';
 import 'mock_data.dart';
 
@@ -94,9 +95,40 @@ class MockTodayRepository implements TodayRepository {
   @override
   Future<MotdInfo> motd(String date) async => MockData.motd(date);
   @override
-  Future<GroupInfo> groupNext() async => MockData.group(DateTime.now().toIso8601String().substring(0, 10), startsIn: groupStartsIn);
+  Future<GroupInfo> groupNext() async => MockData.group(DateTime.now().toIso8601String().substring(0, 10), startsIn: groupStartsIn, myIntention: intentions.values.firstOrNull);
   @override
-  Future<DailyMessage> dailyMessage(String date) async => DailyMessage(date: date, type: 'text', title: 'Releasing Cognitive Friction', text: 'You do not have to solve your mind. Let it settle.', themeTag: 'Focus');
+  Future<DailyMessage> dailyMessage(String date) async => DailyMessage(
+      date: date, type: 'audio', title: 'Releasing Cognitive Friction', text: 'You do not have to solve your mind. Let it settle.', themeTag: 'Focus', durationSec: 255, hasMedia: true,
+      listenersToday: 3840, saved: savedMessages.contains(date), transcript: const [
+        TranscriptLine(t: 0, text: 'Notice where your shoulders are sitting right now.', section: 'Arrive'),
+        TranscriptLine(t: 75, text: 'Breathe in for four counts and lengthen the exhale to six.', section: 'Breath'),
+        TranscriptLine(t: 160, text: 'Take this practice into the next room you walk into today.', section: 'Carry it'),
+      ], week: [
+        WeekMessage(date: date, title: 'Releasing Cognitive Friction', durationSec: 255, state: 'today'),
+        const WeekMessage(date: '2099-01-01', state: 'upcoming', locked: true),
+      ]);
+  final savedMessages = <String>{};
+  final intentions = <String, String>{};
+  final completed = <String>[];
+  @override
+  Future<void> setIntention(String slot, String intention) async => intentions[slot] = intention;
+  @override
+  Future<void> completeMessage(String date) async => completed.add(date);
+  @override
+  Future<void> saveMessage(String date, {required bool on}) async => on ? savedMessages.add(date) : savedMessages.remove(date);
+  @override
+  Future<WorldGauge> world() async => const WorldGauge(
+      total: 4892, countries: 64, vibration: 84, quiet: false, meditatedToday: 31200, minutesToday: 128450, trendPct: 18,
+      regions: [WorldBelt(key: 'americas', name: 'Americas', sittingNow: 2100, minutesToday: 52000, syncShare: 41), WorldBelt(key: 'emea', name: 'EMEA', sittingNow: 1900, minutesToday: 48000, syncShare: 38), WorldBelt(key: 'apac', name: 'APAC', sittingNow: 892, minutesToday: 28450, syncShare: 36)],
+      belts: [WorldBelt(key: 'US', name: 'United States', sittingNow: 1120, minutesToday: 22800, syncShare: 41), WorldBelt(key: 'GB', name: 'United Kingdom', sittingNow: 842, minutesToday: 14200, syncShare: 38)]);
+  @override
+  Future<SilenceInfo> silence() async => const SilenceInfo(
+      sittingNow: 214, belts: Belts(americas: 68, emea: 114, apac: 32), quiet: false, todayTotal: 842, todayZones: 3,
+      opening: [BellOption(id: 'bell-bowl', name: 'Tibetan bowl')], interval: [BellOption(id: 'bell-chime', name: 'Soft chime')], closing: [BellOption(id: 'bell-gongs', name: 'Three dissolving gongs')]);
+  @override
+  Future<LibrarySummary> librarySummary() async => const LibrarySummary(
+      sittingNow: 3180, belts: [(key: 'americas', name: 'Americas', n: 1900), (key: 'emea', name: 'EMEA', n: 1100), (key: 'apac', name: 'APAC', n: 180)],
+      sitsToday: {'t-anx': 2400, 't-slp': 4500, 't-foc': 3200, 't-deep': 860}, completedToday: {'s-motd': 432, 's-deep': 89}, topToday: ['s-motd', 's-deep']);
   @override
   Future<Page<DailyMessage>> archive({String? q, String? theme, String? cursor}) async =>
       Page([for (var i = 0; i < 6; i++) DailyMessage(date: '2026-10-0${i + 1}', type: i.isEven ? 'text' : 'audio', title: 'Message ${i + 1}', text: 'Text ${i + 1}')], null);
@@ -120,6 +152,12 @@ class MockCatalogRepository implements CatalogRepository {
   @override
   Future<SosInfo> sos() async => MockData.catalog.sos;
   @override
+  Future<CrisisDirectory> crisisDirectory({String? country}) async => const CrisisDirectory(
+      regionCode: 'US', regionName: 'United States & Canada', availability: 'Available 24/7 · Free · Confidential',
+      regions: [(code: 'US', name: 'United States & Canada'), (code: 'GB', name: 'United Kingdom & Ireland')],
+      lines: [CrisisLine(id: '988', name: '988 Suicide & Crisis Lifeline', kind: 'Voice & SMS', description: 'Confidential support.', actions: [CrisisAction(type: 'call', label: 'Call 988', value: '988'), CrisisAction(type: 'sms', label: 'Text 988', value: '988')])],
+      international: [(country: 'United Kingdom', line: 'NHS 111 · Samaritans 116 123', value: '111')], tip: 'Place both feet flat on the floor and exhale slowly.');
+  @override
   Future<List<SessionSummary>> search({required String q, String? themeId, String? type}) async =>
       MockData.sessions.where((s) => s.title.toLowerCase().contains(q.toLowerCase())).toList();
 }
@@ -128,6 +166,8 @@ class MockMediaRepository implements MediaRepository {
   @override
   Future<PlayUrl> playUrl(PlayTarget target, {bool download = false, bool fresh = false}) async =>
       PlayUrl(type: 'audio', url: 'https://example.com/mock.mp3', durationSec: 600, expiresAt: DateTime.now().toUtc().add(const Duration(hours: 6)));
+  @override
+  Future<PreviewUrl> previewUrl(String sessionId) async => const PreviewUrl(url: 'https://example.com/preview.mp3', previewSec: 30, enforced: 'clip', fullDurationSec: 2700);
 }
 
 class MockMeditationRepository implements MeditationRepository {
@@ -135,7 +175,17 @@ class MockMeditationRepository implements MeditationRepository {
   @override
   Future<MeditationResult> record(MeditationRecord m) async {
     recorded.add(m);
-    return MeditationResult(id: m.id, counted: m.durationSec >= 180, canDedicate: m.completed, dedicationsLeftToday: 3, togetherPeople: 412, togetherCountries: 37);
+    return MeditationResult(
+        id: m.id, counted: m.durationSec >= 180, canDedicate: m.completed, dedicationsLeftToday: 3, togetherPeople: 412, togetherCountries: 37, finishers: 412, minutesToday: 5768,
+        belts: const Belts(americas: 184, emea: 163, apac: 65), streak: const StreakInfo(current: 12, record: 28, goalDaysDone: 4, daysToGoal: 1, doneToday: true), streakExtended: true,
+        hrDeltaBpm: m.hrDeltaBpm, hrAvgBpm: m.hrAvgBpm);
+  }
+
+  final kudosSent = <String>[];
+  @override
+  Future<int> kudos(String sessionId) async {
+    kudosSent.add(sessionId);
+    return 409;
   }
 
   @override
@@ -190,7 +240,22 @@ class MockCommunityRepository implements CommunityRepository {
   @override
   Future<Page<Dedication>> dedications(String sessionId, {String? cursor}) async => Page(MockData.dedications, null);
   @override
-  Future<PostResult> post({required String meditationId, required String text}) async => PostResult(id: 'new', status: 'visible', leftToday: --left);
+  Future<PostResult> post({required String meditationId, required String text, bool showPlace = false}) async {
+    lastShowPlace = showPlace;
+    return PostResult(id: 'new', status: 'visible', leftToday: --left);
+  }
+
+  bool lastShowPlace = false;
+  int anonymized = 0;
+  @override
+  Future<Page<FeedItem>> feed({String? cursor}) async => Page([
+        FeedItem(dedication: Dedication(id: 'f1', firstName: 'Elena', text: 'For hospital night shift workers in London.', holdingCount: 48, createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 12))), place: 'London, United Kingdom', sessionTitle: 'Steady Under Pressure'),
+        FeedItem(dedication: Dedication(id: 'f2', firstName: 'Raphael', text: 'Sitting for everyone feeling scattered by modern work urgency.', holdingCount: 230, isTeacher: true, createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 2))), isTeacher: true),
+      ], null);
+  @override
+  Future<int> membersAt(String time) async => 1420;
+  @override
+  Future<int> anonymize() async => ++anonymized;
   @override
   Future<int> hold(String id, bool on) async {
     on ? held.add(id) : held.remove(id);
@@ -255,6 +320,19 @@ class MockComingSoonRepository implements ComingSoonRepository {
       inProgress: [if (joined.contains('c7')) c('c7', '7 days of calm', 7, me: const ChallengeMe(completedDays: 3))],
       available: [if (!joined.contains('c7')) c('c7', '7 days of calm', 7), c('c21', '21-Day Resilience Arc', 21)],
       finished: [(id: 'cf', name: 'September: 7 days', days: 7, finishedAt: DateTime.utc(2026, 9, 21))]);
+  }
+
+  @override
+  Future<ChallengeDetail> challengeDetail(String id) async {
+    _check();
+    return ChallengeDetail(
+      id: id, name: '7-Day Autonomic Reset', blurb: 'A progressive protocol led by Raphael.', days: 7, leadName: 'Raphael', leadRole: 'Breathwork & autonomic specialist', badge: 'Finisher', cohort: 1240,
+      belts: const Belts(americas: 520, emea: 410, apac: 310), joined: joined.contains(id), completedDays: 3, pct: 43, remaining: 4, graceLeft: 1,
+      schedule: [
+        for (var d = 1; d <= 7; d++)
+          ScheduleDay(day: d, title: 'Day $d', minutes: 10 + d, summary: 'Guided by Raphael', state: d <= 3 ? 'done' : (d == 4 ? 'today' : 'locked'), unlocksAt: d > 4 ? DateTime.now().toUtc().add(Duration(days: d - 4)) : null),
+      ],
+    );
   }
 
   @override

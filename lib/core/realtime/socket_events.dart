@@ -12,6 +12,7 @@ abstract final class SocketEvents {
   static const authRefresh = 'auth:refresh';
   // server → client
   static const liveAgg = 'live:agg';
+  static const silenceLive = 'silence:live';
   static const sessionLive = 'session:live';
   static const motdStats = 'motd:stats';
   static const lobbyState = 'lobby:state';
@@ -30,7 +31,7 @@ abstract final class SocketEvents {
   static const error = 'error';
 
   static const serverToClient = [
-    liveAgg, sessionLive, motdStats, lobbyState, groupStart, dedicationNew, dedicationHolding, dedicationRemoved,
+    liveAgg, silenceLive, sessionLive, motdStats, lobbyState, groupStart, dedicationNew, dedicationHolding, dedicationRemoved,
     gratitudeNew, gratitudeRemoved, entitlementChanged, inboxNew, configChanged, catalogChanged, authExpiring, forceLogout, error,
   ];
 }
@@ -53,8 +54,10 @@ class Ack {
 int _i(dynamic v) => (v as num?)?.toInt() ?? 0;
 
 class LiveAgg {
-  const LiveAgg({required this.total, required this.countries, required this.top, this.todayTop = const [], required this.quiet, required this.meditatedToday, required this.vibration, required this.at});
+  const LiveAgg({required this.total, required this.countries, required this.top, this.todayTop = const [], required this.quiet, required this.meditatedToday, required this.vibration, required this.at, this.belts = const {}});
   final int total, countries, meditatedToday, vibration, at;
+  /// americas / emea / apac → people now.
+  final Map<String, int> belts;
   final bool quiet;
   final List<({String country, int n})> top;
 
@@ -75,7 +78,7 @@ class LiveAgg {
 
   factory LiveAgg.fromJson(Map<String, dynamic> j) => LiveAgg(
         total: _i(j['total']), countries: _i(j['countries']), quiet: j['quiet'] == true, meditatedToday: _i(j['meditatedToday']),
-        vibration: _i(j['vibration']), at: _i(j['at']),
+        vibration: _i(j['vibration']), at: _i(j['at']), belts: {for (final e in ((j['belts'] as Map?) ?? const {}).entries) '${e.key}': _i(e.value)},
         top: [for (final t in ((j['top'] as List?) ?? const [])) (country: (t as Map)['c'] as String, n: _i(t['n']))],
         todayTop: [for (final t in ((j['todayTop'] as List?) ?? const [])) (country: (t as Map)['c'] as String, n: _i(t['n']))],
       );
@@ -95,16 +98,30 @@ class MotdStats {
   factory MotdStats.fromJson(Map<String, dynamic> j) => MotdStats(date: j['date'] as String, practicedToday: _i(j['practicedToday']));
 }
 
+class SilenceLive {
+  const SilenceLive({required this.people, this.americas = 0, this.emea = 0, this.apac = 0, this.quiet = true});
+  final int people, americas, emea, apac;
+  final bool quiet;
+  factory SilenceLive.fromJson(Map<String, dynamic> j) {
+    final b = ((j['belts'] as Map?) ?? const {});
+    return SilenceLive(people: _i(j['people']), americas: _i(b['americas']), emea: _i(b['emea']), apac: _i(b['apac']), quiet: j['quiet'] != false);
+  }
+}
+
 class LobbyState {
-  const LobbyState({required this.date, required this.waiting, required this.countries, required this.regions, required this.startsAt});
+  const LobbyState({required this.date, required this.waiting, required this.countries, required this.regions, required this.startsAt, this.americas = 0, this.emea = 0, this.apac = 0, this.intentions = const {}});
   final String date;
-  final int waiting, countries;
+  final int waiting, countries, americas, emea, apac;
+  /// intention text → people who chose it for this sit.
+  final Map<String, int> intentions;
   final List<({String region, int n})> regions;
   final DateTime? startsAt;
   factory LobbyState.fromJson(Map<String, dynamic> j) => LobbyState(
         date: j['date'] as String, waiting: _i(j['waiting']), countries: _i(j['countries']),
         regions: [for (final r in ((j['regions'] as List?) ?? const [])) (region: (r as Map)['r'] as String, n: _i(r['n']))],
         startsAt: j['startsAt'] == null ? null : DateTime.parse(j['startsAt'] as String).toUtc(),
+        americas: _i(((j['byBelt'] as Map?) ?? const {})['americas']), emea: _i(((j['byBelt'] as Map?) ?? const {})['emea']), apac: _i(((j['byBelt'] as Map?) ?? const {})['apac']),
+        intentions: {for (final e in ((j['intentions'] as Map?) ?? const {}).entries) '${e.key}': _i(e.value)},
       );
 }
 

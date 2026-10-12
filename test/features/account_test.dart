@@ -74,7 +74,7 @@ void main() {
       final e = await TestEnv.create(member: true, onboardingDone: true);
       await t.pumpWidget(e.app(initial: AppRoutes.saveYourProgressOptional));
       await settle(t);
-      expect(find.text('Save your progress'), findsOneWidget);
+      expect(find.text('Save your practice ritual.'), findsOneWidget);
       expect(find.text('Post dedications'), findsOneWidget);
       expect(find.text('Continue with Google'), findsOneWidget);
       await t.tap(find.byKey(const Key('btn-google')));

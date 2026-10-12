@@ -3,6 +3,7 @@ import '../models/activity.dart';
 import '../models/content.dart';
 import '../models/json.dart';
 import '../models/soon.dart';
+import '../models/stitch.dart';
 import '../models/today.dart';
 
 /// Controllers talk to these interfaces only (spec §6.1). `api/` and `mock/` implement them.
@@ -16,6 +17,14 @@ abstract class TodayRepository {
   /// REST fallback for live counts (`GET /v1/live`).
   Future<LiveAgg?> live();
   Future<void> setGroupReminder(bool on);
+
+  /// Saves the intention for a sit; [slot] is `GroupInfo.date`.
+  Future<void> setIntention(String slot, String intention);
+  Future<void> completeMessage(String date);
+  Future<void> saveMessage(String date, {required bool on});
+  Future<WorldGauge> world();
+  Future<SilenceInfo> silence();
+  Future<LibrarySummary> librarySummary();
 }
 
 abstract class CatalogRepository {
@@ -25,18 +34,25 @@ abstract class CatalogRepository {
   Future<Program> program(String id);
   Future<Teacher> teacher(String id);
   Future<SosInfo> sos();
+  Future<CrisisDirectory> crisisDirectory({String? country});
   Future<List<SessionSummary>> search({required String q, String? themeId, String? type});
 }
 
 abstract class MediaRepository {
   /// [fresh] skips any prefetched URL (used after an expired URL).
   Future<PlayUrl> playUrl(PlayTarget target, {bool download = false, bool fresh = false});
+
+  /// 30-second preview of a locked premium meditation (free users).
+  Future<PreviewUrl> previewUrl(String sessionId);
 }
 
 abstract class MeditationRepository {
   Future<MeditationResult> record(MeditationRecord m);
   Future<List<MeditationResult>> batch(List<MeditationRecord> items);
   Future<Page<Json>> history({String? cursor});
+
+  /// "Send kudos to all" after finishing a meditation.
+  Future<int> kudos(String sessionId);
 }
 
 class DeviceRegistration {
@@ -70,7 +86,10 @@ class PostResult {
 
 abstract class CommunityRepository {
   Future<Page<Dedication>> dedications(String sessionId, {String? cursor});
-  Future<PostResult> post({required String meditationId, required String text});
+  Future<PostResult> post({required String meditationId, required String text, bool showPlace = false});
+  Future<Page<FeedItem>> feed({String? cursor});
+  Future<int> membersAt(String time);
+  Future<int> anonymize();
   Future<int> hold(String id, bool on);
   Future<void> report(String id, {required String reason, bool block = false});
 }
@@ -96,6 +115,7 @@ abstract class AnalyticsRepository {
 /// P12 "coming soon" features. Every call throws `FEATURE_OFF` while its flag is off.
 abstract class ComingSoonRepository {
   Future<ChallengesData> challenges();
+  Future<ChallengeDetail> challengeDetail(String id);
   Future<void> joinChallenge(String id);
   Future<void> leaveChallenge(String id);
   Future<Page<GratitudePost>> gratitude(String kind, {String? cursor});

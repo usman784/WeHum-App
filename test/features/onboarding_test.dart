@@ -152,9 +152,34 @@ void main() {
     await t.drag(find.byKey(const Key('minute-wheel')), const Offset(0, -64));
     await settle(t);
     expect(c.minute.value, 5);
-    await t.tap(find.text('Continue'));
+    await t.tap(find.text('Lock time'));
     await settle(t);
     expect(e.prefs.map['reminder_time'], '09:05');
+    expect(Get.currentRoute, AppRoutes.setup3Reminder);
+    await e.dispose();
+  });
+
+  testWidgets('time: a suggested block sets the wheel, the member count and the chime toggle show, Decide later keeps 07:00', (t) async {
+    phone(t);
+    final e = await TestEnv.create();
+    await t.pumpWidget(e.app(initial: AppRoutes.setup2MeditationReminder));
+    await settle(t);
+    expect(find.byKey(const Key('members-line')), findsOneWidget);
+    expect(find.text('1,420 members sit together in this block'), findsOneWidget);
+    expect(find.text('Dawn Stillness'), findsOneWidget);
+    await t.tap(find.byKey(const Key('block-12:30')));
+    await t.pump();
+    final c = Get.find<TimeController>();
+    expect(c.hhmm, '12:30');
+    await t.ensureVisible(find.byKey(const Key('chime-toggle')));
+    await t.pump();
+    await t.tap(find.byKey(const Key('chime-toggle')));
+    await t.pump();
+    expect(c.chime.value, false);
+    await t.tap(find.byKey(const Key('time-later')));
+    await settle(t);
+    expect(e.prefs.map['reminder_time'], '07:00');
+    expect(e.prefs.map['daily_chime'], false);
     expect(Get.currentRoute, AppRoutes.setup3Reminder);
     await e.dispose();
   });

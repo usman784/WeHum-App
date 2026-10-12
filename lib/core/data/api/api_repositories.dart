@@ -4,6 +4,7 @@ import '../models/activity.dart';
 import '../models/content.dart';
 import '../models/json.dart';
 import '../models/soon.dart';
+import '../models/stitch.dart';
 import '../models/today.dart';
 import 'api_base.dart';
 
@@ -33,6 +34,28 @@ class TodayApi extends ApiBase implements TodayRepository {
   Future<void> setGroupReminder(bool on) async {
     await call(on ? 'PUT' : 'DELETE', '/v1/group/remind');
   }
+
+  @override
+  Future<void> setIntention(String slot, String intention) async {
+    await call('PUT', '/v1/group/intention', body: {'slot': slot, 'intention': intention});
+  }
+
+  @override
+  Future<void> completeMessage(String date) async {
+    await call('POST', '/v1/daily-messages/$date/complete');
+  }
+
+  @override
+  Future<void> saveMessage(String date, {required bool on}) async {
+    await call(on ? 'PUT' : 'DELETE', '/v1/daily-messages/$date/save');
+  }
+
+  @override
+  Future<WorldGauge> world() async => WorldGauge.fromJson(await getJson('/v1/live/world'));
+  @override
+  Future<SilenceInfo> silence() async => SilenceInfo.fromJson(await getJson('/v1/silence'));
+  @override
+  Future<LibrarySummary> librarySummary() async => LibrarySummary.fromJson(await getJson('/v1/library/summary'));
 }
 
 class CatalogApi extends ApiBase implements CatalogRepository {
@@ -54,6 +77,8 @@ class CatalogApi extends ApiBase implements CatalogRepository {
   @override
   Future<SosInfo> sos() async => SosInfo.fromJson(await getJson('/v1/sos', etag: true));
   @override
+  Future<CrisisDirectory> crisisDirectory({String? country}) async => CrisisDirectory.fromJson(await getJson('/v1/sos/directory', query: {if (country != null) 'country': country}));
+  @override
   Future<List<SessionSummary>> search({required String q, String? themeId, String? type}) async {
     final (rows, _) = await getPage('/v1/search', query: {'q': q, if (themeId != null) 'themeId': themeId, if (type != null) 'type': type});
     return rows.map(SessionSummary.fromJson).toList();
@@ -64,6 +89,8 @@ class MediaApi extends ApiBase implements MediaRepository {
   MediaApi(super.api);
   @override
   Future<PlayUrl> playUrl(PlayTarget target, {bool download = false, bool fresh = false}) async => PlayUrl.fromJson(await call('POST', '/v1/media/play-url', body: target.toBody(download: download)));
+  @override
+  Future<PreviewUrl> previewUrl(String sessionId) async => PreviewUrl.fromJson(await call('POST', '/v1/media/preview-url', body: {'sessionId': sessionId}));
 }
 
 class MeditationApi extends ApiBase implements MeditationRepository {
@@ -81,6 +108,9 @@ class MeditationApi extends ApiBase implements MeditationRepository {
     final (rows, next) = await getPage('/v1/meditations', query: {if (cursor != null) 'cursor': cursor});
     return Page(rows, next);
   }
+
+  @override
+  Future<int> kudos(String sessionId) async => asInt((await call('POST', '/v1/sessions/$sessionId/kudos'))['count']);
 }
 
 class MeApi extends ApiBase implements MeRepository {
@@ -145,11 +175,23 @@ class CommunityApi extends ApiBase implements CommunityRepository {
   }
 
   @override
-  Future<PostResult> post({required String meditationId, required String text}) async {
-    final j = await call('POST', '/v1/dedications', body: {'meditationId': meditationId, 'text': text});
+  Future<PostResult> post({required String meditationId, required String text, bool showPlace = false}) async {
+    final j = await call('POST', '/v1/dedications', body: {'meditationId': meditationId, 'text': text, 'locationMode': showPlace ? 'city' : 'worldwide'});
     return PostResult(id: j['id'] as String, status: (j['status'] ?? 'visible') as String, showHelp: j['showHelp'] == true, leftToday: asInt(j['dedicationsLeftToday']));
   }
 
+  @override
+  Future<Page<FeedItem>> feed({String? cursor}) async {
+    final (rows, next) = await getPage('/v1/community/feed', query: {if (cursor != null) 'cursor': cursor});
+    return Page([
+      for (final r in rows) FeedItem(dedication: Dedication.fromJson(r), place: asStr(r['place']), isTeacher: asJson(r['author'])['kind'] == 'teacher', sessionId: asStr(r['sessionId']), sessionTitle: asStr(r['sessionTitle']))
+    ], next);
+  }
+
+  @override
+  Future<int> membersAt(String time) async => asInt((await getJson('/v1/community/members-at', query: {'time': time}))['count']);
+  @override
+  Future<int> anonymize() async => asInt((await call('POST', '/v1/me/dedications/anonymize'))['count']);
   @override
   Future<int> hold(String id, bool on) async => asInt((await call(on ? 'PUT' : 'DELETE', '/v1/dedications/$id/hold'))['holdingCount']);
   @override
@@ -209,6 +251,8 @@ class ComingSoonApi extends ApiBase implements ComingSoonRepository {
   ComingSoonApi(super.api);
   @override
   Future<ChallengesData> challenges() async => ChallengesData.fromJson(await getJson('/v1/challenges'));
+  @override
+  Future<ChallengeDetail> challengeDetail(String id) async => ChallengeDetail.fromJson(await getJson('/v1/challenges/$id'));
   @override
   Future<void> joinChallenge(String id) async {
     await call('POST', '/v1/challenges/$id/join');

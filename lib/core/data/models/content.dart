@@ -13,6 +13,7 @@ class SessionSummary {
   const SessionSummary({
     required this.id, required this.slug, required this.title, this.description, required this.type, required this.access,
     this.themeId, this.teacherId, this.tags = const [], this.durationSec, this.cover, this.youtubeId, this.downloadable = false, this.version = 1,
+    this.phases = const [], this.sizeMb, this.previewable = false,
   });
   final String id, slug, title, type;
   final String? description, themeId, teacherId, youtubeId;
@@ -22,6 +23,11 @@ class SessionSummary {
   final Cover? cover;
   final bool downloadable;
   final int version;
+  /// Chapters for the player: `(atSec, title)`.
+  final List<({int atSec, String title})> phases;
+  final int? sizeMb;
+  /// A free user may preview this for 30 s.
+  final bool previewable;
 
   bool get isPremium => access == Access.premium;
   bool get isVideo => type == 'video';
@@ -33,12 +39,15 @@ class SessionSummary {
         access: j['access'] == 'free' ? Access.free : Access.premium, themeId: asStr(j['themeId']), teacherId: asStr(j['teacherId']),
         tags: [for (final t in ((j['tags'] as List?) ?? const [])) '$t'], durationSec: (j['durationSec'] as num?)?.toInt(), cover: Cover.from(j['cover']),
         youtubeId: asStr(j['youtubeId']), downloadable: j['downloadable'] == true, version: asInt(j['version'], 1),
+        phases: [for (final p in asJsonList(j['phases'])) (atSec: asInt(p['atSec']), title: (p['title'] ?? '') as String)],
+        sizeMb: (j['sizeMb'] as num?)?.toInt(), previewable: j['previewable'] == true,
       );
 
   Json toJson() => {
         'id': id, 'slug': slug, 'title': title, 'description': description, 'type': type, 'access': access.name, 'themeId': themeId, 'teacherId': teacherId,
         'tags': tags, 'durationSec': durationSec, 'cover': cover == null ? null : {'url': cover!.url, 'blurhash': cover!.blurhash}, 'youtubeId': youtubeId,
         'downloadable': downloadable, 'version': version,
+        'phases': [for (final p in phases) {'atSec': p.atSec, 'title': p.title}], 'sizeMb': sizeMb, 'previewable': previewable,
       };
 }
 
@@ -126,17 +135,21 @@ class SosTile {
   final int? durationSec;
   final Access access;
   final Cover? cover;
+  int get minutes => ((durationSec ?? 0) / 60).round().clamp(1, 999);
 }
 
 class SosInfo {
-  const SosInfo({this.title = 'How can I help?', this.subtitle, this.help = const {}, this.tiles = const []});
+  const SosInfo({this.title = 'How can I help?', this.subtitle, this.help = const {}, this.tiles = const [], this.soundBeds = const []});
   final String title;
   final String? subtitle;
+  /// Baseline sound beds to choose from ("Low brown noise", "Delta wave", "None").
+  final List<String> soundBeds;
   /// `{ title, body, ctaLabel, url }` — the "Need more help?" card.
   final Json help;
   final List<SosTile> tiles;
   factory SosInfo.fromJson(Json j) => SosInfo(
         title: asStr(j['title']) ?? 'How can I help?', subtitle: asStr(j['subtitle']), help: asJson(j['help']),
+        soundBeds: [for (final b in ((j['soundBeds'] as List?) ?? const [])) '$b'],
         tiles: [
           for (final t in asJsonList(j['tiles']))
             SosTile(
@@ -178,17 +191,21 @@ class Catalog {
 }
 
 class Dedication {
-  const Dedication({required this.id, required this.firstName, this.country, required this.text, this.holdingCount = 0, this.createdAt, this.heldByMe = false});
+  const Dedication({required this.id, required this.firstName, this.country, required this.text, this.holdingCount = 0, this.createdAt, this.heldByMe = false, this.place, this.isTeacher = false});
   final String id, firstName, text;
   final String? country;
+  /// "London, UK" when the person chose to show it.
+  final String? place;
+  final bool isTeacher;
   final int holdingCount;
   final DateTime? createdAt;
   final bool heldByMe;
   Dedication copyWith({int? holdingCount, bool? heldByMe}) =>
-      Dedication(id: id, firstName: firstName, country: country, text: text, holdingCount: holdingCount ?? this.holdingCount, createdAt: createdAt, heldByMe: heldByMe ?? this.heldByMe);
+      Dedication(id: id, firstName: firstName, country: country, text: text, holdingCount: holdingCount ?? this.holdingCount, createdAt: createdAt, heldByMe: heldByMe ?? this.heldByMe, place: place, isTeacher: isTeacher);
   factory Dedication.fromJson(Json j) => Dedication(
         id: j['id'] as String, firstName: (j['firstName'] ?? '') as String, country: asStr(j['country']), text: (j['text'] ?? '') as String,
-        holdingCount: asInt(j['holdingCount']), createdAt: asDate(j['createdAt']), heldByMe: j['holding'] == true);
+        holdingCount: asInt(j['holdingCount']), createdAt: asDate(j['createdAt']), heldByMe: j['holding'] == true, place: asStr(j['place']),
+        isTeacher: asJson(j['author'])['kind'] == 'teacher');
 }
 
 class SessionDetail {

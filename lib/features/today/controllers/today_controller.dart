@@ -7,6 +7,7 @@ import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/local/app_database.dart';
 import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/json.dart';
+import '../../../core/data/models/stitch.dart';
 import '../../../core/data/models/today.dart';
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/socket_events.dart';
@@ -63,6 +64,16 @@ class TodayController extends GetxController {
   bool get liveQuiet => live.agg.value?.quiet ?? data.value?.live?.quiet ?? false;
   int get practiced => live.motdPracticed[_date] ?? data.value?.motd?.practicedToday ?? 0;
 
+  /// People sitting now by belt: the live socket numbers when connected, otherwise the snapshot from `/v1/today`.
+  Belts get belts {
+    final a = live.agg.value?.belts;
+    if (a != null && a.isNotEmpty && !live.paused) return Belts(americas: a['americas'] ?? 0, emea: a['emea'] ?? 0, apac: a['apac'] ?? 0);
+    return data.value?.belts ?? const Belts();
+  }
+
+  /// People sitting in silence right now (socket first).
+  int get silenceNow => live.silence.value?.people ?? data.value?.silenceNow ?? 0;
+
   @override
   void onInit() {
     super.onInit();
@@ -76,6 +87,7 @@ class TodayController extends GetxController {
     super.onReady();
     live.acquireToday();
     live.acquireMotd(_date);
+    live.acquireSilence();
     _lengths = ever(data, (_) => _pickLength());
   }
 
@@ -88,6 +100,7 @@ class TodayController extends GetxController {
   void onClose() {
     live.releaseToday();
     live.releaseMotd(_date);
+    live.releaseSilence();
     _lengths?.dispose();
     super.onClose();
   }
@@ -150,6 +163,13 @@ class TodayController extends GetxController {
 
   void waitForGroup() => Get.toNamed(AppRoutes.groupMeditationLobby);
 
+  /// "Continue last": reopens the unfinished meditation on its session screen.
+  void continueLast() {
+    final c = data.value?.continueLast;
+    if (c == null) return;
+    Get.toNamed(AppRoutes.sessionDetail.replaceFirst(':id', c.sessionId), arguments: {'id': c.sessionId});
+  }
+
   static Map<String, dynamic> _toJson(TodayData d) => {
         'date': d.date,
         'motd': d.motd == null
@@ -169,6 +189,15 @@ class TodayController extends GetxController {
         'freePick': d.freePick == null ? null : {'sessionId': d.freePick!.sessionId, 'title': d.freePick!.title, 'youtubeId': d.freePick!.youtubeId, 'durationSec': d.freePick!.durationSec},
         'program': d.program == null ? null : {'id': d.program!.id, 'title': d.program!.title, 'day': d.program!.day, 'days': d.program!.days, 'unlockAt': d.program!.unlockAt?.toIso8601String()},
         'progress': {'minutesWeek': d.progress.minutes, 'meditationsWeek': d.progress.meditations, 'daysThisWeek': d.progress.daysThisWeek},
-        'dailyMessage': d.dailyMessage == null ? null : {'date': d.dailyMessage!.date, 'title': d.dailyMessage!.title, 'type': d.dailyMessage!.type},
+        'dailyMessage': d.dailyMessage == null ? null : {'date': d.dailyMessage!.date, 'title': d.dailyMessage!.title, 'type': d.dailyMessage!.type, 'durationSec': d.dailyMessage!.durationSec},
+        'streak': d.streak == null
+            ? null
+            : {
+                'current': d.streak!.current, 'record': d.streak!.record, 'graceLeft': d.streak!.graceLeft, 'graceDays': d.streak!.graceDays, 'weeklyGoal': d.streak!.weeklyGoal,
+                'goalDaysDone': d.streak!.goalDaysDone, 'daysToGoal': d.streak!.daysToGoal, 'doneToday': d.streak!.doneToday,
+                'week': [for (final w in d.streak!.week) {'date': w.date, 'label': w.label, 'state': w.state.name, 'minutes': w.minutes}],
+              },
+        'presence': {'belts': {'americas': d.belts.americas, 'emea': d.belts.emea, 'apac': d.belts.apac}, 'silenceNow': d.silenceNow},
+        'continueLast': d.continueLast == null ? null : {'sessionId': d.continueLast!.sessionId, 'title': d.continueLast!.title, 'positionSec': d.continueLast!.positionSec, 'leftSec': d.continueLast!.leftSec},
       };
 }

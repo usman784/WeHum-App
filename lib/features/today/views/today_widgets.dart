@@ -78,7 +78,7 @@ class HeroActions extends StatelessWidget {
     final g = group;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Semantics(
-        button: true, label: 'Meditate now, $minutes minutes, on your own',
+        button: true, label: 'Join the sit, $minutes minutes, on your own',
         child: Material(
           key: const Key('meditate-now'), color: c.ember, shape: const StadiumBorder(),
           child: InkWell(
@@ -91,7 +91,7 @@ class HeroActions extends StatelessWidget {
                   child: Row(children: [
                     Container(width: 38, height: 38, decoration: BoxDecoration(color: c.onEmber.withValues(alpha: .14), shape: BoxShape.circle), child: Icon(Icons.play_arrow_rounded, color: c.onEmber, size: 26)),
                     const SizedBox(width: 10),
-                    Expanded(child: Text('Meditate now', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.button.copyWith(color: c.onEmber))),
+                    Expanded(child: Text('Join the sit', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.button.copyWith(color: c.onEmber))),
                     const SizedBox(width: 8),
                     Text('on your own', style: AppText.caption.copyWith(color: c.onEmber.withValues(alpha: .75), fontWeight: FontWeight.w600)),
                   ]),

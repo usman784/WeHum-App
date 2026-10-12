@@ -1,4 +1,5 @@
 import 'session.dart';
+import 'stitch.dart';
 
 /// `GET /v1/bootstrap` (backend spec §5.4). Unknown keys are kept in [raw] so new server fields never break the app.
 class Bootstrap {
@@ -12,6 +13,9 @@ class Bootstrap {
     required this.me,
     required this.founding,
     required this.raw,
+    this.sitTimes = const [],
+    this.downloadQuotaMb = 2400,
+    this.hourlySits = false,
   });
 
   final DateTime serverTime;
@@ -23,6 +27,10 @@ class Bootstrap {
   final Me? me;
   final Founding founding;
   final Map<String, dynamic> raw;
+  /// Suggested blocks on the sit-time screen.
+  final List<SitTimeBlock> sitTimes;
+  final int downloadQuotaMb;
+  final bool hourlySits;
 
   bool feature(String key) => features[key] ?? false;
 
@@ -36,6 +44,12 @@ class Bootstrap {
         me: j['me'] is Map ? Me.fromJson((j['me'] as Map).cast<String, dynamic>()) : null,
         founding: Founding.fromJson(j['founding'] is Map ? (j['founding'] as Map).cast<String, dynamic>() : const {}),
         raw: j,
+        sitTimes: [
+          for (final b in ((j['sitTimes'] as List?) ?? const []))
+            if (b is Map) SitTimeBlock(time: (b['time'] ?? '07:00') as String, label: (b['label'] ?? '') as String)
+        ],
+        downloadQuotaMb: ((j['downloads'] as Map?)?['quotaMb'] as num?)?.toInt() ?? 2400,
+        hourlySits: ((j['group'] as Map?)?['cadence']) == 'hourly',
       );
 }
 

@@ -5,6 +5,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/buttons.dart';
+import '../../../core/widgets/controls.dart';
+import '../../../core/widgets/stitch.dart';
+import '../../../core/widgets/surfaces.dart';
 import '../controllers/onboarding_controllers.dart';
 import 'onboarding_widgets.dart';
 
@@ -51,7 +54,7 @@ class NamePage extends StatelessWidget {
   }
 }
 
-/// 07 Setup 2 · Meditation reminder: 24-hour wheel in local time.
+/// 07 Setup 2 · Sit time: wheel in local time, how many members sit in that hour, suggested blocks, the daily chime.
 class TimePage extends StatelessWidget {
   const TimePage({super.key});
   @override
@@ -59,25 +62,98 @@ class TimePage extends StatelessWidget {
     final ctrl = Get.put(TimeController());
     final c = context.colors;
     return OnboardingFrame(
-      showBack: true, cta: 'Continue', onCta: ctrl.submit,
+      showBack: true, cta: 'Lock time', onCta: ctrl.submit,
       topRight: Text('STEP 2 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SizedBox(height: 12),
-        Text('Meditation reminder', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-        const SizedBox(height: 10),
-        Text('We will remind you to meditate daily, as consistency is important.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-        Expanded(
-          child: Center(
+      footer: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Center(child: TextLink('Decide later', key: const Key('time-later'), onPressed: ctrl.later, color: c.textSecondary)),
+      ),
+      child: SingleChildScrollView(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const SizedBox(height: 12),
+          Text('Anchor your sit into your daily rhythm.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+          const SizedBox(height: 10),
+          Text('Gentle consistency over rigid perfection. Choose the time of day when your mind is least crowded.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+          const SizedBox(height: 8),
+          Center(
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               TimeWheel(key: const Key('hour-wheel'), count: 24, value: ctrl.hour, label: 'Hour'),
               Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(':', style: AppText.display.copyWith(color: c.textPrimary))),
               TimeWheel(key: const Key('minute-wheel'), count: 60, step: 5, value: ctrl.minute, label: 'Minute'),
             ]),
           ),
+          Center(child: Text('24-hour clock, in your local time', style: AppText.caption.copyWith(color: c.textTertiary))),
+          const SizedBox(height: 10),
+          Obx(() {
+            final n = ctrl.members.value;
+            if (n == null || n <= 0) return const SizedBox.shrink();
+            return Center(
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Container(width: 8, height: 8, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
+                const SizedBox(width: 8),
+                Text('${groupedInt(n)} ${n == 1 ? 'member sits' : 'members sit'} together in this block', key: const Key('members-line'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              ]),
+            );
+          }),
+          const SizedBox(height: 22),
+          Text('SUGGESTED PRIME BLOCKS', style: AppText.overline.copyWith(color: c.textTertiary)),
+          const SizedBox(height: 10),
+          Obx(() {
+            ctrl.hour.value; // rebuild when the wheel moves
+            ctrl.minute.value;
+            return Wrap(spacing: 10, runSpacing: 10, children: [
+              for (final b in ctrl.blocks)
+                _BlockTile(key: Key('block-${b.time}'), label: b.label, time: TimeController.clock(b.time), selected: ctrl.isPicked(b), onTap: () => ctrl.pick(b)),
+            ]);
+          }),
+          const SizedBox(height: 22),
+          Obx(() => AppCard(
+                child: Row(children: [
+                  Icon(Icons.notifications_active_outlined, color: c.emberText),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('Allow daily sit chime', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text('A single, quiet 10-minute heads-up before your room opens. No spam, no guilt, no promotional buzz.', style: AppText.caption.copyWith(color: c.textSecondary)),
+                    ]),
+                  ),
+                  const SizedBox(width: 8),
+                  AppToggle(key: const Key('chime-toggle'), value: ctrl.chime.value, onChanged: (v) => ctrl.chime.value = v, label: 'Allow daily sit chime'),
+                ]),
+              )),
+          const SizedBox(height: 16),
+        ]),
+      ),
+    );
+  }
+}
+
+class _BlockTile extends StatelessWidget {
+  const _BlockTile({super.key, required this.label, required this.time, required this.selected, required this.onTap});
+  final String label, time;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Semantics(
+      button: true, selected: selected, label: '$label, $time',
+      child: GestureDetector(
+        onTap: onTap,
+        child: ExcludeSemantics(
+          child: Container(
+            width: (MediaQuery.sizeOf(context).width - Gap.gutterOnboarding * 2 - 10) / 2, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: selected ? c.emberTint : c.surface, borderRadius: BorderRadius.circular(Radii.tile),
+              border: Border.all(color: selected ? c.ember : c.border, width: selected ? 1.5 : 1)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(time, style: AppText.navTitle.copyWith(color: selected ? c.emberText : c.textPrimary, fontFeatures: AppText.tabular)),
+              const SizedBox(height: 2),
+              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)),
+            ]),
+          ),
         ),
-        Center(child: Text('24-hour clock, in your local time', style: AppText.caption.copyWith(color: c.textTertiary))),
-        const SizedBox(height: 16),
-      ]),
+      ),
     );
   }
 }

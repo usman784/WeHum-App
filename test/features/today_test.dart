@@ -51,7 +51,7 @@ void main() {
     });
   });
 
-  testWidgets('22 member Today: greeting, hero, lengths, program, Silence Room, progress, daily message', (t) async {
+  testWidgets('22 member Today: greeting, hero, lengths, program, presence, note, streak, accelerators', (t) async {
     final e = await openToday(t);
     expect(find.byKey(const Key('greeting')), findsOneWidget);
     expect(find.textContaining('Marcus'), findsWidgets);
@@ -59,13 +59,19 @@ void main() {
     expect(find.text('10 min'), findsOneWidget);
     expect(find.text('30 min'), findsOneWidget);
     expect(find.text('45 min'), findsOneWidget);
-    expect(find.text('Meditate now'), findsOneWidget);
+    expect(find.text('Join the sit'), findsOneWidget);
     expect(find.text('Wait for the group'), findsOneWidget);
-    expect(find.byKey(const Key('program-card')), findsOneWidget);
-    await t.scrollUntilVisible(find.byKey(const Key('daily-line')), 200, scrollable: find.byType(Scrollable).first);
-    expect(find.byKey(const Key('silence-row')), findsOneWidget);
-    expect(find.text('105'), findsOneWidget);
+    expect(find.byKey(const Key('streak-chip')), findsOneWidget);
+    expect(find.text('5-day streak'), findsWidgets);
+    await t.scrollUntilVisible(find.byKey(const Key('streak-card')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('presence-card')), findsOneWidget);
     expect(find.text('Releasing Cognitive Friction'), findsOneWidget);
+    expect(find.text('105 min this week'), findsOneWidget);
+    expect(find.text('1 sit to reach weekly goal'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('continue-last')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('silence-row')), findsOneWidget);
+    expect(find.textContaining('89 people sitting in silence'), findsOneWidget);
+    expect(find.textContaining('6 min left'), findsOneWidget);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });
@@ -84,7 +90,7 @@ void main() {
     expect(find.text('1,300 meditated today'), findsOneWidget);
     e.socketServer.serverPushes('motd:stats', {'date': localDate(), 'practicedToday': 1301});
     await afterPush(t);
-    expect(find.text('1,301 people practiced this meditation today'), findsOneWidget);
+    expect(find.text('1,301 sat today'), findsOneWidget);
     e.socketServer.serverDrops();
     await t.pump(const Duration(seconds: 11));
     expect(find.text('Live counts paused'), findsOneWidget);

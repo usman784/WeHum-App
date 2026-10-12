@@ -1,4 +1,5 @@
 import 'json.dart';
+import 'stitch.dart';
 
 class PlayUrl {
   const PlayUrl({required this.type, this.url, this.hlsUrl, this.youtubeId, this.mime, this.durationSec, this.expiresAt});
@@ -41,18 +42,21 @@ class PlayBlock extends PlayTarget {
 }
 
 class PlayDailyMessage extends PlayTarget {
-  const PlayDailyMessage(this.date);
+  const PlayDailyMessage(this.date, {this.video = false});
   final String date;
+  final bool video;
   @override
-  Json toBody({bool download = false}) => {'kind': 'daily_message', 'date': date, if (download) 'download': true};
+  Json toBody({bool download = false}) => {'kind': 'daily_message', 'date': date, if (video) 'video': true, if (download) 'download': true};
 }
 
 /// One finished meditation, written to the local outbox first (spec §6.2).
 class MeditationRecord {
   const MeditationRecord({
     required this.id, this.sessionId, this.recipeId, required this.kind, this.lengthVariant, required this.startedAt, required this.endedAt,
-    required this.durationSec, this.completed = false, this.offline = false,
+    required this.durationSec, this.completed = false, this.offline = false, this.hrDeltaBpm, this.hrAvgBpm,
   });
+  /// Optional readings from Apple Health / Health Connect (only when the person connected it).
+  final int? hrDeltaBpm, hrAvgBpm;
   final String id, kind;
   final String? sessionId, recipeId;
   final int? lengthVariant;
@@ -63,24 +67,41 @@ class MeditationRecord {
   Json toJson() => {
         'id': id, if (sessionId != null) 'sessionId': sessionId, if (recipeId != null) 'recipeId': recipeId, 'kind': kind,
         if (lengthVariant != null) 'lengthVariant': lengthVariant, 'startedAt': startedAt.toUtc().toIso8601String(), 'endedAt': endedAt.toUtc().toIso8601String(),
-        'durationSec': durationSec, 'completed': completed, 'offline': offline,
+        'durationSec': durationSec, 'completed': completed, 'offline': offline, if (hrDeltaBpm != null) 'hrDeltaBpm': hrDeltaBpm, if (hrAvgBpm != null) 'hrAvgBpm': hrAvgBpm,
       };
   factory MeditationRecord.fromJson(Json j) => MeditationRecord(
         id: j['id'] as String, sessionId: asStr(j['sessionId']), recipeId: asStr(j['recipeId']), kind: j['kind'] as String, lengthVariant: (j['lengthVariant'] as num?)?.toInt(),
         startedAt: DateTime.parse(j['startedAt'] as String), endedAt: DateTime.parse(j['endedAt'] as String), durationSec: asInt(j['durationSec']),
-        completed: j['completed'] == true, offline: j['offline'] == true);
+        completed: j['completed'] == true, offline: j['offline'] == true, hrDeltaBpm: (j['hrDeltaBpm'] as num?)?.toInt(), hrAvgBpm: (j['hrAvgBpm'] as num?)?.toInt());
 }
 
 class MeditationResult {
-  const MeditationResult({required this.id, this.counted = false, this.canDedicate = false, this.dedicationsLeftToday = 0, this.togetherPeople = 0, this.togetherCountries = 0, this.status = 'created'});
+  const MeditationResult({
+    required this.id, this.counted = false, this.canDedicate = false, this.dedicationsLeftToday = 0, this.togetherPeople = 0, this.togetherCountries = 0, this.status = 'created',
+    this.streak, this.streakExtended = false, this.finishers = 0, this.belts = const Belts(), this.topCountries = const [], this.minutesToday = 0, this.hrDeltaBpm, this.hrAvgBpm,
+  });
   final String id, status;
   final bool counted, canDedicate;
   final int dedicationsLeftToday, togetherPeople, togetherCountries;
+  /// Streak with this sit included; `extended` = this sit made today count.
+  final StreakInfo? streak;
+  final bool streakExtended;
+  /// People who finished the same meditation today.
+  final int finishers;
+  final Belts belts;
+  final List<({String country, int n})> topCountries;
+  final int minutesToday;
+  final int? hrDeltaBpm, hrAvgBpm;
   factory MeditationResult.fromJson(Json j) {
     final t = asJson(j['together']);
+    final hr = j['heartRate'] is Map ? asJson(j['heartRate']) : null;
+    final st = asJson(j['streak']);
     return MeditationResult(
         id: j['id'] as String, status: (j['status'] ?? 'created') as String, counted: j['counted'] == true, canDedicate: j['canDedicate'] == true,
-        dedicationsLeftToday: asInt(j['dedicationsLeftToday']), togetherPeople: asInt(t['people']), togetherCountries: asInt(t['countries']));
+        dedicationsLeftToday: asInt(j['dedicationsLeftToday']), togetherPeople: asInt(t['people']), togetherCountries: asInt(t['countries']),
+        streak: j['streak'] is Map ? StreakInfo.from({...st, 'doneToday': true}) : null, streakExtended: st['extended'] == true, finishers: asInt(asJson(j['finishers'])['completed']),
+        belts: Belts.from(t['belts']), topCountries: [for (final x in asJsonList(t['top'])) (country: (x['c'] ?? '') as String, n: asInt(x['n']))], minutesToday: asInt(t['minutesToday']),
+        hrDeltaBpm: (hr?['deltaBpm'] as num?)?.toInt(), hrAvgBpm: (hr?['avgBpm'] as num?)?.toInt());
   }
 }
 
@@ -94,8 +115,10 @@ class ProgressBar {
 }
 
 class ProgressData {
-  const ProgressData({required this.period, this.minutes = 0, this.meditations = 0, this.together = 0, this.average = 0, this.daysMeditated = 0, this.daysThisWeek = const [], this.bars = const []});
+  const ProgressData({required this.period, this.minutes = 0, this.meditations = 0, this.together = 0, this.average = 0, this.daysMeditated = 0, this.daysThisWeek = const [], this.bars = const [], this.streak, this.lifetime});
   final Period period;
+  final StreakInfo? streak;
+  final Lifetime? lifetime;
   final int minutes, meditations, together, average, daysMeditated;
   final List<bool> daysThisWeek;
   final List<ProgressBar> bars;
@@ -103,7 +126,8 @@ class ProgressData {
         period: Period.values.firstWhere((p) => p.name == j['period'], orElse: () => Period.week), minutes: asInt(j['minutes']), meditations: asInt(j['meditations']),
         together: asInt(j['together']), average: asInt(j['average']), daysMeditated: asInt(j['daysMeditated']),
         daysThisWeek: [for (final d in ((j['daysThisWeek'] as List?) ?? const [])) d == true || (d is num && d > 0)],
-        bars: [for (final b in asJsonList(j['bars'])) ProgressBar(label: (b['label'] ?? '') as String, minutes: asInt(b['minutes']), current: b['current'] == true)]);
+        bars: [for (final b in asJsonList(j['bars'])) ProgressBar(label: (b['label'] ?? '') as String, minutes: asInt(b['minutes']), current: b['current'] == true)],
+        streak: StreakInfo.from(j['streak']), lifetime: Lifetime.from(j['lifetime']));
 }
 
 class Recipe {
@@ -150,14 +174,31 @@ class InboxItem {
 }
 
 class DailyMessage {
-  const DailyMessage({required this.date, required this.type, required this.title, this.text, this.durationSec, this.themeTag, this.imageUrl, this.hasMedia = false});
-  final String date, type, title;
+  const DailyMessage({
+    required this.date, required this.type, required this.title, this.text, this.durationSec, this.themeTag, this.imageUrl, this.hasMedia = false,
+    this.hasVideo = false, this.access = 'premium', this.locked = false, this.saved = false, this.listenersToday = 0, this.transcript = const [], this.week = const [],
+  });
+  final String date, type, title, access;
   final String? text, themeTag, imageUrl;
   final int? durationSec;
-  final bool hasMedia;
+  final bool hasMedia, hasVideo, locked, saved;
+  final int listenersToday;
+  final List<TranscriptLine> transcript;
+  final List<WeekMessage> week;
+  bool get isFree => access == 'free';
+  DailyMessage copyWith({bool? saved}) => DailyMessage(
+      date: date, type: type, title: title, text: text, durationSec: durationSec, themeTag: themeTag, imageUrl: imageUrl, hasMedia: hasMedia, hasVideo: hasVideo, access: access,
+      locked: locked, saved: saved ?? this.saved, listenersToday: listenersToday, transcript: transcript, week: week);
   factory DailyMessage.fromJson(Json j) => DailyMessage(
         date: j['date'] as String, type: (j['type'] ?? 'text') as String, title: (j['title'] ?? '') as String, text: asStr(j['text']), durationSec: (j['durationSec'] as num?)?.toInt(),
-        themeTag: asStr(j['themeTag']), imageUrl: asStr(asJson(j['image'])['url']), hasMedia: j['hasMedia'] == true);
+        themeTag: asStr(j['themeTag']), imageUrl: asStr(asJson(j['image'])['url']), hasMedia: j['hasMedia'] == true, hasVideo: j['hasVideo'] == true,
+        access: asStr(j['access']) ?? 'premium', locked: j['locked'] == true, saved: j['saved'] == true, listenersToday: asInt(j['listenersToday']),
+        transcript: [for (final l in asJsonList(j['transcript'])) TranscriptLine(t: asInt(l['t']), text: (l['text'] ?? '') as String, section: asStr(l['section']))],
+        week: [
+          for (final w in asJsonList(j['week']))
+            WeekMessage(date: w['date'] as String, title: asStr(w['title']), durationSec: (w['durationSec'] as num?)?.toInt(), state: (w['state'] ?? 'available') as String, locked: w['locked'] == true)
+        ],
+      );
 }
 
 class Page<T> {

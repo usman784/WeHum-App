@@ -13,6 +13,8 @@ class LiveService extends GetxService {
   final agg = Rxn<LiveAgg>();
   final motdPracticed = <String, int>{}.obs; // date → count (`motd:stats`)
   final sessionPeople = <String, SessionLive>{}.obs; // sessionId → live (`session:live`)
+  final silence = Rxn<SilenceLive>(); // people sitting in the Silence Room (`silence:live`)
+  StreamSubscription<SilenceLive>? _silSub;
   StreamSubscription<LiveAgg>? _aggSub;
   StreamSubscription<MotdStats>? _motdSub;
   StreamSubscription<SessionLive>? _sessSub;
@@ -28,6 +30,7 @@ class LiveService extends GetxService {
     _aggSub = _socket.on(SocketEvents.liveAgg, LiveAgg.fromJson).listen((a) => agg.value = a);
     _motdSub = _socket.on(SocketEvents.motdStats, MotdStats.fromJson).listen((m) => motdPracticed[m.date] = m.practicedToday);
     _sessSub = _socket.on(SocketEvents.sessionLive, SessionLive.fromJson).listen((s) => sessionPeople[s.sessionId] = s);
+    _silSub = _socket.on(SocketEvents.silenceLive, SilenceLive.fromJson).listen((s) => silence.value = s);
     // once, when the socket gives up: one REST snapshot as a fallback (never repeated, never labelled live)
     _paused = ever(_socket.state, (s) async {
       if (s == SocketState.paused && agg.value == null && !_fallbackTried && _rest != null) {
@@ -46,6 +49,8 @@ class LiveService extends GetxService {
   void releaseWorld() => release('world');
   Future<void> acquireMotd(String date) => acquire('motd:$date');
   void releaseMotd(String date) => release('motd:$date');
+  Future<void> acquireSilence() => acquire('silence');
+  void releaseSilence() => release('silence');
   Future<void> acquireSession(String id) => acquire('session:$id');
   void releaseSession(String id) => release('session:$id');
 
@@ -54,6 +59,7 @@ class LiveService extends GetxService {
     _aggSub?.cancel();
     _motdSub?.cancel();
     _sessSub?.cancel();
+    _silSub?.cancel();
     _paused?.dispose();
     super.onClose();
   }

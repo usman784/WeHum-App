@@ -1,5 +1,6 @@
 import '../models/activity.dart';
 import '../models/content.dart';
+import '../models/stitch.dart';
 import '../models/today.dart';
 
 /// Demo content in the shape of backend spec §5.4 (spec §0 rule 6).
@@ -52,12 +53,15 @@ abstract final class MockData {
   static MotdInfo motd(String date) => MotdInfo(date: date, sessionId: 's-motd', title: 'Steady Under Pressure', teacher: 'Raphael', theme: 'Anxiety & Stress', cover: cover('ocean'), lengths: const [10, 30, 45], practicedToday: 1280);
 
   /// [startsIn] negative = the group is already running (a late joiner).
-  static GroupInfo group(String date, {Duration startsIn = const Duration(minutes: 12)}) {
+  static GroupInfo group(String date, {Duration startsIn = const Duration(minutes: 12), String? myIntention}) {
     final starts = DateTime.now().toUtc().add(startsIn);
     final phase = startsIn.isNegative ? GroupPhase.live : (startsIn <= const Duration(minutes: 3) ? GroupPhase.lobby : GroupPhase.scheduled);
     return GroupInfo(
         date: date, startsAt: starts, endsAt: starts.add(const Duration(minutes: 30)), lobbyOpensAt: starts.subtract(const Duration(minutes: 3)),
-        lengthMin: 30, state: phase, waiting: 120, sessionId: 's-motd', title: 'Steady Under Pressure');
+        lengthMin: 30, state: phase, waiting: 120, sessionId: 's-motd', title: 'Steady Under Pressure',
+        intentions: const ['Calm under pressure', 'Deep physical release', 'Mindful stillness'], myIntention: myIntention,
+        focus: const GroupFocus(title: 'The Midday Coherence Sit', summary: 'Breath anchoring & autonomic settling', quote: 'Equalize inhale and exhale.', attribution: 'Raphael'),
+        waitingByBelt: const Belts(americas: 186, emea: 214, apac: 82));
   }
 
   static TodayData today(String date, {required bool member, Duration groupStartsIn = const Duration(minutes: 12)}) => TodayData(
@@ -65,7 +69,18 @@ abstract final class MockData {
         freePick: member ? null : const FreePick(sessionId: 's-free1', title: 'Breathing Reset', youtubeId: 'dQw4w9WgXcQ', durationSec: 480),
         program: member ? const ProgramCard(id: 'p-7', title: '7-Day Autonomic Reset', day: 4, days: 7) : null,
         progress: const WeekProgress(minutes: 105, meditations: 7, daysThisWeek: [true, true, false, true, true, false, false]),
-        dailyMessage: member ? DailyMessageRef(date: date, title: 'Releasing Cognitive Friction', type: 'audio') : null);
+        dailyMessage: member ? DailyMessageRef(date: date, title: 'Releasing Cognitive Friction', type: 'audio', durationSec: 120) : null,
+        streak: const StreakInfo(current: 5, record: 28, goalDaysDone: 4, daysToGoal: 1, week: [
+          StreakDay(date: '2026-10-12', label: 'Mon', state: DayState.done, minutes: 15),
+          StreakDay(date: '2026-10-13', label: 'Tue', state: DayState.done, minutes: 20),
+          StreakDay(date: '2026-10-14', label: 'Wed', state: DayState.rest),
+          StreakDay(date: '2026-10-15', label: 'Thu', state: DayState.today),
+          StreakDay(date: '2026-10-16', label: 'Fri', state: DayState.upcoming),
+          StreakDay(date: '2026-10-17', label: 'Sat', state: DayState.upcoming),
+          StreakDay(date: '2026-10-18', label: 'Sun', state: DayState.upcoming),
+        ]),
+        belts: const Belts(americas: 512, emea: 428, apac: 308), silenceNow: 89,
+        continueLast: member ? const ContinueLast(sessionId: 's-deep', title: 'Mindful Transitions', positionSec: 540, leftSec: 360) : null);
 
   static final dedications = <Dedication>[
     Dedication(id: 'd1', firstName: 'Lena', country: 'DE', text: 'For my mother, who is unwell.', holdingCount: 14, createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 3))),
@@ -75,5 +90,7 @@ abstract final class MockData {
 
   static ProgressData progress(Period p) => ProgressData(
         period: p, minutes: 105, meditations: 7, together: 3, average: 15, daysMeditated: 4, daysThisWeek: const [true, true, false, true, true, false, false],
-        bars: [for (final (i, l) in ['M', 'T', 'W', 'T', 'F', 'S', 'S'].indexed) ProgressBar(label: l, minutes: [20, 15, 0, 30, 40, 0, 0][i], current: i == 4)]);
+        bars: [for (final (i, l) in ['M', 'T', 'W', 'T', 'F', 'S', 'S'].indexed) ProgressBar(label: l, minutes: [20, 15, 0, 30, 40, 0, 0][i], current: i == 4)],
+        streak: const StreakInfo(current: 12, record: 28, goalDaysDone: 4, daysToGoal: 1),
+        lifetime: const Lifetime(sits: 64, minutes: 820, together: 48, togetherPct: 75, avgMin: 12.8, hrShiftBpm: -14));
 }

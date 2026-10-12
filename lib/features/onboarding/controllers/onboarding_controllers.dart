@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../app/app_controller.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/models/bootstrap.dart';
+import '../../../core/data/models/stitch.dart';
 import '../../../core/errors/error_code.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/realtime/live_service.dart';
@@ -149,6 +151,24 @@ class TimeController extends GetxController {
   final hour = 7.obs;
   final minute = 0.obs;
 
+  /// "Allow daily sit chime": one quiet heads-up before the room opens. Off = no daily reminder is set up.
+  final chime = true.obs;
+
+  /// How many members sit in the chosen hour (a real count from the server); null until known.
+  final members = RxnInt();
+  Worker? _watch;
+  Timer? _debounce;
+
+  /// Suggested blocks from the CMS (`bootstrap.sitTimes`).
+  List<SitTimeBlock> get blocks {
+    final fromServer = Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.sitTimes : null;
+    if (fromServer != null && fromServer.isNotEmpty) return fromServer;
+    return const [
+      SitTimeBlock(time: '06:30', label: 'Dawn Stillness'), SitTimeBlock(time: '07:00', label: 'Morning Prime'),
+      SitTimeBlock(time: '12:30', label: 'Midday Reset'), SitTimeBlock(time: '21:00', label: 'Night Decompress'),
+    ];
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -156,12 +176,61 @@ class TimeController extends GetxController {
     hour.value = int.tryParse(p[0]) ?? 7;
     minute.value = int.tryParse(p[1]) ?? 0;
     Get.find<AnalyticsService>().track('onboarding_step_view', {'step': 'time'});
+    _loadMembers();
+    // a new hour → a new count (debounced: the wheel fires on every notch)
+    _watch = ever(hour, (_) {
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 400), _loadMembers);
+    });
+  }
+
+  @override
+  void onClose() {
+    _watch?.dispose();
+    _debounce?.cancel();
+    super.onClose();
+  }
+
+  Future<void> _loadMembers() async {
+    try {
+      members.value = await Get.find<CommunityRepository>().membersAt(hhmm);
+    } catch (_) {
+      members.value = null; // no number is better than an invented one
+    }
   }
 
   String get hhmm => '${hour.value.toString().padLeft(2, '0')}:${minute.value.toString().padLeft(2, '0')}';
 
+  /// "07:00 AM" for a block tile.
+  static String clock(String hhmm) {
+    final p = hhmm.split(':');
+    final h = int.tryParse(p[0]) ?? 0;
+    final ap = h >= 12 ? 'PM' : 'AM';
+    final h12 = h % 12 == 0 ? 12 : h % 12;
+    return '${h12.toString().padLeft(2, '0')}:${p.length > 1 ? p[1] : '00'} $ap';
+  }
+
+  void pick(SitTimeBlock b) {
+    final p = b.time.split(':');
+    hour.value = int.tryParse(p[0]) ?? hour.value;
+    minute.value = int.tryParse(p[1]) ?? minute.value;
+    Get.find<AnalyticsService>().track('sit_time_block_pick', {'time': b.time, 'source': 'suggested'});
+  }
+
+  bool isPicked(SitTimeBlock b) => b.time == hhmm;
+
   void submit() {
-    Get.find<OnboardingStore>().reminderTime = hhmm;
+    final store = Get.find<OnboardingStore>();
+    store.reminderTime = hhmm;
+    store.dailyChime = chime.value;
+    Get.toNamed(AppRoutes.setup3Reminder);
+  }
+
+  /// "Decide later": keeps the default 07:00 and carries on (the reminder can be changed in You → Reminders).
+  void later() {
+    final store = Get.find<OnboardingStore>();
+    store.reminderTime = '07:00';
+    store.dailyChime = chime.value;
     Get.toNamed(AppRoutes.setup3Reminder);
   }
 }
@@ -177,6 +246,12 @@ class ReminderPermissionController extends GetxController {
 
   Future<void> allow() async {
     busy.value = true;
+    if (!Get.find<OnboardingStore>().dailyChime) {
+      // the person turned the daily chime off: nothing to ask the phone for
+      Get.find<OnboardingStore>().notificationChoice = 'skipped';
+      await _finish(false);
+      return;
+    }
     final n = Get.find<NotificationService>();
     await n.init();
     final ok = await n.requestPermission();

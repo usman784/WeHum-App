@@ -69,6 +69,10 @@ class OnboardingStore extends GetxService {
   String get reminderTime => _box.read<String>('reminder_time') ?? '07:00';
   set reminderTime(String v) => _box.write('reminder_time', v);
 
+  /// "Allow daily sit chime" on the sit-time screen: when off, no daily reminder is set up.
+  bool get dailyChime => _box.read<bool>('daily_chime') ?? true;
+  set dailyChime(bool v) => _box.write('daily_chime', v);
+
   /// `granted | denied | skipped | unknown`
   String get notificationChoice => _box.read<String>('notification_choice') ?? 'unknown';
   set notificationChoice(String v) => _box.write('notification_choice', v);
