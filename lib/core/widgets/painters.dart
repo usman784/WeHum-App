@@ -346,8 +346,8 @@ class Overline extends StatelessWidget {
   Widget build(BuildContext context) => Text(text.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: color ?? context.colors.emberText));
 }
 
-/// The WeHum ring logo (spec §3.3, same numbers as assets/brand/logo.svg): an ember arc with the gap top-right,
-/// a green disc and a dark centre dot. Brand colours are fixed in both themes. Decorative: no semantics.
+/// The WeHum logo (same numbers as assets/brand/logo.svg): a full ember ring, a green centre dot and a few
+/// green presence dots. Brand colours are fixed in both themes. Decorative: no semantics.
 class BrandLogo extends StatelessWidget {
   const BrandLogo({super.key, this.size = 30});
   final double size;
@@ -361,14 +361,12 @@ class _BrandLogoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / 30);
     const centre = Offset(15, 15);
-    final arc = Paint()
-      ..color = const Color(0xFFFF7A45)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(Rect.fromCircle(center: centre, radius: 11), 0, 52 / 11, false, arc); // dasharray 52 18
-    canvas.drawCircle(centre, 6, Paint()..color = const Color(0xFF4ADE80));
-    canvas.drawCircle(centre, 2.4, Paint()..color = const Color(0xFF0B0D0E));
+    canvas.drawCircle(centre, 12, Paint()..color = const Color(0xFFFF7A45)..style = PaintingStyle.stroke..strokeWidth = 2.4);
+    canvas.drawCircle(centre, 2.2, Paint()..color = const Color(0xFF34D399));
+    final dot = Paint()..color = const Color(0xCC34D399);
+    for (final o in const [Offset(9.5, 12), Offset(13.5, 9), Offset(16.8, 9.6), Offset(21.5, 13.6), Offset(12, 19), Offset(17.5, 20.2), Offset(19.2, 15.8), Offset(9.5, 16.2)]) {
+      canvas.drawCircle(o, .9, dot);
+    }
   }
 
   @override
