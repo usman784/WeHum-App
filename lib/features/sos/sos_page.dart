@@ -65,13 +65,21 @@ class SosPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(SosController());
     return AppScaffold(
-      title: 'SoS',
+      title: 'SoS', stitch: true,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
               final s = ctrl.sos;
               final help = s.help;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
+                Row(children: [
+                  Container(width: 7, height: 7, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('IMMEDIATE AUDIO DISPATCH', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.success, fontSize: 10.5))),
+                  const SizedBox(width: 8),
+                  GestureDetector(behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.crisisDirectory), child: SizedBox(height: 48, child: Row(children: [Text('Crisis directory', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700)), const SizedBox(width: 4), Icon(Icons.arrow_downward_rounded, size: 14, color: c.emberText)]))),
+                ]),
+                const SizedBox(height: 14),
                 Text(s.title, key: const Key('sos-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 6),
                 Text('Select what you are feeling. Raphael’s voice begins within two seconds: no intro, no build-up.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
@@ -80,25 +88,34 @@ class SosPage extends StatelessWidget {
                   key: const Key('sos-breath'), onTap: () => Get.toNamed(AppRoutes.breathRun, arguments: const BreathPattern(name: 'Sync breath', inhaleSec: 4, exhaleSec: 6, rounds: 24)),
                   semanticLabel: 'Sync breath right now, four minutes',
                   child: Row(children: [
-                    const IconTile(Icons.air_rounded),
+                    Container(width: 48, height: 48, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: c.ember, width: 3)), child: Icon(Icons.air_rounded, size: 20, color: c.emberText)),
                     const SizedBox(width: 14),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Sync breath right now', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text('SYNC BREATH RIGHT NOW', style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5)),
+                      const SizedBox(height: 2),
                       Text('4 s in · 6 s out · 4 min, no audio needed', style: AppText.caption.copyWith(color: c.textSecondary)),
                     ])),
-                    Icon(Icons.play_circle_outline_rounded, color: c.emberText),
+                    Text('Inhale (4s)', style: AppText.navTitle.copyWith(color: c.emberText, fontSize: 14)),
                   ]),
                 ),
                 const SizedBox(height: 14),
                 AdaptiveGrid(
-                  baseExtent: 108,
+                  baseExtent: 150,
                   children: [
                     for (final t in s.tiles)
                       AppCard(
                         key: Key('sos-${t.feeling}'), onTap: () => ctrl.tap(t),
+                        padding: const EdgeInsets.all(14),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Row(children: [Text(t.durationSec == null ? '' : '${t.minutes} min', style: AppText.caption.copyWith(color: c.textSecondary)), const Spacer(), if (t.access == Access.premium && !ctrl.access.isMember) Icon(Icons.lock_outline_rounded, size: 16, color: c.textTertiary)]),
-                          Text(t.feeling, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                          Row(children: [
+                            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Text(t.durationSec == null ? '' : '${t.minutes} min', style: AppText.caption.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600))),
+                            const Spacer(),
+                            if (t.access == Access.premium && !ctrl.access.isMember) Icon(Icons.lock_outline_rounded, size: 18, color: c.textTertiary) else Container(width: 30, height: 30, decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle), child: Icon(Icons.play_arrow_rounded, size: 18, color: c.emberText)),
+                          ]),
+                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(t.feeling, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17)),
+                            if ((t.subtitle ?? '').isNotEmpty) Padding(padding: const EdgeInsets.only(top: 2), child: Text(t.subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))),
+                          ]),
                         ]),
                       ),
                   ],

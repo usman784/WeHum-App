@@ -61,29 +61,39 @@ class CrisisDirectoryPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(CrisisDirectoryController());
     return AppScaffold(
-      title: 'Crisis support',
+      title: 'Crisis support', stitch: true,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
               final d = ctrl.dir.value!;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
-                Text('You are not alone', key: const Key('crisis-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-                const SizedBox(height: 8),
-                Text('If you are in severe distress or feeling unsafe, please reach out to a person now. These lines are free and confidential.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 14),
                 AppCard(
-                  child: Row(children: [
-                    Icon(Icons.public_rounded, color: c.textSecondary),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Container(width: 36, height: 36, decoration: BoxDecoration(color: c.teal, shape: BoxShape.circle), child: Icon(Icons.favorite_rounded, size: 18, color: c.tealText)),
                     const SizedBox(width: 12),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Region', style: AppText.caption.copyWith(color: c.textSecondary)),
-                      Text(d.regionName, key: const Key('crisis-region'), style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text('You are not alone', key: const Key('crisis-title'), style: AppText.title.copyWith(color: c.textPrimary, fontSize: 19)),
+                      const SizedBox(height: 4),
+                      Text('If you are in severe distress or feeling unsafe, please reach out to a person now. These lines are free and confidential.', style: AppText.bodySmall.copyWith(color: c.textSecondary, height: 1.5)),
+                    ])),
+                  ]),
+                ),
+                const SizedBox(height: 12),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Row(children: [
+                    Icon(Icons.public_rounded, size: 18, color: c.emberText),
+                    const SizedBox(width: 10),
+                    Expanded(child: Row(children: [
+                      Text('Region: ', style: AppText.caption.copyWith(color: c.textSecondary)),
+                      Flexible(child: Text(d.regionName, key: const Key('crisis-region'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 14))),
                     ])),
                     if (d.regions.length > 1)
                       PopupMenuButton<String>(
                         key: const Key('crisis-change'), tooltip: 'Change region', onSelected: ctrl.pickRegion,
                         itemBuilder: (_) => [for (final r in d.regions) PopupMenuItem(value: r.code, child: Text(r.name))],
-                        child: Text('Change', style: AppText.bodySmall.copyWith(color: c.emberText, fontWeight: FontWeight.w700)),
+                        child: Text('CHANGE', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
                       ),
                   ]),
                 ),
@@ -94,17 +104,29 @@ class CrisisDirectoryPage extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: AppCard(
                       key: Key('line-${l.id}'),
+                      padding: const EdgeInsets.all(16),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        if (l.kind.isNotEmpty) Text(l.kind.toUpperCase(), style: AppText.overline.copyWith(color: c.tealText)),
-                        const SizedBox(height: 4),
-                        Text(l.name, style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                        if (l.description.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: Text(l.description, style: AppText.bodySmall.copyWith(color: c.textSecondary))),
-                        const SizedBox(height: 12),
-                        Wrap(spacing: 8, runSpacing: 8, children: [
-                          for (final a in l.actions)
-                            ActionChip(
-                              key: Key('act-${l.id}-${a.type}'), avatar: Icon(a.isCall ? Icons.call_rounded : Icons.sms_rounded, size: 18),
-                              label: Text(a.label), onPressed: () => ctrl.act(l, a)),
+                        Row(children: [
+                          Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text('AVAILABLE 24/7 · FREE · CONFIDENTIAL', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.success, fontSize: 10))),
+                          if (l.kind.isNotEmpty) Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Text(l.kind.toUpperCase(), style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5))),
+                        ]),
+                        const SizedBox(height: 8),
+                        Text(l.name, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                        if (l.description.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(l.description, style: AppText.bodySmall.copyWith(color: c.textSecondary, height: 1.45))),
+                        const SizedBox(height: 14),
+                        Row(children: [
+                          for (final (i, a) in l.actions.indexed) ...[
+                            if (i > 0) const SizedBox(width: 8),
+                            Expanded(child: GestureDetector(
+                              key: Key('act-${l.id}-${a.type}'), onTap: () => ctrl.act(l, a),
+                              child: Pressable(child: Container(
+                                height: 46, alignment: Alignment.center, decoration: BoxDecoration(color: i == 0 ? c.ember : c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+                                child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(a.isCall ? Icons.call_rounded : Icons.sms_rounded, size: 18, color: i == 0 ? c.onEmber : c.textPrimary), const SizedBox(width: 8), Flexible(child: Text(a.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.button.copyWith(color: i == 0 ? c.onEmber : c.textPrimary, fontSize: 15)))]),
+                              )),
+                            )),
+                          ],
                         ]),
                       ]),
                     ),

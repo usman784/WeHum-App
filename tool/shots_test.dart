@@ -1,11 +1,11 @@
 // Visual review aid (not part of the normal suite): renders screens with the mock data and writes PNGs to test/tool/shots/.
-//   flutter test --update-goldens test/tool/shots_test.dart            (all)   |   SHOT=silence flutter test ... (name filter)
+//   flutter test --update-goldens tool/shots_test.dart            (all)   |   SHOT=silence flutter test ... (name filter)
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meditation/app/routes/app_routes.dart';
-import '../support/test_env.dart';
+import '../test/support/test_env.dart';
 
 const routes = <String, String>{
   'today': AppRoutes.todayMember, 'library': AppRoutes.library, 'silence': AppRoutes.silenceRoomSetup, 'lobby': AppRoutes.groupMeditationLobby, 'next': AppRoutes.nextSit,
@@ -35,7 +35,7 @@ void main() {
       for (var i = 0; i < 12; i++) {
         await t.pump(const Duration(milliseconds: 150));
       }
-      await expectLater(find.byType(MaterialApp), matchesGoldenFile('shots/${e.key}.png'));
+      await expectLater(find.byType(MaterialApp), matchesGoldenFile('../test/tool/shots/${e.key}.png'));
       await t.pumpWidget(const SizedBox());
       await env.dispose();
     });

@@ -76,7 +76,7 @@ class BeltsCard extends StatelessWidget {
               Opacity(opacity: .5, child: CustomPaint(painter: _BeltPainter(c.success, c.ember, c.border))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [label('Americas', belts.americas, c.success), label('EMEA', belts.emea, c.ember), label('Asia-Pac', belts.apac, c.success)]),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [for (final l in [label('Americas', belts.americas, c.success), label('EMEA', belts.emea, c.ember), label('Asia-Pac', belts.apac, c.success)]) Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: l))]),
               ),
             ]),
           ),
@@ -271,7 +271,7 @@ class DurationGrid extends StatelessWidget {
             key: Key('dur-$m'), onTap: () => onPick(m),
             child: Pressable(
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180), width: w, height: 56,
+                duration: const Duration(milliseconds: 180), width: w, constraints: const BoxConstraints(minHeight: 56),
                 decoration: BoxDecoration(color: m == selected ? c.ember : c.surfaceAlt, borderRadius: BorderRadius.circular(12)),
                 child: Stack(clipBehavior: Clip.none, alignment: Alignment.center, children: [
                   Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [

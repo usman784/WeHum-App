@@ -97,8 +97,8 @@ class StitchHeader extends StatelessWidget {
             const SosPill(),
             const SizedBox(width: 8),
             GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.you),
-              child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: Get.isRegistered<OnboardingStore>() ? (Get.find<OnboardingStore>().nameRx.value.isEmpty ? '' : Get.find<OnboardingStore>().nameRx.value.substring(0, 1).toUpperCase()) : '', size: 32, fontSize: 13)),
+              behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.you),
+              child: SizedBox(width: 48, height: 48, child: Center(child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: Get.isRegistered<OnboardingStore>() ? (Get.find<OnboardingStore>().nameRx.value.isEmpty ? '' : Get.find<OnboardingStore>().nameRx.value.substring(0, 1).toUpperCase()) : '', size: 32, fontSize: 13)))),
             ),
             const SizedBox(width: 10),
           ]),

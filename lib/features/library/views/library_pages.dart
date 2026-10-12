@@ -129,16 +129,16 @@ class LibraryPage extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 22),
-                  Row(children: [Expanded(child: Text('ACTIVE PROTOCOLS', style: AppText.overline.copyWith(color: c.textSecondary))), GestureDetector(onTap: () => Get.toNamed(AppRoutes.allPrograms), child: Text('ALL PROGRAMS', style: AppText.overline.copyWith(color: c.emberText)))]),
+                  Row(children: [Expanded(child: Text('ACTIVE PROTOCOLS', style: AppText.overline.copyWith(color: c.textSecondary))), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.allPrograms), child: SizedBox(height: 48, child: Align(alignment: Alignment.centerRight, child: Text('ALL PROGRAMS', style: AppText.overline.copyWith(color: c.emberText)))))]),
                   const SizedBox(height: 8),
                   if (ctrl.programCard.value != null)
                     AppCard(
                       key: const Key('program-in-progress'), onTap: () => Get.toNamed('/program/${ctrl.programCard.value!.id}', arguments: {'id': ctrl.programCard.value!.id}), padding: const EdgeInsets.all(18),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(children: [
-                          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.emberDeep, borderRadius: BorderRadius.circular(4)), child: Text('IN PROGRESS', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10))),
+                          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.emberDeep, borderRadius: BorderRadius.circular(4)), child: Text('IN PROGRESS', maxLines: 1, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10))),
                           const SizedBox(width: 8),
-                          Text('Day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}', style: AppText.caption.copyWith(color: c.textSecondary)),
+                          Flexible(child: Text('Day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))),
                           const Spacer(),
                           Container(width: 36, height: 36, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)), child: Icon(Icons.bolt_rounded, size: 20, color: c.emberText)),
                         ]),
@@ -261,7 +261,7 @@ class _Tab extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque, onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.only(bottom: 8), alignment: Alignment.center,
+          constraints: const BoxConstraints(minHeight: 48), padding: const EdgeInsets.only(bottom: 4), alignment: Alignment.bottomCenter,
           decoration: BoxDecoration(border: Border(bottom: BorderSide(color: on ? c.ember : c.border, width: on ? 2 : 1))),
           child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: on ? c.textPrimary : c.textSecondary, fontSize: 10.5)),
         ),

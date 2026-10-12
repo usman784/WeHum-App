@@ -123,67 +123,137 @@ class WorldPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(WorldController());
     return AppScaffold(
-      title: 'Global presence', action: const Padding(padding: EdgeInsets.only(right: 4), child: SosPill()),
+      title: 'Global presence', stitch: true,
       body: Obx(() {
         final trend = ctrl.trendPct;
-        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: staggered([
-          Text(ctrl.kicker, key: const Key('world-kicker'), style: AppText.overline.copyWith(color: ctrl.paused || ctrl.quiet ? c.textTertiary : c.success)),
-          const SizedBox(height: 4),
-          Text(ctrl.big, key: const Key('world-big'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 56)),
-          Text(ctrl.sub, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-          const SizedBox(height: 16),
-          AppCard(padding: const EdgeInsets.all(12), child: WorldDotMap(hot: ctrl.paused ? const {} : ctrl.hot, height: 190)),
-          const SizedBox(height: 16),
+        final live = !(ctrl.paused || ctrl.quiet);
+        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 6, Gap.gutter, 28), children: staggered([
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(child: Text(ctrl.kicker, key: const Key('world-kicker'), style: AppText.overline.copyWith(color: live ? c.emberText : c.textTertiary, fontSize: 10.5))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  live ? PulseDot(color: c.success, size: 3.5) : Container(width: 7, height: 7, decoration: BoxDecoration(color: c.textTertiary, shape: BoxShape.circle)),
+                  const SizedBox(width: 4),
+                  Text(live ? 'Synchronized' : (ctrl.paused ? 'Paused' : 'Quiet'), style: AppText.caption.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600, fontSize: 11)),
+                ]),
+              ),
+            ]),
+            const SizedBox(height: 6),
+            Text('Global Presence', style: AppText.heroTitle.copyWith(color: c.textPrimary, fontSize: 30)),
+            const SizedBox(height: 4),
+            Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+              Text(ctrl.big, key: const Key('world-big'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15, fontFeatures: AppText.tabular)),
+              const SizedBox(width: 6),
+              Expanded(child: Text(ctrl.sub, style: AppText.bodySmall.copyWith(color: c.textSecondary))),
+            ]),
+          ]),
           AppCard(
-            key: const Key('gauge-card'),
+            key: const Key('gauge-card'), padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(child: Text('WORLD VIBRATION', style: AppText.overline.copyWith(color: c.textSecondary))),
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('WORLD VIBRATION GAUGE', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
+                  const SizedBox(height: 4),
+                  Text(ctrl.vibrationWord, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                ])),
                 if (trend != null) InfoChip(key: const Key('trend'), text: '${trend >= 0 ? '+' : ''}$trend% today', icon: trend >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded, accent: trend >= 0),
               ]),
-              const SizedBox(height: 8),
-              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Text('${ctrl.vibration}', key: const Key('vibration-num'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 44)),
-                Padding(padding: const EdgeInsets.only(bottom: 8, left: 4), child: Text('/ 100 · ${ctrl.vibrationWord}', key: const Key('vibration'), style: AppText.navTitle.copyWith(color: c.textSecondary, fontSize: 15))),
+              const SizedBox(height: 14),
+              Row(children: [
+                SizedBox(
+                  width: 104, height: 104,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: ctrl.vibration / 100), duration: const Duration(milliseconds: 900), curve: Curves.easeOutCubic,
+                    builder: (_, v, __) => CustomPaint(
+                      painter: _GaugePainter(v, c.ember, c.success, c.track),
+                      child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text('${ctrl.vibration}', key: const Key('vibration-num'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 32, fontFeatures: AppText.tabular)),
+                        Text('/ 100', style: AppText.caption.copyWith(color: c.textSecondary)),
+                      ]))),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: Container(
+                  padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(12)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('VOLUME TRACKED', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
+                    const SizedBox(height: 4),
+                    if (ctrl.minutesToday != null && ctrl.minutesToday! > 0)
+                      Text('${groupedInt(ctrl.minutesToday!)} min', key: const Key('minutes-today'), style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20, fontFeatures: AppText.tabular))
+                    else
+                      Text('Quiet · ${ctrl.vibrationWord}', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                    const SizedBox(height: 2),
+                    Text('sat so far today', style: AppText.caption.copyWith(color: c.textSecondary)),
+                    const SizedBox(height: 4),
+                    Text('/ 100 · ${ctrl.vibrationWord}', key: const Key('vibration'), style: AppText.caption.copyWith(color: c.textTertiary)),
+                  ]),
+                )),
               ]),
-              const SizedBox(height: 4),
+              const SizedBox(height: 14),
               VibrationBar(value: ctrl.vibration, onInfo: () {
                 ctrl.openInfo();
                 showAppSheet<void>(context, title: 'World Vibration', builder: (_) => Text('The vibration rises when more people meditate on the same day and when group meditations gather many people at once. It moves toward green as the world meditates more.', style: AppText.body.copyWith(color: c.textBody)));
               }),
-              if (ctrl.minutesToday != null && ctrl.minutesToday! > 0) ...[
-                const SizedBox(height: 10),
-                Text('${groupedInt(ctrl.minutesToday!)} minutes sat so far today', key: const Key('minutes-today'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
-              ],
             ]),
           ),
-          if (ctrl.regions.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            const SectionLabel('Active regional belts'),
-            const SizedBox(height: 6),
-            for (final r in ctrl.regions) _BeltRow(key: Key('belt-${r.key}'), b: r, name: r.name),
-          ],
-          if (ctrl.countryRows.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            const SectionLabel('Where people are sitting'),
-            const SizedBox(height: 6),
-            for (final b in ctrl.countryRows.take(8)) _BeltRow(key: Key('country-${b.key}'), b: b, name: b.name),
-          ],
-          const SizedBox(height: 16),
+          AppCard(
+            padding: const EdgeInsets.all(14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Icon(Icons.travel_explore_rounded, size: 18, color: c.emberText),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Active sanctuary field', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16))),
+                Text('LIVE COARSE HEATMAP', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5)),
+              ]),
+              const SizedBox(height: 12),
+              WorldDotMap(hot: ctrl.paused ? const {} : ctrl.hot, height: 190),
+            ]),
+          ),
+          PrimaryButton('Join the global sit', icon: Icons.play_circle_outline_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
+          if (ctrl.regions.isNotEmpty) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('ACTIVE REGIONAL BELTS', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+            const SizedBox(height: 8),
+            for (final r in ctrl.regions) Padding(padding: const EdgeInsets.only(bottom: 10), child: _BeltRow(key: Key('belt-${r.key}'), b: r, name: r.name)),
+          ]),
+          if (ctrl.countryRows.isNotEmpty) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('WHERE PEOPLE ARE SITTING', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+            const SizedBox(height: 8),
+            for (final b in ctrl.countryRows.take(8)) Padding(padding: const EdgeInsets.only(bottom: 10), child: _BeltRow(key: Key('country-${b.key}'), b: b, name: b.name)),
+          ]),
           AppCard(
             outlined: true,
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Icon(Icons.shield_outlined, color: c.tealText, size: 20),
               const SizedBox(width: 10),
-              Expanded(child: Text('Country-level numbers only. We never access, store or show your GPS, your IP trail or who is sitting. Counts come from the server, not from guesses.', style: AppText.caption.copyWith(color: c.textSecondary))),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('ZERO-TRACKING PRIVACY GUARANTEE', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
+                const SizedBox(height: 4),
+                Text('Country-level numbers only. We never access, store or show your GPS, your IP trail or who is sitting. Counts come from the server, not from guesses.', style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45)),
+              ])),
             ]),
           ),
-          const SizedBox(height: 16),
-          PrimaryButton('Join the global sit', onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
-        ]));
+        ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
       }),
     );
   }
+}
+
+class _GaugePainter extends CustomPainter {
+  _GaugePainter(this.v, this.a, this.b, this.track);
+  final double v;
+  final Color a, b, track;
+  @override
+  void paint(Canvas canvas, Size s) {
+    final r = Rect.fromCircle(center: s.center(Offset.zero), radius: s.width / 2 - 6);
+    canvas.drawArc(r, 0, math.pi * 2, false, Paint()..style = PaintingStyle.stroke..strokeWidth = 7..color = track);
+    canvas.drawArc(r, -math.pi / 2, math.pi * 2 * v.clamp(0.0, 1.0), false, Paint()..style = PaintingStyle.stroke..strokeWidth = 7..strokeCap = StrokeCap.round..shader = SweepGradient(startAngle: -math.pi / 2, endAngle: math.pi * 1.5, colors: [a, b]).createShader(r));
+  }
+
+  @override
+  bool shouldRepaint(covariant _GaugePainter o) => o.v != v;
 }
 
 class _BeltRow extends StatelessWidget {
@@ -193,9 +263,10 @@ class _BeltRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return AppCard(
+      padding: const EdgeInsets.all(14),
       child: Row(children: [
+        Container(width: 40, height: 40, margin: const EdgeInsets.only(right: 12), decoration: BoxDecoration(color: c.bgDeep, shape: BoxShape.circle), child: Icon(Icons.public_rounded, size: 20, color: c.success)),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(name, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
           Text('${groupedInt(b.sittingNow)} sitting now · ${groupedInt(b.minutesToday)} min today', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
@@ -499,7 +570,7 @@ class NextSitPage extends StatelessWidget {
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Container(width: 8, height: 8, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
                       const SizedBox(width: 8),
-                      Text('${groupedInt(total)} ${total == 1 ? 'meditator' : 'meditators'} waiting', key: const Key('waiting-count'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+                      Flexible(child: Text('${groupedInt(total)} ${total == 1 ? 'meditator' : 'meditators'} waiting', key: const Key('waiting-count'), textAlign: TextAlign.center, style: AppText.navTitle.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular))),
                     ]),
                     if (!w.isEmpty) ...[const SizedBox(height: 10), BeltCounts(belts: w)],
                   ]),
@@ -560,7 +631,7 @@ class NextSitPage extends StatelessWidget {
                   SecondaryButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: g.startsAt.toLocal(), endDate: g.startsAt.toLocal().add(Duration(minutes: g.lengthMin))))),
                 ]),
                 Column(children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.sensors_rounded, size: 14, color: c.textSecondary), const SizedBox(width: 6), Text('STRICT PRESENCE TELEMETRY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))]),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.sensors_rounded, size: 14, color: c.textSecondary), const SizedBox(width: 6), Flexible(child: Text('STRICT PRESENCE TELEMETRY', maxLines: 2, textAlign: TextAlign.center, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))]),
                   const SizedBox(height: 4),
                   Text('No cameras. No talking. Just shared presence with everyone sitting at the same moment.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
                 ]),

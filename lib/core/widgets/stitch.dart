@@ -204,7 +204,7 @@ class LiveStrip extends StatelessWidget {
       ),
       const SizedBox(width: 8),
       if (onWave != null)
-        GestureDetector(onTap: onWave, child: Container(width: 34, height: 34, decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle), child: Icon(Icons.graphic_eq_rounded, size: 18, color: c.textSecondary))),
+        GestureDetector(behavior: HitTestBehavior.opaque, onTap: onWave, child: SizedBox(width: 48, height: 48, child: Center(child: Container(width: 34, height: 34, decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle), child: Icon(Icons.graphic_eq_rounded, size: 18, color: c.textSecondary))))),
     ]);
   }
 }
