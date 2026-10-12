@@ -6,7 +6,10 @@ import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/local/app_database.dart';
 import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/content.dart';
+import '../../../core/data/models/soon.dart';
+import '../../../core/data/models/stitch.dart';
 import '../../../core/data/models/today.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/catalog_service.dart';
@@ -38,6 +41,12 @@ class LibraryController extends GetxController {
   final filters = const LibraryFilters().obs;
   final programCard = Rxn<ProgramCard>();
   final recipeCount = 0.obs;
+  /// Header numbers and "sat today" counts; null until the server answers (the page then shows no numbers).
+  final summary = Rxn<LibrarySummary>();
+  /// Challenges (cohort sprints) in progress or open to join; empty while `features.challenges` is off.
+  final challenges = Rxn<ChallengesData>();
+
+  bool get challengesOn => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature('challenges');
 
   Catalog? get c => catalog.catalog.value;
 
@@ -57,6 +66,58 @@ class LibraryController extends GetxController {
     try {
       recipeCount.value = (await Get.find<RecipeRepository>().list()).length;
     } catch (_) {}
+    try {
+      summary.value = await Get.find<TodayRepository>().librarySummary();
+    } catch (_) {}
+    if (challengesOn) {
+      try {
+        challenges.value = await Get.find<ComingSoonRepository>().challenges();
+      } catch (_) {}
+    }
+  }
+
+  /// Quick filter chips under the search box.
+  bool chipOn(String chip) => switch (chip) {
+        'all' => !filters.value.active,
+        'short' => filters.value.lengths.length == 1 && filters.value.lengths.contains(10),
+        'mid' => filters.value.lengths.length == 1 && filters.value.lengths.contains(20),
+        'free' => filters.value.type == 'free',
+        'downloaded' => filters.value.downloadedOnly,
+        _ => false,
+      };
+
+  void chip(String chip) {
+    switch (chip) {
+      case 'all':
+        resetFilters();
+      case 'short':
+        applyFilters(LibraryFilters(lengths: chipOn('short') ? const {} : const {10}));
+      case 'mid':
+        applyFilters(LibraryFilters(lengths: chipOn('mid') ? const {} : const {20}));
+      case 'free':
+        applyFilters(LibraryFilters(type: chipOn('free') ? 'all' : 'free'));
+      case 'downloaded':
+        applyFilters(LibraryFilters(downloadedOnly: !chipOn('downloaded')));
+    }
+  }
+
+  /// The biggest sessions today by people who finished them (needs the summary; empty without it).
+  List<({SessionSummary session, int completed})> get topToday {
+    final sm = summary.value, cat = c;
+    if (sm == null || cat == null) return const [];
+    return [
+      for (final id in sm.topToday)
+        if (cat.session(id) != null) (session: cat.session(id)!, completed: sm.completedToday[id] ?? 0),
+    ];
+  }
+
+  int sitsToday(String themeId) => summary.value?.sitsToday[themeId] ?? 0;
+
+  /// "12–25 min" for a discipline row.
+  String rangeOf(ThemeInfo t) {
+    final mins = (c?.inTheme(t.id) ?? const <SessionSummary>[]).map((s) => s.minutes).where((m) => m > 0).toList()..sort();
+    if (mins.isEmpty) return '';
+    return mins.first == mins.last ? '${mins.first} min' : '${mins.first}–${mins.last} min';
   }
 
   Set<String> get downloadedIds => downloads.downloadedIds;

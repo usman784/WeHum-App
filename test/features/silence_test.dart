@@ -24,7 +24,7 @@ import '../support/test_env.dart';
 class FakeBell implements BellPlayer {
   int rings = 0;
   @override
-  Future<void> ring() async => rings++;
+  Future<void> ring({String? url}) async => rings++;
   @override
   Future<void> dispose() async {}
 }
@@ -194,7 +194,7 @@ void main() {
     expect(r.notif.calls.where((c) => c == 'bell'), isEmpty);
   });
 
-  testWidgets('50/51 screens: honest numbers from live:agg (quiet wording), presets, Enter opens the run screen with the timer', (t) async {
+  testWidgets('50/51 screens: honest numbers from the silence room (busy, then quiet), durations, Enter opens the run screen with the timer', (t) async {
     phone(t);
     final e = await TestEnv.create(member: true, onboardingDone: true);
     await e.socket.connect();
@@ -202,12 +202,18 @@ void main() {
     await t.pumpWidget(e.app(initial: AppRoutes.silenceRoomSetup));
     await t.pump();
     await t.pump(const Duration(milliseconds: 600));
-    e.socketServer.serverPushes('live:agg', {'total': 3, 'countries': 2, 'top': [], 'quiet': true, 'meditatedToday': 86, 'vibration': 5, 'at': 1});
+    // snapshot from GET /v1/silence: busy room
+    expect(find.text('214'), findsOneWidget);
+    expect(find.text('sitting in silence now'), findsOneWidget);
+    expect(find.byKey(const Key('silence-belts')), findsOneWidget);
+    // the room empties: the quiet variant shows the day's total and the honest-presence note
+    e.socketServer.serverPushes('silence:live', {'people': 3, 'belts': {'americas': 1, 'emea': 2, 'apac': 0}, 'quiet': true, 'at': 1});
     await t.pump();
     await t.pump(const Duration(milliseconds: 20));
-    expect(find.text('86'), findsOneWidget);
-    expect(find.text('meditated here today'), findsOneWidget);
-    expect(find.textContaining('Quiet right now. We never add fake numbers'), findsOneWidget);
+    expect(find.text('842'), findsOneWidget);
+    expect(find.text('sat in this room today'), findsOneWidget);
+    expect(find.text('3 quietly right now · across 3 zones'), findsOneWidget);
+    expect(find.byKey(const Key('honest-card')), findsOneWidget);
     await t.tap(find.text('30 min'));
     await t.pump();
     expect(find.text('30 minutes, then the bell.'), findsOneWidget);

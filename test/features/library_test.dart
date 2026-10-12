@@ -39,7 +39,8 @@ void main() {
     expect(find.byKey(const Key('program-card')), findsNothing);
     await t.scrollUntilVisible(find.byKey(const Key('themes-title')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Anxiety & Stress'), findsOneWidget);
-    expect(find.text('2 meditations · 8–10 min'), findsOneWidget);
+    expect(find.textContaining('8–10 min'), findsOneWidget);
+    expect(find.textContaining('2,400 sat today'), findsOneWidget);
     await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('From Raphael’s online library'), findsOneWidget);
     expect(find.text('FREE FOR YOU'), findsNothing); // no free label for members
@@ -72,8 +73,8 @@ void main() {
     await t.tap(find.text('Video'));
     await t.pump();
     expect(find.text('Show 1 meditations'), findsOneWidget);
-    await t.tap(find.text('All'));
-    await t.tap(find.text('Free'));
+    await t.tap(find.text('All').last);
+    await t.tap(find.text('Free').last);
     await t.pump();
     expect(find.text('Show 2 meditations'), findsOneWidget);
     await t.tap(find.byKey(const Key('show-n')));

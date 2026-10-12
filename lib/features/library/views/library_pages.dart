@@ -13,6 +13,7 @@ import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/painters.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
+import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../today/views/today_pages.dart' show tabHeader;
 import '../../today/views/today_widgets.dart';
@@ -70,8 +71,15 @@ class LibraryPage extends StatelessWidget {
               final member = ctrl.access.isMember;
               final active = ctrl.filters.value.active;
               final list = ctrl.filtered;
+              final sm = ctrl.summary.value;
+              final total = cat.sessions.length;
+              final ch = ctrl.challenges.value;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
                 Text('Library', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+                const SizedBox(height: 4),
+                Text(
+                  '$total meditations${sm != null && sm.sittingNow > 0 ? ' · ${groupedInt(sm.sittingNow)} sitting live' : ''}',
+                  key: const Key('library-counts'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
                 const SizedBox(height: 12),
                 Row(children: [
                   Expanded(
@@ -83,43 +91,108 @@ class LibraryPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Semantics(button: true, label: 'Filters', child: GestureDetector(key: const Key('filter-btn'), onTap: () => showFiltersSheet(context, ctrl), child: Container(width: 48, height: 48, decoration: BoxDecoration(color: active ? c.emberTint : c.surface, shape: BoxShape.circle, border: Border.all(color: active ? c.ember : c.border)), child: Icon(Icons.tune_rounded, color: active ? c.emberText : c.textPrimary)))),
                 ]),
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
+                    for (final (k, label) in const [('all', 'All'), ('short', 'Under 10 min'), ('mid', '10–20 min'), ('free', 'Free back-catalogue'), ('downloaded', 'Downloaded')])
+                      Padding(padding: const EdgeInsets.only(right: 8), child: _Chip(key: Key('chip-$k'), label: label, selected: ctrl.chipOn(k), onTap: () => ctrl.chip(k))),
+                  ]),
+                ),
                 const SizedBox(height: 16),
                 if (active) ...[
                   Text('${list.length} meditations', key: const Key('filtered-count'), style: AppText.overline.copyWith(color: c.textTertiary)),
                   for (final s in list) SessionRow(s: s, onTap: () => ctrl.open(s), showFree: !member, downloaded: ctrl.downloadedIds.contains(s.id)),
                   if (list.isEmpty) const EmptyState(title: 'No meditations match', body: 'Try changing or resetting the filters.', icon: Icons.filter_alt_off_rounded),
                 ] else ...[
+                  if (!member)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: AppCard(
+                        key: const Key('preview-banner'), outlined: true, onTap: () => openPaywall('library_banner'), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        child: Row(children: [
+                          Icon(Icons.lock_open_rounded, color: c.emberText),
+                          const SizedBox(width: 12),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('Every masterclass previewable', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15)),
+                            Text('A 30-second pass: hear any locked meditation before you decide.', style: AppText.caption.copyWith(color: c.textSecondary)),
+                          ])),
+                        ]),
+                      ),
+                    ),
                   AdaptiveGrid(
                     baseExtent: 100,
                     children: [
                       _Tile(key: const Key('tile-silence'), icon: Icons.nightlight_round, title: 'Silence Room', badge: member ? null : BadgeKind.premium, onTap: ctrl.goSilence),
                       _Tile(key: const Key('tile-byo'), icon: Icons.tune_rounded, title: 'Build your own', badge: member ? null : BadgeKind.premium, onTap: () => member ? Get.toNamed(AppRoutes.buildYourOwn) : openPaywall('lock')),
-                      _Tile(key: const Key('tile-challenges'), icon: Icons.emoji_events_outlined, title: 'Challenges', badge: BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.challenges)),
+                      _Tile(key: const Key('tile-challenges'), icon: Icons.emoji_events_outlined, title: 'Challenges', badge: ctrl.challengesOn ? null : BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.challenges)),
                       _Tile(key: const Key('tile-breath'), icon: Icons.air_rounded, title: 'Breathwork', badge: BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.breathwork)),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(children: [Expanded(child: Text('Programs', style: AppText.title.copyWith(color: c.textPrimary))), TextLink('All programs', onPressed: () => Get.toNamed(AppRoutes.allPrograms))]),
+                  const SizedBox(height: 22),
+                  Row(children: [Expanded(child: Text('Active protocols', style: AppText.title.copyWith(color: c.textPrimary))), TextLink('All programs', onPressed: () => Get.toNamed(AppRoutes.allPrograms))]),
+                  const SizedBox(height: 8),
                   if (ctrl.programCard.value != null)
-                    AppCard(onTap: () => Get.toNamed('/program/${ctrl.programCard.value!.id}', arguments: {'id': ctrl.programCard.value!.id}), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Overline('In progress · day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}'), const SizedBox(height: 4), Text(ctrl.programCard.value!.title, style: AppText.navTitle.copyWith(color: c.textPrimary)), const SizedBox(height: 8), AppProgressBar(ctrl.programCard.value!.day / ctrl.programCard.value!.days)]))
+                    AppCard(key: const Key('program-in-progress'), onTap: () => Get.toNamed('/program/${ctrl.programCard.value!.id}', arguments: {'id': ctrl.programCard.value!.id}), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Overline('In progress · day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}'), const SizedBox(height: 4), Text(ctrl.programCard.value!.title, style: AppText.navTitle.copyWith(color: c.textPrimary)), const SizedBox(height: 8), AppProgressBar(ctrl.programCard.value!.day / ctrl.programCard.value!.days)]))
                   else
                     AppCard(onTap: () => Get.toNamed(AppRoutes.allPrograms), child: const ListRow(title: 'Start a program', subtitle: 'Multi-day practices, one meditation a day', leading: IconTile(Icons.route_outlined))),
-                  const SizedBox(height: 20),
-                  Text('Themes', key: const Key('themes-title'), style: AppText.title.copyWith(color: c.textPrimary)),
-                  const SizedBox(height: 8),
-                  AdaptiveGrid(
-                    baseExtent: 148,
-                    children: [
-                      for (final t in cat.themes)
-                        AppCard(
-                          key: Key('theme-${t.id}'), onTap: () => Get.toNamed('/theme/${t.id}', arguments: {'id': t.id}),
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            IconTile(themeIcon(t.iconKey), size: 40),
-                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text(ctrl.catalog.themeLine(t), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))]),
+                  if (ch != null)
+                    for (final x in [...ch.inProgress, ...ch.available].take(2))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: AppCard(
+                          key: Key('challenge-${x.id}'), onTap: () => Get.toNamed('/challenge/${x.id}', arguments: {'id': x.id}),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Overline(x.me != null ? 'Cohort · day ${x.me!.completedDays + 1} of ${x.days}' : 'Cohort sprint · ${x.days} days'),
+                            const SizedBox(height: 4),
+                            Text(x.name, style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                            if (x.me != null) ...[const SizedBox(height: 8), AppProgressBar(x.me!.completedDays / x.days)] else Text('${groupedInt(x.peopleInIt)} enrolled', style: AppText.caption.copyWith(color: c.textSecondary)),
                           ]),
                         ),
-                    ],
-                  ),
+                      ),
+                  const SizedBox(height: 22),
+                  Text('Disciplines', key: const Key('themes-title'), style: AppText.title.copyWith(color: c.textPrimary)),
+                  const SizedBox(height: 4),
+                  Text('${cat.themes.length} foundations of practice', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                  const SizedBox(height: 8),
+                  for (final t in cat.themes)
+                    InkWell(
+                      key: Key('theme-${t.id}'), onTap: () => Get.toNamed('/theme/${t.id}', arguments: {'id': t.id}),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(children: [
+                          IconTile(themeIcon(t.iconKey), size: 44),
+                          const SizedBox(width: 14),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
+                            Text(t.subtitle ?? ctrl.catalog.themeLine(t), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)),
+                            Text([ctrl.rangeOf(t), if (ctrl.sitsToday(t.id) > 0) '${groupedInt(ctrl.sitsToday(t.id))} sat today'].where((x) => x.isNotEmpty).join(' · '), style: AppText.micro.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
+                          ])),
+                          Icon(Icons.arrow_forward_rounded, size: 18, color: c.textSecondary),
+                        ]),
+                      ),
+                    ),
+                  if (ctrl.topToday.isNotEmpty) ...[
+                    const SizedBox(height: 22),
+                    Text('Top today', key: const Key('top-today'), style: AppText.title.copyWith(color: c.textPrimary)),
+                    const SizedBox(height: 8),
+                    for (final t in ctrl.topToday.take(3))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: AppCard(
+                          key: Key('top-${t.session.id}'), onTap: () => ctrl.open(t.session),
+                          child: Row(children: [
+                            ThumbImage(t.session.cover?.url, blurHash: t.session.cover?.blurhash, seed: t.session.id, width: 56, height: 56, radius: 12),
+                            const SizedBox(width: 12),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(t.session.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
+                              Text('${t.session.minutes} min · ${groupedInt(t.completed)} completed', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                            ])),
+                            if (t.session.isPremium && !member) Text('30 s preview', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700)) else Icon(Icons.play_circle_outline_rounded, color: c.textSecondary),
+                          ]),
+                        ),
+                      ),
+                  ],
                   const SizedBox(height: 16),
                   AppCard(key: const Key('sos-row'), onTap: () => Get.toNamed(AppRoutes.sosHowCanIHelp), child: const ListRow(title: 'SoS', subtitle: '8 short meditations for hard times', leading: IconTile(Icons.favorite_border_rounded))),
                   const SizedBox(height: 20),
@@ -136,6 +209,30 @@ class LibraryPage extends StatelessWidget {
               ]);
             }),
           )),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({super.key, required this.label, required this.selected, required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Semantics(
+      button: true, selected: selected, label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: ExcludeSemantics(
+          child: Container(
+            height: 36, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
+            decoration: BoxDecoration(color: selected ? c.ember : c.surface, borderRadius: BorderRadius.circular(Radii.pill), border: Border.all(color: selected ? c.ember : c.border)),
+            child: Text(label, style: AppText.caption.copyWith(color: selected ? c.onEmber : c.textPrimary, fontWeight: FontWeight.w600)),
+          ),
+        ),
+      ),
     );
   }
 }

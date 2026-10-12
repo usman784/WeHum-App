@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/services/logger.dart';
 import '../../../core/audio/audio_engine.dart';
+import '../../../core/audio/interval_chime.dart';
 import '../../../core/audio/local_media.dart';
 import '../../../core/audio/media_session.dart';
 import '../../../core/audio/recipe_engine.dart';
@@ -61,8 +63,8 @@ class PlayerController extends GetxController {
   PlayerController(this.args, {
     required AudioEngine engine, required MediaRepository media, required PresenceService presence, required SyncService sync, required AnalyticsService analytics,
     LocalMedia? local, ConnectivityService? connectivity, PlayerNav? nav, DateTime Function()? now, Catalog? Function()? catalog, MediaSessionPort? mediaSession,
-    this.stallGrace = const Duration(seconds: 4),
-  })  : _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog, _session = mediaSession ?? const NoMediaSession();
+    ChimePort? chime, this.stallGrace = const Duration(seconds: 4),
+  })  : _chime = chime ?? const NoChime(), _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog, _session = mediaSession ?? const NoMediaSession();
 
   final PlayerArgs args;
   final AudioEngine _engine;
@@ -76,6 +78,7 @@ class PlayerController extends GetxController {
   final DateTime Function()? _now;
   final Catalog? Function()? _catalog;
   final MediaSessionPort _session;
+  final ChimePort _chime;
   final Duration stallGrace;
 
   late final SessionRecorder recorder = SessionRecorder(
@@ -98,6 +101,52 @@ class PlayerController extends GetxController {
   /// People meditating with you (ring numbers), from `presence:start` ack and `session:live`.
   ({int people, int countries})? get together => _presence.together.value;
   Rx<({int people, int countries})?> get togetherRx => _presence.together;
+
+  // ───────────── mix & pacing (Stitch player): volume of this meditation, haptic breath pacing, interval chime
+  final volume = 1.0.obs;
+  final haptics = false.obs;
+  /// Minutes between chimes; 0 = off.
+  final chimeEveryMin = 0.obs;
+  int _lastChimeMark = 0;
+  Timer? _hapticTimer;
+
+  /// The chapters of this meditation (`Phase 2 · Anchoring breath`) when the CMS defined some.
+  List<({int atSec, String title})> get phases => (_catalog?.call()?.session(args.sessionId ?? '')?.phases ?? const []);
+
+  /// 1-based number and title of the chapter the playhead is in; null without chapters.
+  ({int n, int of, String title})? get chapter {
+    final ps = phases;
+    if (ps.isEmpty) return null;
+    var cur = 0;
+    for (var i = 0; i < ps.length; i++) {
+      if (position.value.inSeconds >= ps[i].atSec) cur = i;
+    }
+    return (n: cur + 1, of: ps.length, title: ps[cur].title);
+  }
+
+  Future<void> setVolume(double v) async {
+    volume.value = v.clamp(0, 1);
+    final e = _engine;
+    if (e is AdjustableVolume) await (e as AdjustableVolume).setVolume(volume.value);
+  }
+
+  void setChime(int minutes) {
+    chimeEveryMin.value = minutes;
+    _lastChimeMark = minutes == 0 ? 0 : position.value.inSeconds ~/ (minutes * 60);
+  }
+
+  void setHaptics(bool on) {
+    haptics.value = on;
+    _hapticTimer?.cancel();
+    if (on) _pulse(inhale: true);
+  }
+
+  /// One pulse at the start of every breath: 4 s in, 6 s out (the same cadence as the cue on screen).
+  void _pulse({required bool inhale}) {
+    if (!haptics.value || _finished) return;
+    if (isPlaying) HapticFeedback.lightImpact();
+    _hapticTimer = Timer(Duration(seconds: inhale ? 4 : 6), () => _pulse(inhale: !inhale));
+  }
 
   double get progress => duration.value.inMilliseconds == 0 ? 0 : (position.value.inMilliseconds / duration.value.inMilliseconds).clamp(0.0, 1.0);
   bool get isPlaying => phase.value == PlayerPhase.playing;
@@ -174,6 +223,14 @@ class PlayerController extends GetxController {
     _subs.add(_engine.position.listen((p) {
       position.value = p;
       _session.update(playing: isPlaying, buffering: phase.value == PlayerPhase.buffering, position: p);
+      final m = chimeEveryMin.value;
+      if (m > 0 && isPlaying) {
+        final mark = p.inSeconds ~/ (m * 60);
+        if (mark > _lastChimeMark) {
+          _lastChimeMark = mark;
+          _chime.ring();
+        }
+      }
     }));
     _subs.add(_engine.duration.listen((d) {
       if (d != null && d > Duration.zero) duration.value = d;
@@ -351,6 +408,8 @@ class PlayerController extends GetxController {
   void onClose() {
     _online?.dispose();
     _stallTimer?.cancel();
+    _hapticTimer?.cancel();
+    _chime.dispose();
     for (final s in _subs) {
       s.cancel();
     }

@@ -4,13 +4,16 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/download_engine.dart';
 import '../../../core/data/api/caching_media.dart';
 import '../../../core/data/contracts/repositories.dart';
+import '../../../core/data/local/app_database.dart' show Download;
 import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/socket_events.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/catalog_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/connectivity_service.dart';
+import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/download_service.dart';
 import '../../../core/services/play_launcher.dart';
 import '../../../core/theme/app_colors.dart';
@@ -21,6 +24,7 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
+import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../player/player_args.dart';
 import '../../together/views/together_pages.dart' show DedicationLine;
@@ -197,26 +201,75 @@ class DownloadsPage extends StatelessWidget {
         if (items.isEmpty) {
           return EmptyState(title: 'No downloads yet', body: 'Download a session to listen without internet. Look for the download button on any session.', icon: Icons.download_for_offline_outlined, ctaLabel: 'Browse the library', onCta: () => Get.offAllNamed(AppRoutes.library));
         }
+        final cat = Get.find<CatalogService>().catalog.value;
+        final quotaMb = Get.isRegistered<ConfigService>() ? (Get.find<ConfigService>().current.value?.downloadQuotaMb ?? 2400) : 2400;
+        final quota = quotaMb * 1024 * 1024;
+        final used = dl.usedBytes;
+        final done = items.where((d) => d.status == 'done').length;
+        // grouped by discipline (theme), the same names as the Library
+        final groups = <String, List<Download>>{};
+        for (final d in items) {
+          final theme = cat?.session(d.sessionId)?.themeId;
+          final name = d.sessionId.startsWith('motd:') ? 'Meditation of the Day' : (theme == null ? 'Other' : (cat?.theme(theme)?.name ?? 'Other'));
+          (groups[name] ??= []).add(d);
+        }
+        final store = Get.find<OnboardingStore>();
         return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: [
-          Text(formatBytes(dl.usedBytes), key: const Key('used'), style: AppText.title.copyWith(color: c.textPrimary)),
-          Text('on this phone', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-          const SizedBox(height: 4),
-          Text('Downloaded sessions play without internet.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+          AppCard(
+            key: const Key('storage-card'),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const SectionLabel('Local storage'),
+              const SizedBox(height: 8),
+              Text(formatBytes(used), key: const Key('used'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 34)),
+              Text('used of ${formatBytes(quota)} · $done ${done == 1 ? 'session' : 'sessions'} saved', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              const SizedBox(height: 12),
+              AppProgressBar(quota == 0 ? 0 : used / quota),
+            ]),
+          ),
           const SizedBox(height: 12),
-          for (final d in items)
-            Dismissible(
-              key: Key('dl-${d.sessionId}-${d.variant}'), direction: DismissDirection.endToStart,
-              confirmDismiss: (_) async => await _confirm(context, 'Delete this download?'),
-              onDismissed: (_) => dl.remove(DownloadKey(d.sessionId, d.variant)),
-              background: Container(color: c.dangerTint, alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), child: Icon(Icons.delete_outline_rounded, color: c.dangerText)),
-              child: ListRow(
-                title: d.title.isEmpty ? d.sessionId : d.title, subtitle: d.status == 'done' ? formatBytes(d.bytes) : (dl.errors['${d.sessionId}#${d.variant}'] ?? '${d.status[0].toUpperCase()}${d.status.substring(1)}${d.status == 'running' ? ' ${((dl.progress['${d.sessionId}#${d.variant}'] ?? 0) * 100).round()}%' : ''}'),
-                leading: IconTile(d.status == 'done' ? Icons.download_done_rounded : Icons.downloading_rounded), showChevron: d.status == 'done',
-                trailing: d.status == 'failed' || d.status == 'paused' ? TextLink('Retry', onPressed: () => dl.start(DownloadKey(d.sessionId, d.variant), title: d.title)) : null,
-                onTap: d.status == 'done' ? () => _play(d.sessionId, d.variant) : null,
+          StatefulBuilder(builder: (ctx, set) => AppCard(
+                child: Row(children: [
+                  Icon(Icons.wifi_rounded, color: c.emberText),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Wi-Fi only', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                    Text('Keeps mobile data for everything else', style: AppText.caption.copyWith(color: c.textSecondary)),
+                  ])),
+                  AppToggle(key: const Key('wifi-only'), value: store.wifiOnlyDownloads, onChanged: (v) => set(() => store.wifiOnlyDownloads = v), label: 'Wi-Fi only downloads'),
+                ]),
+              )),
+          const SizedBox(height: 18),
+          for (final g in groups.entries) ...[
+            Text('${g.key.toUpperCase()} · ${g.value.length} ${g.value.length == 1 ? 'SESSION' : 'SESSIONS'}', style: AppText.overline.copyWith(color: c.textSecondary)),
+            const SizedBox(height: 4),
+            for (final d in g.value)
+              Dismissible(
+                key: Key('dl-${d.sessionId}-${d.variant}'), direction: DismissDirection.endToStart,
+                confirmDismiss: (_) async => await _confirm(context, 'Delete this download?'),
+                onDismissed: (_) => dl.remove(DownloadKey(d.sessionId, d.variant)),
+                background: Container(color: c.dangerTint, alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), child: Icon(Icons.delete_outline_rounded, color: c.dangerText)),
+                child: ListRow(
+                  title: d.title.isEmpty ? d.sessionId : d.title, subtitle: d.status == 'done' ? formatBytes(d.bytes) : (dl.errors['${d.sessionId}#${d.variant}'] ?? '${d.status[0].toUpperCase()}${d.status.substring(1)}${d.status == 'running' ? ' ${((dl.progress['${d.sessionId}#${d.variant}'] ?? 0) * 100).round()}%' : ''}'),
+                  leading: IconTile(d.status == 'done' ? Icons.download_done_rounded : Icons.downloading_rounded), showChevron: d.status == 'done',
+                  trailing: d.status == 'failed' || d.status == 'paused' ? TextLink('Retry', onPressed: () => dl.start(DownloadKey(d.sessionId, d.variant), title: d.title)) : null,
+                  onTap: d.status == 'done' ? () => _play(d.sessionId, d.variant) : null,
+                ),
               ),
-            ),
+            const SizedBox(height: 12),
+          ],
+          AppCard(
+            outlined: true,
+            child: Row(children: [
+              Icon(Icons.notifications_active_outlined, color: c.textSecondary),
+              const SizedBox(width: 12),
+              Expanded(child: Text('Silence Room bells are built in and always available offline.', style: AppText.caption.copyWith(color: c.textSecondary))),
+            ]),
+          ),
+          const SizedBox(height: 8),
+          Text('Sits you finish offline are saved on this phone and sync when you reconnect.', style: AppText.caption.copyWith(color: c.textTertiary)),
           const SizedBox(height: 16),
+          OutlineButton('Browse library for more', key: const Key('browse-library'), onPressed: () => Get.offAllNamed(AppRoutes.library)),
+          const SizedBox(height: 12),
           DangerButton('Clear all downloads', key: const Key('clear-all'), onPressed: () async {
             if (await _confirm(context, 'Delete all downloads?')) await dl.clearAll();
           }),

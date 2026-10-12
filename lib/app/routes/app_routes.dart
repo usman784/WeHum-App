@@ -62,6 +62,12 @@ abstract final class AppRoutes {
   static const offline = '/offline'; // 65
   static const updateRequired = '/update'; // 68
   static const challenges = '/soon/challenges'; // 69
+  static const challengeDetail = '/challenge/:id'; // Stitch: cohort sprint detail
+  static const preview = '/preview/:id'; // Stitch: 30-second preview of a locked meditation
+  static const worldGauge = '/world'; // Stitch world gauge (same screen as 25)
+  static const crisisDirectory = '/sos/directory'; // Stitch crisis directory
+  static const nextSit = '/sit/next'; // Stitch next synchronised sit countdown
+  static const dedicate = '/dedications/compose'; // Stitch dedication composer
   static const gratitude = '/soon/gratitude'; // 70
   static const breathwork = '/soon/breathwork'; // 71
   static const breathPattern = '/soon/breath-pattern'; // 72

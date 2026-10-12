@@ -58,6 +58,11 @@ abstract class AudioEngine {
   Future<void> dispose();
 }
 
+/// Engines that can change their own volume (the player's mix sheet). Others keep the system volume.
+abstract interface class AdjustableVolume {
+  Future<void> setVolume(double v);
+}
+
 /// Which engine plays what. One object with four named makers, registered once.
 /// (Four `typedef X = AudioEngine Function()` aliases are one and the same type to the dependency container: only
 /// the first registration survived, so video, YouTube and "Build your own" all got the plain audio engine.)
@@ -67,7 +72,7 @@ class PlayerEngines {
 }
 
 /// just_audio + audio_session: speech category, pause on interruption, resume only if it was playing, unplug → pause.
-class JustAudioEngine implements AudioEngine {
+class JustAudioEngine implements AudioEngine, AdjustableVolume {
   JustAudioEngine() {
     _init();
   }
@@ -142,6 +147,8 @@ class JustAudioEngine implements AudioEngine {
   Future<void> seek(Duration to) => _player.seek(to);
   @override
   Future<void> stop() => _player.stop();
+  @override
+  Future<void> setVolume(double v) => _player.setVolume(v.clamp(0, 1));
 
   @override
   Future<void> dispose() async {

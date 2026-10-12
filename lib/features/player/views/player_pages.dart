@@ -6,10 +6,12 @@ import 'package:video_player/video_player.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yt;
 import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_engine.dart';
+import '../../../core/audio/interval_chime.dart';
 import '../../../core/audio/engines.dart';
 import '../../../core/audio/local_media.dart';
 import '../../../core/audio/media_session.dart';
 import '../../../core/data/contracts/repositories.dart';
+import '../../../core/data/models/stitch.dart';
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/presence_service.dart';
 import '../../../core/services/access_service.dart';
@@ -22,6 +24,9 @@ import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/painters.dart';
+import '../../../core/widgets/sheets.dart';
+import '../../../core/widgets/controls.dart';
+import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/app_scaffold.dart' show SosPill;
 import '../../../core/widgets/surfaces.dart';
 import '../../today/controllers/today_controller.dart';
@@ -32,7 +37,8 @@ import '../player_args.dart';
 PlayerController _make(PlayerArgs args, AudioEngine engine) => Get.put(
       PlayerController(
         args, engine: engine, media: Get.find<MediaRepository>(), presence: Get.find<PresenceService>(), sync: Get.find<SyncService>(), analytics: Get.find<AnalyticsService>(),
-        local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>(), catalog: () => Get.find<CatalogService>().catalog.value, mediaSession: Get.find<MediaSessionPort>()),
+        local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>(), catalog: () => Get.find<CatalogService>().catalog.value, mediaSession: Get.find<MediaSessionPort>(),
+        chime: Get.isRegistered<ChimePort>() ? Get.find<ChimePort>() : null),
       tag: args.sessionId ?? args.title,
     );
 
@@ -180,19 +186,31 @@ class PlayerPage extends StatelessWidget {
                 const SizedBox(height: 10),
                 const BreathCue(),
                 const Spacer(),
-                const Overline('Now playing'),
+                const Overline('Active practice'),
                 const SizedBox(height: 8),
                 Text(args.title, key: const Key('player-title'), textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 if (args.subtitle != null) Text(args.subtitle!, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+                if (ctrl.chapter != null) ...[
+                  const SizedBox(height: 10),
+                  InfoChip(key: const Key('phase-chip'), text: 'Phase ${ctrl.chapter!.n} · ${ctrl.chapter!.title} · ${ctrl.chapter!.n}/${ctrl.chapter!.of}', icon: Icons.radio_button_checked_rounded),
+                ],
                 const SizedBox(height: 10),
                 _TogetherLine(people: people, countries: t?.countries ?? 0, quiet: quiet, meditatedToday: live.agg.value?.meditatedToday ?? 0, paused: live.paused),
+                if (!live.paused && !quiet && (live.agg.value?.belts.values.fold<int>(0, (a, b) => a + b) ?? 0) > 0) ...[
+                  const SizedBox(height: 10),
+                  BeltCounts(key: const Key('player-belts'), belts: Belts(americas: live.agg.value!.belts['americas'] ?? 0, emea: live.agg.value!.belts['emea'] ?? 0, apac: live.agg.value!.belts['apac'] ?? 0)),
+                ],
                 const SizedBox(height: 20),
                 StalledBanner(ctrl: ctrl),
                 if (ctrl.phase.value == PlayerPhase.loading) const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: CircularProgressIndicator()) else TransportControls(ctrl: ctrl, live: args.live || args.recipe != null),
                 const SizedBox(height: 16),
-                OutlineButton('End meditation', key: const Key('end'), onPressed: ctrl.endEarly),
+                Row(children: [
+                  Expanded(child: OutlineButton('Mix & pacing', key: const Key('mix-open'), onPressed: () => showMixSheet(context, ctrl))),
+                  const SizedBox(width: 12),
+                  Expanded(child: OutlineButton('End early', key: const Key('end'), onPressed: ctrl.endEarly)),
+                ]),
                 const SizedBox(height: 10),
-                Text('Each dot is someone meditating with you. Dedications open when your meditation ends.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
+                Text('Each dot is someone sitting with you. Dedications open when your sit ends.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
               ]),
             );
           }),
@@ -315,4 +333,31 @@ class FreePlayerPage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "Mix & pacing" sheet: volume of this meditation, an interval chime and haptic breath pacing.
+Future<void> showMixSheet(BuildContext context, PlayerController ctrl) {
+  return showAppSheet<void>(context, title: 'Mix & pacing', builder: (ctx) {
+    final c = ctx.colors;
+    return Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text('VOLUME', style: AppText.overline.copyWith(color: c.textTertiary)),
+          Slider(key: const Key('volume-slider'), value: ctrl.volume.value, onChanged: ctrl.setVolume, activeColor: c.ember, inactiveColor: c.track),
+          const SizedBox(height: 8),
+          Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Chime every 5 minutes', style: AppText.bodyLarge.copyWith(color: c.textPrimary)),
+              Text('A soft bell on top of the meditation', style: AppText.caption.copyWith(color: c.textSecondary)),
+            ])),
+            AppToggle(key: const Key('chime-switch'), value: ctrl.chimeEveryMin.value == 5, onChanged: (v) => ctrl.setChime(v ? 5 : 0), label: 'Chime every 5 minutes'),
+          ]),
+          const SizedBox(height: 8),
+          Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Haptic breath pacing', style: AppText.bodyLarge.copyWith(color: c.textPrimary)),
+              Text('A light tap at the start of every breath', style: AppText.caption.copyWith(color: c.textSecondary)),
+            ])),
+            AppToggle(key: const Key('haptics-switch'), value: ctrl.haptics.value, onChanged: ctrl.setHaptics, label: 'Haptic breath pacing'),
+          ]),
+        ]));
+  });
 }

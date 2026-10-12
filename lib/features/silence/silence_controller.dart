@@ -7,6 +7,9 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../app/routes/app_routes.dart';
 import '../../core/audio/session_recorder.dart';
+import '../../core/data/contracts/repositories.dart';
+import '../../core/data/models/activity.dart';
+import '../../core/data/models/stitch.dart';
 import '../../core/realtime/live_service.dart';
 import '../../core/realtime/presence_service.dart';
 import '../../core/services/analytics_service.dart';
@@ -18,19 +21,27 @@ import '../today/controllers/today_controller.dart';
 
 /// Plays the bell. A port so the timer can be tested without audio.
 abstract class BellPlayer {
-  Future<void> ring();
+  /// [url]: a bell from the CMS (signed URL); null = the bundled bell.
+  Future<void> ring({String? url});
   Future<void> dispose();
 }
 
 class AssetBellPlayer implements BellPlayer {
   final _p = AudioPlayer();
   @override
-  Future<void> ring() async {
+  Future<void> ring({String? url}) async {
     try {
-      await _p.setAsset('assets/audio/bell.wav');
+      if (url != null) {
+        await _p.setUrl(url);
+      } else {
+        await _p.setAsset('assets/audio/bell.wav');
+      }
       await _p.seek(Duration.zero);
       await _p.play();
-    } catch (_) {/* a missing bell never stops the meditation */}
+    } catch (_) {
+      // a bell that cannot load falls back to the bundled one; a missing bell never stops the meditation
+      if (url != null) await ring();
+    }
   }
 
   @override
@@ -83,7 +94,25 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   final SilenceNav _nav;
   final Duration dimAfter;
 
-  static const presets = [5, 10, 15, 20, 30, 45, 60, 0]; // 0 = open-ended
+  /// Used until the server answers (`GET /v1/silence`); 0 = open-ended.
+  static const presets = [5, 10, 15, 20, 30, 45, 60, 0];
+
+  /// Setup numbers and options from the server; null until loaded.
+  final info = Rxn<SilenceInfo>();
+  final openingId = RxnString();
+  final intervalId = RxnString();
+  final closingId = RxnString();
+  /// Soft marker every N minutes while sitting; 0 = none.
+  final intervalMin = 5.obs;
+  /// Off until the person asks for it: a soft marker every [intervalMin] minutes.
+  final chimeOn = false.obs;
+  String? _openingUrl, _intervalUrl, _closingUrl;
+  int _lastIntervalMark = 0;
+
+  List<int> get durations => info.value?.durations ?? presets;
+  int get extendMin => info.value?.extendMin ?? 5;
+  int get inhaleSec => info.value?.inhaleSec ?? 4;
+  int get exhaleSec => info.value?.exhaleSec ?? 6;
 
   final minutes = 15.obs;
   final bellStart = true.obs;
@@ -103,15 +132,80 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   bool get openEnded => minutes.value == 0;
   Duration get planned => Duration(minutes: minutes.value);
 
-  /// Honest count only (spec: never fake): quiet room → "N meditated here today".
-  String get bigNum => live.agg.value == null ? '–' : groupNumber(live.agg.value!.headline);
-  String get bigLabel => live.paused ? 'Live counts paused' : ((live.agg.value?.quiet ?? true) ? 'meditated here today' : 'meditating now');
+  /// People sitting in silence right now: the socket first, then the setup snapshot. Null = not known yet.
+  int? get sittingNow => live.paused ? null : (live.silence.value?.people ?? info.value?.sittingNow);
+
+  /// Quiet room: the "low traffic" variant (a few people, so we say "N sat here today" instead of a crowd).
+  bool get quietRoom => live.silence.value?.quiet ?? info.value?.quiet ?? true;
+
+  /// Honest count only (spec: never fake): quiet room → "N sat here today".
+  String get bigNum {
+    if (info.value == null && live.silence.value == null) return live.agg.value == null ? '–' : groupNumber(live.agg.value!.headline);
+    return groupNumber(quietRoom ? (info.value?.todayTotal ?? 0) : (sittingNow ?? 0));
+  }
+
+  String get bigLabel {
+    if (live.paused) return 'Live counts paused';
+    if (info.value == null && live.silence.value == null) return (live.agg.value?.quiet ?? true) ? 'meditated here today' : 'meditating now';
+    return quietRoom ? 'sat in this room today' : 'sitting in silence now';
+  }
+
+  /// "7:30" style clock of the next interval marker, or null when there is none (open-ended sits count up).
+  DateTime? get nextChimeAt {
+    final s = _startedAt;
+    if (s == null || !chimeOn.value || intervalMin.value <= 0) return null;
+    final step = Duration(minutes: intervalMin.value);
+    final mark = (elapsed.value.inSeconds ~/ step.inSeconds) + 1;
+    final at = s.add(_paused).add(step * mark);
+    if (!openEnded && at.isAfter(s.add(_paused).add(planned))) return null;
+    return at;
+  }
 
   @override
   void onReady() {
     super.onReady();
     live.acquireToday();
+    live.acquireSilence();
     WidgetsBinding.instance.addObserver(this);
+    _loadInfo();
+  }
+
+  Future<void> _loadInfo() async {
+    try {
+      final i = await Get.find<TodayRepository>().silence();
+      info.value = i;
+      if (!i.durations.contains(minutes.value) && i.durations.isNotEmpty) minutes.value = i.durations.contains(15) ? 15 : i.durations.first;
+      openingId.value ??= i.opening.firstOrNull?.id;
+      intervalId.value ??= i.interval.firstOrNull?.id;
+      closingId.value ??= i.closing.firstOrNull?.id;
+    } catch (_) {/* the page keeps working with the built-in options */}
+  }
+
+  /// Resolves the chosen bells to signed URLs once, before the sit starts (a failure falls back to the bundled bell).
+  Future<void> _resolveBells() async {
+    final media = Get.isRegistered<MediaRepository>() ? Get.find<MediaRepository>() : null;
+    if (media == null) return;
+    Future<String?> url(String? id) async {
+      if (id == null) return null;
+      try {
+        final u = await media.playUrl(PlayBlock(id));
+        return u.url ?? u.hlsUrl;
+      } catch (_) {
+        return null;
+      }
+    }
+    final r = await Future.wait([url(openingId.value), url(intervalId.value), url(closingId.value)]);
+    _openingUrl = r[0];
+    _intervalUrl = r[1];
+    _closingUrl = r[2];
+  }
+
+  /// "+5 min": the sit gets longer (a timed sit only; the end bell moves with it).
+  void extend() {
+    if (openEnded || phase.value == SilencePhase.done) return;
+    minutes.value += extendMin;
+    refreshTime();
+    if (phase.value == SilencePhase.running && bellEnd.value) _notifications.scheduleEndBell(clock.now().toUtc().add(remaining.value));
   }
 
   /// Back from the background: the time is recomputed from timestamps, so it is right at once.
@@ -126,6 +220,7 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
     _tick?.cancel();
     _dimTimer?.cancel();
     live.releaseToday();
+    live.releaseSilence();
     _screen.restore();
     _screen.keepAwake(false);
     _bell.dispose();
@@ -142,7 +237,9 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
     _rec!.playing();
     _analytics.track('silence_start', {'length': minutes.value, 'bells': bellStart.value || bellEnd.value});
     await _screen.keepAwake(true);
-    if (bellStart.value) unawaited(_bell.ring());
+    await _resolveBells();
+    _lastIntervalMark = 0;
+    if (bellStart.value) unawaited(_bell.ring(url: _openingUrl));
     // the end bell also rings as a local notification if the app is suspended
     if (!openEnded && bellEnd.value) await _notifications.scheduleEndBell(_startedAt!.toUtc().add(planned));
     await _presence.start(meditationId: _rec!.id, kind: 'silence', mode: 'silence', lengthMin: openEnded ? null : minutes.value);
@@ -159,6 +256,14 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
     final now = _pausedAt ?? clock.now();
     final e = now.difference(s) - _paused;
     elapsed.value = e.isNegative ? Duration.zero : e;
+    if (chimeOn.value && intervalMin.value > 0 && phase.value == SilencePhase.running) {
+      final mark = elapsed.value.inSeconds ~/ (intervalMin.value * 60);
+      if (mark > _lastIntervalMark) {
+        _lastIntervalMark = mark;
+        final isEnd = !openEnded && elapsed.value >= planned;
+        if (!isEnd) unawaited(_bell.ring(url: _intervalUrl));
+      }
+    }
     if (!openEnded) {
       final left = planned - elapsed.value;
       remaining.value = left.isNegative ? Duration.zero : left;
@@ -188,7 +293,7 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
 
   Future<void> _complete() async {
     if (_finishing) return;
-    if (bellEnd.value) unawaited(_bell.ring());
+    if (bellEnd.value) unawaited(_bell.ring(url: _closingUrl));
     await finish(completed: true);
   }
 

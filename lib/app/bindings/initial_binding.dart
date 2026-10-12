@@ -6,6 +6,7 @@ import '../../core/data/api/auth_api.dart';
 import '../../core/data/api/bootstrap_api.dart';
 import '../../core/data/api/caching_media.dart';
 import '../../core/audio/audio_engine.dart';
+import '../../core/audio/interval_chime.dart';
 import '../../core/audio/engines.dart';
 import '../../core/audio/recipe_engine.dart';
 import '../../core/audio/local_media.dart';
@@ -83,6 +84,7 @@ class InitialBinding extends Bindings {
     final media = CachingMediaRepository(mocks ? MockMediaRepository() : MediaApi(api));
     Get.put<CachingMediaRepository>(media, permanent: true);
     Get.put<MediaRepository>(media, permanent: true);
+    Get.put<ChimePort>(JustAudioChime(), permanent: true);
     Get.put<PlayerEngines>(
       PlayerEngines(audio: () => JustAudioEngine(), recipe: () => RecipeEngine(clipFactory: () => JustClipPlayer()), video: () => VideoEngine(), youtube: () => YoutubeEngine()),
       permanent: true,

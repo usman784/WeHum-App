@@ -13,6 +13,8 @@ import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
 import '../../features/player/views/player_pages.dart';
 import '../../features/silence/silence_pages.dart';
+import '../../features/library/preview_page.dart';
+import '../../features/soon/challenge_detail.dart';
 import '../../features/soon/soon_pages.dart';
 import '../../features/sos/sos_page.dart';
 import '../../features/system/views/system_pages.dart';
@@ -89,6 +91,8 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.offline, page: () => const OfflinePage()),
     GetPage(name: AppRoutes.updateRequired, page: () => const UpdateRequiredPage()),
     GetPage(name: AppRoutes.challenges, page: () => const ChallengesPage()),
+    GetPage(name: AppRoutes.preview, page: () => const PreviewPage()),
+    GetPage(name: AppRoutes.challengeDetail, page: () => const ChallengeDetailPage()),
     GetPage(name: AppRoutes.gratitude, page: () => const GratitudePage()),
     GetPage(name: AppRoutes.breathwork, page: () => const BreathworkPage()),
     GetPage(name: AppRoutes.breathPattern, page: () => const BreathPatternPage()),

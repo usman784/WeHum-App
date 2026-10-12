@@ -22,6 +22,11 @@ void launchSession(SessionSummary s, {String kind = 'solo', String? programId, i
   final member = Get.find<AccessService>().isMember;
   final route = routeFor(s, member: member);
   if (route == AppRoutes.membershipPaywall) {
+    // a locked audio meditation can be previewed for 30 s before the paywall (Stitch)
+    if (s.previewable) {
+      Get.toNamed(AppRoutes.preview.replaceFirst(':id', s.id), arguments: {'id': s.id});
+      return;
+    }
     Get.toNamed(route, arguments: {'source': 'lock'});
     return;
   }
