@@ -20,3 +20,4 @@ Pods/
 .symlinks/
 ios/Flutter/ephemeral/
 google-services.json.bak
+test/tool/shots/

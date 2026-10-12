@@ -196,6 +196,7 @@ void main() {
 
   testWidgets('50/51 screens: honest numbers from the silence room (busy, then quiet), durations, Enter opens the run screen with the timer', (t) async {
     phone(t);
+    t.view.physicalSize = const Size(1170, 4200); // the whole page is built
     final e = await TestEnv.create(member: true, onboardingDone: true);
     await e.socket.connect();
     e.socketServer.serverConnects();
@@ -203,8 +204,7 @@ void main() {
     await t.pump();
     await t.pump(const Duration(milliseconds: 600));
     // snapshot from GET /v1/silence: busy room
-    expect(find.text('214'), findsOneWidget);
-    expect(find.text('sitting in silence now'), findsOneWidget);
+    expect(find.text('214 SITTING IN SILENCE NOW'), findsOneWidget);
     expect(find.byKey(const Key('silence-belts')), findsOneWidget);
     // the room empties: the quiet variant shows the day's total and the honest-presence note
     e.socketServer.serverPushes('silence:live', {'people': 3, 'belts': {'americas': 1, 'emea': 2, 'apac': 0}, 'quiet': true, 'at': 1});
@@ -214,13 +214,13 @@ void main() {
     expect(find.text('sat in this room today'), findsOneWidget);
     expect(find.text('3 quietly right now · across 3 zones'), findsOneWidget);
     expect(find.byKey(const Key('honest-card')), findsOneWidget);
-    await t.tap(find.text('30 min'));
+    await t.tap(find.byKey(const Key('dur-30')));
     await t.pump();
-    expect(find.text('30 minutes, then the bell.'), findsOneWidget);
-    await t.tap(find.text('Open'));
+    expect(find.textContaining('30 minutes, then the bell.'), findsOneWidget);
+    await t.tap(find.byKey(const Key('dur-0')));
     await t.pump();
     expect(find.text('No end: finish whenever you like.'), findsOneWidget);
-    await t.tap(find.text('10 min'));
+    await t.tap(find.byKey(const Key('dur-10')));
     await t.pump();
     await t.pumpWidget(const SizedBox());
     Get.delete<SilenceController>(force: true);

@@ -78,26 +78,26 @@ void main() {
 
   testWidgets('live pill follows the socket: REST snapshot → live:agg busy → quiet → paused after 10 s', (t) async {
     final e = await openToday(t);
-    expect(find.text('412 meditating now · 37 countries'), findsOneWidget); // snapshot from /v1/today
+    expect(find.text('412 SITTING WORLDWIDE RIGHT NOW'), findsOneWidget); // snapshot from /v1/today
     await e.socket.connect();
     e.socketServer.serverConnects();
     expect(e.socket.rooms, containsAll(['today', 'motd:${localDate()}']));
     e.socketServer.serverPushes('live:agg', {'total': 500, 'countries': 40, 'top': [], 'quiet': false, 'meditatedToday': 1300, 'vibration': 60, 'at': 1});
     await afterPush(t);
-    expect(find.text('500 meditating now · 40 countries'), findsOneWidget);
+    expect(find.text('500 SITTING WORLDWIDE RIGHT NOW'), findsOneWidget);
     e.socketServer.serverPushes('live:agg', {'total': 3, 'countries': 2, 'top': [], 'quiet': true, 'meditatedToday': 1300, 'vibration': 5, 'at': 2});
     await afterPush(t);
-    expect(find.text('1,300 meditated today'), findsOneWidget);
+    expect(find.text('1,300 MEDITATED TODAY'), findsOneWidget);
     e.socketServer.serverPushes('motd:stats', {'date': localDate(), 'practicedToday': 1301});
     await afterPush(t);
     expect(find.text('1,301 sat today'), findsOneWidget);
     e.socketServer.serverDrops();
     await t.pump(const Duration(seconds: 11));
-    expect(find.text('Live counts paused'), findsOneWidget);
+    expect(find.text('LIVE COUNTS PAUSED'), findsOneWidget);
     expect(find.textContaining('1,300'), findsNothing); // old numbers are not shown as live
     e.socketServer.serverConnects();
     await afterPush(t);
-    expect(find.text('Live counts paused'), findsNothing);
+    expect(find.text('LIVE COUNTS PAUSED'), findsNothing);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

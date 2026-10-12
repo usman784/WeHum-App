@@ -60,6 +60,14 @@ class TodayController extends GetxController {
   String get date => _date;
   String get name => Get.find<OnboardingStore>().nameRx.value;
 
+  /// Busy room: "1,248 sitting worldwide right now"; a quiet room says so honestly (liveText).
+  String get liveStrip {
+    final n = liveCount;
+    return n > 0 && !liveQuiet && !live.paused ? '${groupNumber(n)} sitting worldwide right now' : (liveText ?? '');
+  }
+
+  int get liveCount => live.agg.value?.total ?? data.value?.live?.total ?? 0;
+
   String? get liveText => liveLineText(agg: live.agg.value, snapshot: data.value?.live, paused: live.paused);
   bool get liveQuiet => live.agg.value?.quiet ?? data.value?.live?.quiet ?? false;
   int get practiced => live.motdPracticed[_date] ?? data.value?.motd?.practicedToday ?? 0;

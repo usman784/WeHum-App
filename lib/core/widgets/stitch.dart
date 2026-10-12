@@ -3,6 +3,7 @@ import '../data/models/stitch.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../theme/tokens.dart';
+import 'motion.dart';
 import 'surfaces.dart';
 
 /// Pieces shared by the Stitch screens: streak strip, belt counts, stat tiles, section labels.
@@ -111,7 +112,7 @@ class _Dot extends StatelessWidget {
     const size = 32.0;
     switch (d.state) {
       case DayState.done:
-        return Container(width: size, height: size, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle), child: Icon(Icons.check_rounded, size: 18, color: c.onEmber));
+        return Container(width: size, height: size, decoration: BoxDecoration(color: c.emberDeep, shape: BoxShape.circle), child: Icon(Icons.check_rounded, size: 18, color: c.emberText));
       case DayState.rest:
         return Container(
           width: size, height: size, alignment: Alignment.center,
@@ -120,8 +121,8 @@ class _Dot extends StatelessWidget {
       case DayState.today:
         final n = int.tryParse(d.date.length >= 10 ? d.date.substring(8, 10) : '') ?? 0;
         return Container(
-          width: size, height: size, alignment: Alignment.center, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: c.ember, width: 2)),
-          child: Text(n == 0 ? '' : '$n', style: AppText.micro.copyWith(color: c.emberText, fontWeight: FontWeight.w700)));
+          width: size, height: size, alignment: Alignment.center, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle, border: Border.all(color: c.emberText.withValues(alpha: .6), width: 2)),
+          child: Text(n == 0 ? '' : '$n', style: AppText.micro.copyWith(color: c.onEmber, fontWeight: FontWeight.w800)));
       case DayState.missed:
       case DayState.upcoming:
         return Container(width: size, height: size, decoration: BoxDecoration(color: c.track, shape: BoxShape.circle));
@@ -167,12 +168,127 @@ class AccelRow extends StatelessWidget {
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary)),
-            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+            Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17)),
+            const SizedBox(height: 2),
+            Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
           ]),
         ),
         Icon(locked ? Icons.lock_outline_rounded : Icons.chevron_right_rounded, color: c.textSecondary),
       ]),
     );
   }
+}
+
+/// "● 1,248 SITTING WORLDWIDE RIGHT NOW" with the round sound/atmosphere button at its right (Today).
+class LiveStrip extends StatelessWidget {
+  const LiveStrip({super.key, required this.text, this.quiet = false, this.onWave});
+  final String text;
+  final bool quiet;
+  final VoidCallback? onWave;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Row(children: [
+      Expanded(
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              quiet ? Container(width: 8, height: 8, decoration: BoxDecoration(color: c.textTertiary, shape: BoxShape.circle)) : PulseDot(color: c.success, size: 4),
+              const SizedBox(width: 6),
+              Flexible(child: Text(text.toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
+            ]),
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
+      if (onWave != null)
+        GestureDetector(onTap: onWave, child: Container(width: 34, height: 34, decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle), child: Icon(Icons.graphic_eq_rounded, size: 18, color: c.textSecondary))),
+    ]);
+  }
+}
+
+/// "Global presence heatmap": a stylised world with glowing belts, then the three belt counts.
+class HeatmapCard extends StatelessWidget {
+  const HeatmapCard({super.key, required this.belts, required this.onExplore});
+  final Belts belts;
+  final VoidCallback onExplore;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final max = [belts.americas, belts.emea, belts.apac, 1].reduce((a, b) => a > b ? a : b);
+    return AppCard(
+      key: const Key('presence-card'), onTap: onExplore, semanticLabel: 'Global presence, explore the map', padding: const EdgeInsets.all(18),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          PulseDot(color: c.success, size: 4),
+          const SizedBox(width: 4),
+          Expanded(child: Text('GLOBAL PRESENCE HEATMAP', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
+          Text('EXPLORE MAP', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
+          const SizedBox(width: 4),
+          Icon(Icons.arrow_forward_rounded, size: 14, color: c.emberText),
+        ]),
+        const SizedBox(height: 14),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            color: c.bgDeep, padding: const EdgeInsets.all(8),
+            child: AspectRatio(aspectRatio: 400 / 180, child: CustomPaint(painter: _HeatPainter(c, belts.americas / max, belts.emea / max, belts.apac / max))),
+          ),
+        ),
+        const SizedBox(height: 14),
+        BeltCounts(belts: belts),
+      ]),
+    );
+  }
+}
+
+class _HeatPainter extends CustomPainter {
+  _HeatPainter(this.c, this.a, this.e, this.p);
+  final AppColors c;
+  final double a, e, p;
+  @override
+  void paint(Canvas canvas, Size s) {
+    canvas.scale(s.width / 400, s.height / 180);
+    final grid = Paint()..style = PaintingStyle.stroke..strokeWidth = .6..color = c.border;
+    for (final y in [45.0, 90.0, 135.0]) {
+      canvas.drawLine(Offset(0, y), Offset(400, y), grid);
+    }
+    for (final x in [100.0, 200.0, 300.0]) {
+      canvas.drawLine(Offset(x, 0), Offset(x, 180), grid);
+    }
+    Path blob(List<double> pts) {
+      final path = Path()..moveTo(pts[0], pts[1]);
+      for (var i = 2; i + 1 < pts.length; i += 2) {
+        path.lineTo(pts[i], pts[i + 1]);
+      }
+      return path..close();
+    }
+    final fill = Paint()..color = c.surfaceAlt.withValues(alpha: .9);
+    final edge = Paint()..style = PaintingStyle.stroke..strokeWidth = 1..color = c.border;
+    for (final b in [
+      blob([65, 30, 95, 34, 110, 55, 100, 78, 90, 95, 105, 110, 120, 125, 112, 145, 105, 160, 95, 135, 80, 115, 70, 92, 60, 70]),
+      blob([180, 35, 225, 25, 285, 30, 325, 65, 300, 82, 285, 95, 250, 90, 235, 90, 225, 112, 215, 135, 200, 118, 185, 100, 170, 75]),
+      blob([305, 75, 340, 70, 365, 90, 365, 110, 345, 135, 320, 145, 305, 135, 295, 125]),
+    ]) {
+      canvas.drawPath(b, fill);
+      canvas.drawPath(b, edge);
+    }
+    void glow(double cx, double cy, double r, Color col, double k) {
+      if (k <= 0) return;
+      final rect = Rect.fromCircle(center: Offset(cx, cy), radius: r);
+      canvas.drawCircle(Offset(cx, cy), r, Paint()..shader = RadialGradient(colors: [col.withValues(alpha: .25 + .5 * k), col.withValues(alpha: 0)]).createShader(rect));
+    }
+    glow(110, 82, 38, c.success, a);
+    glow(210, 62, 32, const Color(0xFFFFB59A), e);
+    glow(300, 80, 42, c.success, p);
+    final dot = Paint();
+    for (final d in [(95.0, 70.0, c.success, a), (125.0, 92.0, c.success, a), (205.0, 56.0, const Color(0xFFFFB59A), e), (222.0, 70.0, c.success, e), (292.0, 76.0, c.success, p), (315.0, 88.0, const Color(0xFFFFB59A), p)]) {
+      if (d.$4 > 0) canvas.drawCircle(Offset(d.$1, d.$2), 2.2, dot..color = d.$3);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeatPainter old) => old.a != a || old.e != e || old.p != p;
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'brand_mark.dart';
 import 'user_avatar.dart';
 import '../services/config_service.dart';
+import '../services/onboarding_store.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../theme/app_colors.dart';
@@ -75,6 +76,38 @@ class TabHeader extends StatelessWidget {
   }
 }
 
+/// Header of the Stitch sub screens: back arrow, centered title, the SoS pill and the profile photo (64 px high).
+class StitchHeader extends StatelessWidget {
+  const StitchHeader({super.key, required this.title, this.onBack});
+  final String title;
+  final VoidCallback? onBack;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return ClampedText(child: SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: 60,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Row(children: [
+            IconButton(tooltip: 'Back', onPressed: onBack ?? () => Get.back<void>(), icon: Icon(Icons.arrow_back_rounded, size: 22, color: c.textPrimary)),
+            const BrandMark(size: 26),
+            Expanded(child: Text(title, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary))),
+            const SosPill(),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => Get.toNamed(AppRoutes.you),
+              child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: Get.isRegistered<OnboardingStore>() ? (Get.find<OnboardingStore>().nameRx.value.isEmpty ? '' : Get.find<OnboardingStore>().nameRx.value.substring(0, 1).toUpperCase()) : '', size: 32, fontSize: 13)),
+            ),
+            const SizedBox(width: 10),
+          ]),
+        ),
+      ),
+    ));
+  }
+}
+
 /// Sub header: back, centered title, optional right action.
 class SubHeader extends StatelessWidget implements PreferredSizeWidget {
   const SubHeader({super.key, required this.title, this.action, this.onBack, this.transparent = false});
@@ -105,7 +138,7 @@ class SubHeader extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class AppScaffold extends StatelessWidget {
-  const AppScaffold({super.key, required this.body, this.title, this.action, this.header, this.bottom, this.banner, this.resize = true});
+  const AppScaffold({super.key, required this.body, this.title, this.action, this.header, this.bottom, this.banner, this.resize = true, this.stitch = false});
   final Widget body;
   final String? title;
   final Widget? action;
@@ -114,6 +147,8 @@ class AppScaffold extends StatelessWidget {
   final Widget? bottom;
   final Widget? banner;
   final bool resize;
+  /// Header with the logo, the SoS pill and the profile photo (Stitch sub screens).
+  final bool stitch;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -122,7 +157,7 @@ class AppScaffold extends StatelessWidget {
         body: SafeArea(
           bottom: bottom == null,
           child: Column(children: [
-            if (header != null) header! else if (title != null) SubHeader(title: title!, action: action),
+            if (header != null) header! else if (title != null) (stitch ? StitchHeader(title: title!) : SubHeader(title: title!, action: action)),
             if (banner != null) banner!,
             Expanded(child: body),
           ]),

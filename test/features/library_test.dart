@@ -31,11 +31,10 @@ Future<TestEnv> open(WidgetTester t, String route, {bool member = true}) async {
 }
 
 void main() {
-  testWidgets('31 library (member): tiles, themes with counts, program in progress, free items unlabelled, My Meditations, Downloads', (t) async {
+  testWidgets('31 library (member): protocols, themes with counts, program in progress, free items unlabelled, My Meditations, Downloads', (t) async {
     final e = await open(t, AppRoutes.library);
-    expect(find.text('Silence Room'), findsOneWidget);
     expect(find.text('PREMIUM'), findsNothing); // members see no lock
-    expect(find.text('COMING SOON'), findsNWidgets(2));
+    expect(find.text('ACTIVE PROTOCOLS'), findsOneWidget);
     expect(find.byKey(const Key('program-card')), findsNothing);
     await t.scrollUntilVisible(find.byKey(const Key('themes-title')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Anxiety & Stress'), findsOneWidget);
@@ -48,14 +47,9 @@ void main() {
     await e.dispose();
   });
 
-  testWidgets('31 library (free): Silence Room shows PREMIUM and opens the paywall; the free section is "Free for you" with labels', (t) async {
+  testWidgets('31 library (free): the 30-second pass banner; the free section is "Free for you" with labels', (t) async {
     final e = await open(t, AppRoutes.library, member: false);
-    expect(find.text('PREMIUM'), findsWidgets);
-    await t.tap(find.byKey(const Key('tile-silence')));
-    await settle(t);
-    expect(Get.currentRoute, AppRoutes.membershipPaywall);
-    Get.back<void>();
-    await settle(t);
+    expect(find.byKey(const Key('preview-banner')), findsOneWidget); // free people see the 30-second pass
     await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Free for you'), findsOneWidget);
     await t.drag(find.byType(Scrollable).first, const Offset(0, -240));

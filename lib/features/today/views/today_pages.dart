@@ -49,21 +49,23 @@ class TodayPage extends StatelessWidget {
                 final streak = d?.streak;
                 final belts = ctrl.belts;
                 return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Expanded(child: Text(greetingFor(DateTime.now(), ctrl.name), key: const Key('greeting'), style: AppText.heroTitle.copyWith(color: c.textPrimary))),
-                    if (streak != null && streak.current > 0) ...[const SizedBox(width: 10), Padding(padding: const EdgeInsets.only(top: 6), child: InfoChip(key: const Key('streak-chip'), text: '${streak.current}-day streak', icon: Icons.local_fire_department_rounded))],
+                  LiveStrip(key: const Key('live-strip'), text: ctrl.liveStrip, quiet: ctrl.liveQuiet || ctrl.live.paused, onWave: () => Get.toNamed(AppRoutes.worldMapWorldVibration)),
+                  const SizedBox(height: 20),
+                  Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                    Expanded(child: Text(greetingFor(DateTime.now(), ctrl.name), key: const Key('greeting'), maxLines: 2, style: AppText.heroTitle.copyWith(color: c.textPrimary, fontSize: 26, height: 1.2))),
+                    if (streak != null && streak.current > 0) ...[const SizedBox(width: 10), Text('${streak.current}-day streak', key: const Key('streak-chip'), style: AppText.navTitle.copyWith(color: c.emberText, fontSize: 13))],
                   ]),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(DateFormatX.today(), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 16),
                   if (d?.motd != null) _MotdHero(ctrl: ctrl) else const _NoMotd(),
-                  if (!belts.isEmpty) ...[const SizedBox(height: 16), _PresenceCard(belts: belts, onMap: () => Get.toNamed(AppRoutes.worldMapWorldVibration))],
+                  if (!belts.isEmpty) ...[const SizedBox(height: 16), HeatmapCard(belts: belts, onExplore: () => Get.toNamed(AppRoutes.worldMapWorldVibration))],
                   if (d?.dailyMessage != null) ...[const SizedBox(height: 12), _NoteCard(m: d!.dailyMessage!)],
                   const SizedBox(height: 12),
                   if (streak != null) _StreakCard(streak: streak, minutes: d?.progress.minutes ?? 0) else _ProgressCard(p: d?.progress ?? const WeekProgress()),
                   if (d?.program != null) ...[const SizedBox(height: 12), _ProgramCard(card: d!.program)],
                   const SizedBox(height: 22),
-                  const SectionLabel('Quick accelerators'),
+                  Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [Expanded(child: Text('Quick accelerators', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20))), Text('ON DEMAND', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))]),
                   const SizedBox(height: 10),
                   AccelRow(
                     key: const Key('silence-row'), icon: Icons.self_improvement_rounded, title: 'Silence Room',
@@ -102,54 +104,55 @@ class _MotdHero extends StatelessWidget {
   const _MotdHero({required this.ctrl});
   final TodayController ctrl;
   @override
-  Widget build(BuildContext context) => Obx(_hero);
+  Widget build(BuildContext context) => Obx(() => _hero(context));
 
-  Widget _hero() {
+  Widget _hero(BuildContext context) {
+    final c = context.colors;
     final m = ctrl.data.value!.motd!;
     final g = ctrl.group;
-    return HeroImageCard(
-      key: const Key('motd-hero'), image: m.cover?.url, blurHash: m.cover?.blurhash, onTap: ctrl.openRoom,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-        if (ctrl.liveText != null) Align(alignment: Alignment.centerLeft, child: LivePill(text: ctrl.liveText!, quiet: ctrl.liveQuiet || ctrl.live.paused)),
-        const SizedBox(height: 150),
-        Overline('Today’s hero sit · ${ctrl.length.value} min'),
-        const SizedBox(height: 6),
-        Text(m.title, style: AppText.heroTitle.copyWith(color: Colors.white)),
-        Text('with ${m.teacher ?? 'Raphael'}', style: AppText.bodyLarge.copyWith(color: Colors.white70)),
-        const SizedBox(height: 8),
-        if (ctrl.practiced > 0) Text('${groupNumber(ctrl.practiced)} sat today', key: const Key('practiced'), style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 14),
-        if (m.lengths.isNotEmpty) SegmentedControl<int>(options: m.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
-        const SizedBox(height: 12),
-        HeroActions(
-          minutes: ctrl.length.value, onMeditate: ctrl.meditateNow,
-          group: g != null && ctrl.groupOpen ? (time: ctrl.groupTime, live: g.state == GroupPhase.live, countdown: formatCountdown(ctrl.untilGroup), onTap: ctrl.waitForGroup) : null,
-        ),
-      ]),
-    );
-  }
-}
-
-class _PresenceCard extends StatelessWidget {
-  const _PresenceCard({required this.belts, required this.onMap});
-  final Belts belts;
-  final VoidCallback onMap;
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return AppCard(
-      key: const Key('presence-card'), onTap: onMap, semanticLabel: 'Global presence, explore the map',
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(Icons.public_rounded, size: 18, color: c.success),
-          const SizedBox(width: 8),
-          Expanded(child: Text('GLOBAL PRESENCE', style: AppText.overline.copyWith(color: c.textSecondary))),
-          Text('Explore map', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700)),
-          Icon(Icons.chevron_right_rounded, size: 18, color: c.emberText),
+    final live = ctrl.liveCount;
+    return Material(
+      key: const Key('motd-hero'), color: c.surface, borderRadius: BorderRadius.circular(Radii.cardLarge), clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: ctrl.openRoom,
+        child: Stack(children: [
+          Positioned(right: -48, top: -48, child: Container(width: 190, height: 190, decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [c.ember.withValues(alpha: .16), c.ember.withValues(alpha: 0)])))),
+          Positioned(left: -48, bottom: -48, child: Container(width: 190, height: 190, decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [c.success.withValues(alpha: .08), c.success.withValues(alpha: 0)])))),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+              Row(children: [
+                Expanded(child: Align(alignment: Alignment.centerLeft, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(4)), child: Text('TODAY’S HERO SIT · ${ctrl.length.value} MIN', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5))))),
+                const SizedBox(width: 8),
+                if (live > 0)
+                  Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.bgDeep.withValues(alpha: .8), borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
+                    const SizedBox(width: 6),
+                    Text('${groupNumber(live)} sitting now', key: const Key('hero-live'), style: AppText.caption.copyWith(color: c.textPrimary, fontSize: 11)),
+                  ])),
+              ]),
+              const SizedBox(height: 16),
+              Text(m.title, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 22, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 16),
+              Row(children: [
+                Container(width: 36, height: 36, alignment: Alignment.center, decoration: BoxDecoration(color: c.teal, shape: BoxShape.circle), child: Text((m.teacher ?? 'R').substring(0, 1), style: AppText.navTitle.copyWith(color: c.tealText))),
+                const SizedBox(width: 10),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('With ${m.teacher ?? 'Raphael'}', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 14)),
+                  if ((m.theme ?? '').isNotEmpty) Text(m.theme!, style: AppText.caption.copyWith(color: c.textSecondary)),
+                ])),
+                if (ctrl.practiced > 0) Text('${groupNumber(ctrl.practiced)} sat today', key: const Key('practiced'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+              ]),
+              if (m.lengths.length > 1) ...[const SizedBox(height: 14), SegmentedControl<int>(options: m.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min')],
+              const SizedBox(height: 16),
+              HeroActions(
+                minutes: ctrl.length.value, onMeditate: ctrl.meditateNow,
+                group: g != null && ctrl.groupOpen ? (time: ctrl.groupTime, live: g.state == GroupPhase.live, countdown: formatCountdown(ctrl.untilGroup), onTap: ctrl.waitForGroup) : null,
+              ),
+            ]),
+          ),
         ]),
-        const SizedBox(height: 14),
-        BeltCounts(belts: belts),
-      ]),
+      ),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/motion.dart';
-import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
@@ -11,7 +10,6 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/controls.dart';
-import '../../../core/widgets/painters.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
 import '../../../core/widgets/stitch.dart';
@@ -76,12 +74,21 @@ class LibraryPage extends StatelessWidget {
               final total = cat.sessions.length;
               final ch = ctrl.challenges.value;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
-                Text('Library', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-                const SizedBox(height: 4),
-                Text(
-                  '$total meditations${sm != null && sm.sittingNow > 0 ? ' · ${groupedInt(sm.sittingNow)} sitting live' : ''}',
-                  key: const Key('library-counts'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
-                const SizedBox(height: 12),
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Text('Library', style: AppText.heroTitle.copyWith(color: c.textPrimary, fontSize: 28)),
+                  const SizedBox(width: 8),
+                  Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(4)), child: Text('$total SITS', key: const Key('library-counts'), style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
+                  const SizedBox(width: 8),
+                  if (sm != null && sm.sittingNow > 0)
+                    Expanded(child: Align(alignment: Alignment.centerRight, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      PulseDot(color: c.success, size: 3.5),
+                      const SizedBox(width: 4),
+                      Flexible(child: Text('${groupedInt(sm.sittingNow)} SITTING LIVE', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
+                    ])))),
+                ]),
+                const SizedBox(height: 6),
+                Text('Structured protocols and guided practice with Raphael: choose by length, theme or how you feel.', style: AppText.bodySmall.copyWith(color: c.textSecondary, height: 1.45)),
+                const SizedBox(height: 16),
                 Row(children: [
                   Expanded(
                     child: GestureDetector(
@@ -121,20 +128,28 @@ class LibraryPage extends StatelessWidget {
                         ]),
                       ),
                     ),
-                  AdaptiveGrid(
-                    baseExtent: 100,
-                    children: [
-                      _Tile(key: const Key('tile-silence'), icon: Icons.nightlight_round, title: 'Silence Room', badge: member ? null : BadgeKind.premium, onTap: ctrl.goSilence),
-                      _Tile(key: const Key('tile-byo'), icon: Icons.tune_rounded, title: 'Build your own', badge: member ? null : BadgeKind.premium, onTap: () => member ? Get.toNamed(AppRoutes.buildYourOwn) : openPaywall('lock')),
-                      _Tile(key: const Key('tile-challenges'), icon: Icons.emoji_events_outlined, title: 'Challenges', badge: ctrl.challengesOn ? null : BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.challenges)),
-                      _Tile(key: const Key('tile-breath'), icon: Icons.air_rounded, title: 'Breathwork', badge: BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.breathwork)),
-                    ],
-                  ),
                   const SizedBox(height: 22),
-                  Row(children: [Expanded(child: Text('Active protocols', style: AppText.title.copyWith(color: c.textPrimary))), TextLink('All programs', onPressed: () => Get.toNamed(AppRoutes.allPrograms))]),
+                  Row(children: [Expanded(child: Text('ACTIVE PROTOCOLS', style: AppText.overline.copyWith(color: c.textSecondary))), GestureDetector(onTap: () => Get.toNamed(AppRoutes.allPrograms), child: Text('ALL PROGRAMS', style: AppText.overline.copyWith(color: c.emberText)))]),
                   const SizedBox(height: 8),
                   if (ctrl.programCard.value != null)
-                    AppCard(key: const Key('program-in-progress'), onTap: () => Get.toNamed('/program/${ctrl.programCard.value!.id}', arguments: {'id': ctrl.programCard.value!.id}), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Overline('In progress · day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}'), const SizedBox(height: 4), Text(ctrl.programCard.value!.title, style: AppText.navTitle.copyWith(color: c.textPrimary)), const SizedBox(height: 8), AppProgressBar(ctrl.programCard.value!.day / ctrl.programCard.value!.days)]))
+                    AppCard(
+                      key: const Key('program-in-progress'), onTap: () => Get.toNamed('/program/${ctrl.programCard.value!.id}', arguments: {'id': ctrl.programCard.value!.id}), padding: const EdgeInsets.all(18),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Row(children: [
+                          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.emberDeep, borderRadius: BorderRadius.circular(4)), child: Text('IN PROGRESS', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10))),
+                          const SizedBox(width: 8),
+                          Text('Day ${ctrl.programCard.value!.day} of ${ctrl.programCard.value!.days}', style: AppText.caption.copyWith(color: c.textSecondary)),
+                          const Spacer(),
+                          Container(width: 36, height: 36, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)), child: Icon(Icons.bolt_rounded, size: 20, color: c.emberText)),
+                        ]),
+                        const SizedBox(height: 10),
+                        Text(ctrl.programCard.value!.title, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 19)),
+                        const SizedBox(height: 12),
+                        AppProgressBar(ctrl.programCard.value!.day / ctrl.programCard.value!.days),
+                        const SizedBox(height: 14),
+                        Align(alignment: Alignment.centerRight, child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9), decoration: BoxDecoration(color: c.emberText, borderRadius: BorderRadius.circular(99)), child: Text('RESUME SIT ${ctrl.programCard.value!.day}', style: AppText.overline.copyWith(color: c.onEmber, fontSize: 11)))),
+                      ]),
+                    )
                   else
                     AppCard(onTap: () => Get.toNamed(AppRoutes.allPrograms), child: const ListRow(title: 'Start a program', subtitle: 'Multi-day practices, one meditation a day', leading: IconTile(Icons.route_outlined))),
                   if (ch != null)
@@ -143,33 +158,53 @@ class LibraryPage extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 10),
                         child: AppCard(
                           key: Key('challenge-${x.id}'), onTap: () => Get.toNamed('/challenge/${x.id}', arguments: {'id': x.id}),
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Overline(x.me != null ? 'Cohort · day ${x.me!.completedDays + 1} of ${x.days}' : 'Cohort sprint · ${x.days} days'),
-                            const SizedBox(height: 4),
-                            Text(x.name, style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                            if (x.me != null) ...[const SizedBox(height: 8), AppProgressBar(x.me!.completedDays / x.days)] else Text('${groupedInt(x.peopleInIt)} enrolled', style: AppText.caption.copyWith(color: c.textSecondary)),
+                          child: Row(children: [
+                            Container(width: 40, height: 40, decoration: BoxDecoration(color: c.teal, borderRadius: BorderRadius.circular(10)), child: Icon(Icons.shield_outlined, color: c.tealText, size: 20)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(x.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
+                              Text(x.me != null ? 'Cohort · day ${x.me!.completedDays + 1} of ${x.days}' : '${x.days} days · ${groupedInt(x.peopleInIt)} enrolled', style: AppText.caption.copyWith(color: c.textSecondary)),
+                              if (x.me != null) Padding(padding: const EdgeInsets.only(top: 6), child: AppProgressBar(x.me!.completedDays / x.days)),
+                            ])),
+                            const SizedBox(width: 10),
+                            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(8)), child: Text(x.me != null ? 'OPEN' : 'JOIN ARC', style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5))),
                           ]),
                         ),
                       ),
                   const SizedBox(height: 22),
+                  Row(children: [
+                    _Tab(label: 'ALL CATEGORIES', on: true, onTap: () {}),
+                    _Tab(label: 'MY SITS', on: false, onTap: () => Get.toNamed(AppRoutes.myMeditations)),
+                    _Tab(label: 'DOWNLOADS (${ctrl.downloadedIds.length})', on: false, onTap: () => Get.toNamed(AppRoutes.downloads)),
+                  ]),
+                  const SizedBox(height: 14),
                   Text('Disciplines', key: const Key('themes-title'), style: AppText.title.copyWith(color: c.textPrimary)),
                   const SizedBox(height: 4),
                   Text('${cat.themes.length} foundations of practice', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   for (final t in cat.themes)
-                    InkWell(
-                      key: Key('theme-${t.id}'), onTap: () => Get.toNamed('/theme/${t.id}', arguments: {'id': t.id}),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(children: [
-                          IconTile(themeIcon(t.iconKey), size: 44),
-                          const SizedBox(width: 14),
-                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
-                            Text(t.subtitle ?? ctrl.catalog.themeLine(t), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)),
-                            Text([ctrl.rangeOf(t), if (ctrl.sitsToday(t.id) > 0) '${groupedInt(ctrl.sitsToday(t.id))} sat today'].where((x) => x.isNotEmpty).join(' · '), style: AppText.micro.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
-                          ])),
-                          Icon(Icons.arrow_forward_rounded, size: 18, color: c.textSecondary),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: AppCard(
+                        key: Key('theme-${t.id}'), onTap: () => Get.toNamed('/theme/${t.id}', arguments: {'id': t.id}), padding: const EdgeInsets.all(16),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Container(width: 44, height: 44, decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(12)), child: Icon(themeIcon(t.iconKey), size: 22, color: c.textPrimary)),
+                            const SizedBox(width: 14),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 18)),
+                              const SizedBox(height: 2),
+                              Text(t.subtitle ?? ctrl.catalog.themeLine(t), maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                            ])),
+                            const SizedBox(width: 8),
+                            if (ctrl.rangeOf(t).isNotEmpty) Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(4)), child: Text(ctrl.rangeOf(t), style: AppText.caption.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600, fontFeatures: AppText.tabular))),
+                          ]),
+                          const SizedBox(height: 12),
+                          Row(children: [
+                            if (ctrl.sitsToday(t.id) > 0) ...[Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Text('${groupedInt(ctrl.sitsToday(t.id))} sat today', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))],
+                            const Spacer(),
+                            Icon(Icons.arrow_forward_rounded, size: 18, color: c.textSecondary),
+                          ]),
                         ]),
                       ),
                     ),
@@ -214,6 +249,27 @@ class LibraryPage extends StatelessWidget {
   }
 }
 
+class _Tab extends StatelessWidget {
+  const _Tab({required this.label, required this.on, required this.onTap});
+  final String label;
+  final bool on;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque, onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.only(bottom: 8), alignment: Alignment.center,
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: on ? c.ember : c.border, width: on ? 2 : 1))),
+          child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: on ? c.textPrimary : c.textSecondary, fontSize: 10.5)),
+        ),
+      ),
+    );
+  }
+}
+
 class _Chip extends StatelessWidget {
   const _Chip({super.key, required this.label, required this.selected, required this.onTap});
   final String label;
@@ -234,25 +290,6 @@ class _Chip extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Tile extends StatelessWidget {
-  const _Tile({super.key, required this.icon, required this.title, required this.onTap, this.badge});
-  final IconData icon;
-  final String title;
-  final BadgeKind? badge;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return AppCard(
-      onTap: onTap,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Row(children: [Icon(icon, color: c.emberText), const SizedBox(width: 6), Expanded(child: Align(alignment: Alignment.centerRight, child: badge == null ? const SizedBox.shrink() : AppBadge(badge!)))]),
-        Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
-      ]),
     );
   }
 }
