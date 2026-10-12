@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../data/contracts/auth_repository.dart';
 import '../data/contracts/repositories.dart';
@@ -149,6 +150,7 @@ class AccountService extends GetxService {
 
   AccountResult _fail(Object e, {String? provider}) {
     final a = ApiClient.map(e);
+    debugPrint('[account] request failed: ${a.code.wire} ${a.status} ${a.message}');
     if (a.code == ErrorCode.accountExists) {
       final d = a.details is Map ? (a.details as Map) : const {};
       return AccountExists((d['provider'] ?? provider ?? '') as String, d['mergeToken'] as String?);

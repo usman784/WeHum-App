@@ -14,6 +14,7 @@ import '../../../core/realtime/socket_events.dart';
 import '../../../core/realtime/socket_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/perf_service.dart';
 import '../../../core/services/time_service.dart';
@@ -58,7 +59,11 @@ class TodayController extends GetxController {
   String _date = localDate();
 
   String get date => _date;
-  String get name => Get.find<OnboardingStore>().nameRx.value;
+  String get name {
+    final n = Get.find<OnboardingStore>().nameRx.value;
+    if (n.isNotEmpty || !Get.isRegistered<ConfigService>()) return n;
+    return Get.find<ConfigService>().current.value?.me?.firstName ?? '';
+  }
 
   /// Busy room: "1,248 sitting worldwide right now"; a quiet room says so honestly (liveText).
   String get liveStrip {

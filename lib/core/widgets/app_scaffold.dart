@@ -76,6 +76,12 @@ class TabHeader extends StatelessWidget {
   }
 }
 
+String _initialOf() {
+  var n = Get.isRegistered<OnboardingStore>() ? Get.find<OnboardingStore>().nameRx.value : '';
+  if (n.isEmpty && Get.isRegistered<ConfigService>()) n = Get.find<ConfigService>().current.value?.me?.firstName ?? '';
+  return n.isEmpty ? '' : n.substring(0, 1).toUpperCase();
+}
+
 /// Header of the Stitch sub screens: back arrow, centered title, the SoS pill and the profile photo (64 px high).
 class StitchHeader extends StatelessWidget {
   const StitchHeader({super.key, required this.title, this.onBack});
@@ -98,7 +104,7 @@ class StitchHeader extends StatelessWidget {
             const SizedBox(width: 8),
             GestureDetector(
               behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.you),
-              child: SizedBox(width: 48, height: 48, child: Center(child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: Get.isRegistered<OnboardingStore>() ? (Get.find<OnboardingStore>().nameRx.value.isEmpty ? '' : Get.find<OnboardingStore>().nameRx.value.substring(0, 1).toUpperCase()) : '', size: 32, fontSize: 13)))),
+              child: SizedBox(width: 48, height: 48, child: Center(child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: _initialOf(), size: 32, fontSize: 13)))),
             ),
             const SizedBox(width: 10),
           ]),

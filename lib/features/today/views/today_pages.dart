@@ -5,6 +5,7 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/data/models/stitch.dart';
 import '../../../core/data/models/today.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/inbox_service.dart';
 import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/catalog_service.dart';
@@ -25,7 +26,8 @@ import 'today_widgets.dart';
 
 /// Tab header with the avatar initial and the live unread count of the bell (`inbox:new`).
 Widget tabHeader() => Obx(() {
-      final name = Get.find<OnboardingStore>().nameRx.value;
+      var name = Get.find<OnboardingStore>().nameRx.value;
+      if (name.isEmpty && Get.isRegistered<ConfigService>()) name = Get.find<ConfigService>().current.value?.me?.firstName ?? ''; // a new install of a signed-in person
       return TabHeader(initials: name.isEmpty ? '' : name.substring(0, 1).toUpperCase(), unread: Get.find<InboxService>().unread.value);
     });
 

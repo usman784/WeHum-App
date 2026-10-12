@@ -32,6 +32,8 @@ class UsernameFieldState extends State<UsernameField> {
   String? _reason;
   List<String> _suggestions = const [];
   int _gen = 0;
+  String _auto = ''; // what we filled in ourselves; while the text is still that, a new first name gives a new suggestion
+  Timer? _reseed;
 
   @override
   void initState() {
@@ -50,22 +52,31 @@ class UsernameFieldState extends State<UsernameField> {
       _text.text = widget.initial;
       _ok = widget.initial.isNotEmpty ? true : null;
     }
-    if (widget.autoFill && widget.initial.isEmpty && _text.text.isEmpty && widget.seed != old.seed && widget.seed.length >= 2) _loadSuggestions();
+    if (widget.autoFill && widget.initial.isEmpty && widget.seed != old.seed && widget.seed.trim().length >= 2 && (_text.text.isEmpty || _text.text == _auto)) {
+      _reseed?.cancel();
+      _reseed = Timer(const Duration(milliseconds: 600), () {
+        if (mounted && (_text.text.isEmpty || _text.text == _auto)) _loadSuggestions(force: true);
+      });
+    }
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
+    _reseed?.cancel();
     _text.dispose();
     super.dispose();
   }
 
-  Future<void> _loadSuggestions() async {
+  Future<void> _loadSuggestions({bool force = false}) async {
     try {
       final s = await _me.suggestUsernames(widget.seed.isEmpty ? 'sitter' : widget.seed);
       if (!mounted) return;
       setState(() => _suggestions = s);
-      if (widget.autoFill && _text.text.isEmpty && s.isNotEmpty) _use(s.first); // a good default, editable
+      if (widget.autoFill && (force || _text.text.isEmpty) && s.isNotEmpty) {
+        _auto = s.first;
+        _use(s.first); // a good default, editable
+      }
     } catch (_) {/* offline: the person types one */}
   }
 
