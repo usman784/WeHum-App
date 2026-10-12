@@ -20,7 +20,7 @@ class NamePage extends StatelessWidget {
     final c = context.colors;
     return OnboardingFrame(
       showBack: true, onSkip: ctrl.skip, cta: 'Continue', onCta: ctrl.submit,
-      topRight: Row(mainAxisSize: MainAxisSize.min, children: [
+      step: 1, topRight: Row(mainAxisSize: MainAxisSize.min, children: [
         Text('STEP 1 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
         const SizedBox(width: 16),
         TextLink('Skip', onPressed: ctrl.skip, color: c.textSecondary),
@@ -63,7 +63,7 @@ class TimePage extends StatelessWidget {
     final c = context.colors;
     return OnboardingFrame(
       showBack: true, cta: 'Lock time', onCta: ctrl.submit,
-      topRight: Text('STEP 2 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
+      step: 2, topRight: Text('STEP 2 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
       footer: Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Center(child: TextLink('Decide later', key: const Key('time-later'), onPressed: ctrl.later, color: c.textSecondary)),
@@ -211,7 +211,7 @@ class ReminderPermissionPage extends StatelessWidget {
     final ctrl = Get.put(ReminderPermissionController());
     final c = context.colors;
     return OnboardingFrame(
-      showBack: true, topRight: Text('STEP 3 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
+      showBack: true, step: 3, topRight: Text('STEP 3 OF 3', style: AppText.overline.copyWith(color: c.textTertiary)),
       // One neutral button that opens the system prompt; the person answers there (Apple HIG, "Requesting permission":
       // no look-alike alert, no "Allow" wording, no button that skips the system prompt). Either answer continues.
       cta: 'Continue', onCta: ctrl.allow,

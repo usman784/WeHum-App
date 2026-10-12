@@ -295,10 +295,8 @@ class TogetherPage extends StatelessWidget {
               final g = ctrl.group.value;
               final running = g != null && g.state != GroupPhase.ended;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
-                Text('Together', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-                const SizedBox(height: 6),
-                if (ctrl.liveText != null) Align(alignment: Alignment.centerLeft, child: LivePill(key: const Key('together-live'), text: '${ctrl.liveText} · see where', quiet: ctrl.quiet || ctrl.live.paused, onTap: () => Get.toNamed(AppRoutes.worldMapWorldVibration))),
-                const SizedBox(height: 16),
+                if (ctrl.liveText != null) LiveStrip(key: const Key('together-live'), text: ctrl.liveText!, quiet: ctrl.quiet || ctrl.live.paused, onWave: () => Get.toNamed(AppRoutes.worldMapWorldVibration)),
+                const SizedBox(height: 12),
                 if (running)
                   AppCard(
                     key: const Key('next-group'),
@@ -323,24 +321,47 @@ class TogetherPage extends StatelessWidget {
                     ]),
                   ),
                 const SizedBox(height: 14),
+                Row(children: [
+                  Expanded(child: Text('SELF-PACED SANCTUARY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
+                  if (ctrl.silenceCount > 0) ...[Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Text('${groupedInt(ctrl.silenceCount)} IN SILENCE', style: AppText.overline.copyWith(color: c.success, fontSize: 10))],
+                ]),
+                const SizedBox(height: 8),
                 AppCard(
-                  key: const Key('together-silence'), onTap: () => Get.toNamed(AppRoutes.silenceRoomSetup),
-                  child: Row(children: [
-                    const IconTile(Icons.self_improvement_rounded),
-                    const SizedBox(width: 14),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Silence Room', style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                      Text(ctrl.silenceCount > 0 ? '${groupedInt(ctrl.silenceCount)} sitting in silence · unguided, timer only' : 'Unguided, timer only · a quiet room, together', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                    ])),
-                    Icon(Icons.chevron_right_rounded, color: c.textSecondary),
+                  key: const Key('together-silence'), onTap: () => Get.toNamed(AppRoutes.silenceRoomSetup), padding: const EdgeInsets.all(16),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('Silence Room', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                        const SizedBox(height: 4),
+                        Text(ctrl.silenceCount > 0 ? '${groupedInt(ctrl.silenceCount)} sitting in silence · unguided, timer only' : 'Unguided, timer-only shared sit with a quiet collective pulse.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                      ])),
+                      Container(width: 38, height: 38, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)), child: Icon(Icons.hourglass_empty_rounded, size: 18, color: c.textSecondary)),
+                    ]),
+                    const SizedBox(height: 14),
+                    Row(children: [
+                      for (final (i, m) in const [5, 15, 30, 0].indexed) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        Expanded(child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)),
+                          child: Column(children: [
+                            m == 0 ? Icon(Icons.all_inclusive_rounded, size: 18, color: c.textPrimary) : Text('$m', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15)),
+                            Text(m == 0 ? 'OPEN' : 'MIN', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5)),
+                          ]),
+                        )),
+                      ],
+                    ]),
+                    const SizedBox(height: 14),
+                    Row(children: [Text('Enter Silence Room', style: AppText.navTitle.copyWith(color: c.emberText, fontSize: 15)), const Spacer(), Icon(Icons.arrow_forward_rounded, size: 18, color: c.emberText)]),
                   ]),
                 ),
                 const SizedBox(height: 22),
                 Row(children: [
-                  Expanded(child: Text('Shared intent', style: AppText.title.copyWith(color: c.textPrimary))),
+                  Expanded(child: Text('SHARED INTENT', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
                   if (g?.sessionId != null) TextLink('By meditation', onPressed: () => Get.toNamed('/dedications/${g!.sessionId}', arguments: {'sessionId': g.sessionId})),
                 ]),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
+                Text('Who or what do you dedicate your practice to?', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                const SizedBox(height: 4),
                 Text('Text only · 1 dedication per finished sit · real people', style: AppText.caption.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 8),
                 if (ctrl.feed.isEmpty)

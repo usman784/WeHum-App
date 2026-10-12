@@ -51,16 +51,28 @@ class PaywallPage extends StatelessWidget {
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Get the complete practice library.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-            const SizedBox(height: 12),
             AppCard(
-              key: const Key('paywall-quote'), outlined: true,
+              key: const Key('paywall-quote'), padding: const EdgeInsets.all(16),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('“We built WeHum to be a daily sanctuary, not an algorithmic ad trap. If it helps you stay steady, join us.”', style: AppText.body.copyWith(color: c.textBody, fontStyle: FontStyle.italic)),
+                Row(children: [
+                  Container(width: 40, height: 40, alignment: Alignment.center, decoration: BoxDecoration(color: c.teal, shape: BoxShape.circle), child: Text('R', style: AppText.navTitle.copyWith(color: c.tealText))),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Raphael', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 18)),
+                    Text('LEAD GUIDE & CO-FOUNDER', style: AppText.overline.copyWith(color: c.emberText, fontSize: 9.5)),
+                  ])),
+                  Icon(Icons.verified_rounded, color: c.emberText, size: 20),
+                ]),
+                const SizedBox(height: 12),
+                Text('“We built WeHum to be a daily sanctuary, not an algorithmic ad trap. If it helps you stay steady, join us.”', style: AppText.body.copyWith(color: c.textBody, fontStyle: FontStyle.italic, height: 1.5)),
                 const SizedBox(height: 6),
                 Text('Raphael Reiter', style: AppText.caption.copyWith(color: c.textSecondary, fontWeight: FontWeight.w700)),
               ]),
             ),
+            const SizedBox(height: 20),
+            Text('UNCOMPROMISING MINDFULNESS', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
+            const SizedBox(height: 6),
+            Text('Get the complete practice library.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 14),
             for (final p in perks) Benefit(p),
             const SizedBox(height: 16),
@@ -88,7 +100,7 @@ class PaywallPage extends StatelessWidget {
               const SizedBox(height: 12),
               if (m != null) _PlanTile(key: const Key('plan-monthly'), selected: ctrl.selected.value == 'monthly', onTap: () => ctrl.selected.value = 'monthly', title: 'Monthly', price: m.priceString, per: '/month', note: '${m.trialDays} days free, then ${m.priceString}/month. Cancel anytime.'),
               const SizedBox(height: 20),
-              PrimaryButton('Start ${ctrl.plan?.trialDays ?? 7}-day free trial', loading: ctrl.busy.value, onPressed: online ? ctrl.start : null),
+              PrimaryButton('Start ${ctrl.plan?.trialDays ?? 7}-day free trial', icon: Icons.arrow_forward_rounded, loading: ctrl.busy.value, onPressed: online ? ctrl.start : null),
               if (!online) Padding(padding: const EdgeInsets.only(top: 10), child: Text('You’re offline. Connect to the internet to start your trial.', key: const Key('buy-offline'), style: AppText.bodySmall.copyWith(color: c.textSecondary))),
               if (ctrl.message.value != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(ctrl.message.value!, style: AppText.bodySmall.copyWith(color: c.dangerText))),
               const SizedBox(height: 10),

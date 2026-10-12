@@ -27,7 +27,7 @@ class StepDots extends StatelessWidget {
 
 /// Common frame for the onboarding slides: top row (back / skip), content, dots, primary button.
 class OnboardingFrame extends StatelessWidget {
-  const OnboardingFrame({super.key, required this.child, this.onSkip, this.skipLabel = 'Skip', this.showBack = false, this.dots, this.cta, this.onCta, this.ctaEnabled = true, this.ctaLoading = false, this.footer, this.topRight});
+  const OnboardingFrame({super.key, required this.child, this.onSkip, this.skipLabel = 'Skip', this.showBack = false, this.dots, this.cta, this.onCta, this.ctaEnabled = true, this.ctaLoading = false, this.footer, this.topRight, this.step});
   final Widget child;
   final VoidCallback? onSkip, onCta;
   final String skipLabel;
@@ -35,6 +35,8 @@ class OnboardingFrame extends StatelessWidget {
   final int? dots;
   final String? cta;
   final Widget? footer, topRight;
+  /// 1–3: the progress segments under the top row (setup).
+  final int? step;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +61,11 @@ class OnboardingFrame extends StatelessWidget {
                 topRight ?? (onSkip == null ? const SizedBox.shrink() : TextLink(skipLabel, onPressed: onSkip, color: c.textSecondary)),
               ]),
             ),
+            if (step != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(children: [for (var i = 1; i <= 3; i++) Expanded(child: Container(height: 3, margin: EdgeInsets.only(right: i == 3 ? 0 : 6), decoration: BoxDecoration(color: i <= step! ? c.ember : c.track, borderRadius: BorderRadius.circular(2))))]),
+              ),
             Expanded(child: child),
             if (dots != null) Padding(padding: const EdgeInsets.only(bottom: 20), child: StepDots(index: dots!)),
             if (cta != null) PrimaryButton(cta!, onPressed: ctaEnabled ? onCta : null, loading: ctaLoading),

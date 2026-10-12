@@ -46,25 +46,54 @@ class CompletePage extends StatelessWidget {
             final busy = ctrl.busy;
             final st = ctrl.streak;
             final hr = ctrl.hrDelta;
-            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 24), children: staggered([
-              const SizedBox(height: 8),
-              if (busy) WorldDotMap(hot: ctrl.hot, height: 130), // where people are meditating right now (live), nothing when nobody is
-              if (busy) const SizedBox(height: 16),
-              Text('SIT COMPLETE', style: AppText.overline.copyWith(color: c.emberText)),
-              const SizedBox(height: 6),
-              Text('You sat ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-              const SizedBox(height: 8),
-              if (ctrl.togetherLine != null) Text(ctrl.togetherLine!, key: const Key('complete-together'), style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-              if (busy && !ctrl.belts.isEmpty) ...[const SizedBox(height: 14), AppCard(key: const Key('complete-belts'), child: BeltCounts(belts: ctrl.belts))],
-              if (busy && ctrl.minutesToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupedInt(ctrl.minutesToday)} minutes sat by everyone today', key: const Key('complete-collective'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
-              const SizedBox(height: 20),
-              Row(children: [
-                Expanded(child: _Stat(value: '${ctrl.daysThisWeek} ${ctrl.daysThisWeek == 1 ? 'day' : 'days'}', label: 'This week')),
-                const SizedBox(width: 12),
-                Expanded(child: _Stat(value: '${ctrl.totalMinutes}', label: 'Total minutes')),
+            final now = DateTime.now();
+            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 28), children: staggered([
+              Center(child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1), duration: const Duration(milliseconds: 900), curve: Curves.easeOutCubic,
+                builder: (_, v, __) => SizedBox(width: 104, height: 104, child: CustomPaint(painter: _CheckRingPainter(v, c.ember, c.track), child: Center(child: Opacity(opacity: v, child: Icon(Icons.check_rounded, size: 40, color: c.emberText))))),
+              )),
+              Column(children: [
+                Text('SIT COMPLETE', style: AppText.overline.copyWith(color: c.emberText)),
+                const SizedBox(height: 6),
+                Text('You sat ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+                if (ctrl.togetherLine != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(ctrl.togetherLine!, key: const Key('complete-together'), textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
               ]),
-              if (st != null) ...[
-                const SizedBox(height: 12),
+              AppCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Container(width: 6, height: 6, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle)),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text('SESSION LOG', style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5))),
+                    Text('Today · ${TimeOfDay.fromDateTime(now).format(context)}', style: AppText.caption.copyWith(color: c.textSecondary)),
+                  ]),
+                  const SizedBox(height: 12),
+                  Text(args.player.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 19)),
+                  if ((args.player.subtitle ?? '').isNotEmpty) Text(args.player.subtitle!, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                  if (busy) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(12)),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Row(children: [Expanded(child: Text('SYNCHRONOUS NETWORK', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))), Icon(Icons.public_rounded, size: 14, color: c.success), const SizedBox(width: 4), Text('Global active', style: AppText.caption.copyWith(color: c.success, fontWeight: FontWeight.w600))]),
+                        const SizedBox(height: 8),
+                        WorldDotMap(hot: ctrl.hot, height: 110),
+                        if (!ctrl.belts.isEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: KeyedSubtree(key: const Key('complete-belts'), child: BeltCounts(belts: ctrl.belts))),
+                        if (ctrl.minutesToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupedInt(ctrl.minutesToday)} minutes sat by everyone today', key: const Key('complete-collective'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
+                      ]),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  Row(children: [
+                    Expanded(child: _Stat(value: '${ctrl.minutes}:00', label: 'DURATION')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _Stat(value: '${ctrl.daysThisWeek} ${ctrl.daysThisWeek == 1 ? 'day' : 'days'}', label: 'THIS WEEK')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _Stat(value: '${ctrl.totalMinutes}', label: 'TOTAL MIN')),
+                  ]),
+                ]),
+              ),
+              if (st != null)
                 AppCard(
                   key: const Key('complete-streak'),
                   child: Row(children: [
@@ -76,21 +105,17 @@ class CompletePage extends StatelessWidget {
                     ])),
                   ]),
                 ),
-              ],
-              if (hr != null) ...[
-                const SizedBox(height: 12),
+              if (hr != null)
                 AppCard(
                   key: const Key('complete-hr'),
                   child: Row(children: [
                     Icon(Icons.favorite_border_rounded, color: c.emberText),
                     const SizedBox(width: 12),
                     Expanded(child: Text('Heart rate shift', style: AppText.navTitle.copyWith(color: c.textPrimary))),
-                    Text('${hr > 0 ? '+' : ''}$hr bpm', style: AppText.title.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+                    Text('${hr > 0 ? '+' : ''}$hr bpm', style: AppText.title.copyWith(color: c.success, fontFeatures: AppText.tabular)),
                   ]),
                 ),
-              ],
-              if (busy && ctrl.finishers > 1) ...[
-                const SizedBox(height: 12),
+              if (busy && ctrl.finishers > 1)
                 AppCard(
                   key: const Key('complete-finishers'),
                   child: Row(children: [
@@ -101,21 +126,34 @@ class CompletePage extends StatelessWidget {
                       TextLink(ctrl.kudosSent.value ? 'Kudos sent' : 'Send kudos', key: const Key('send-kudos'), onPressed: ctrl.kudosSent.value ? null : ctrl.sendKudos, color: ctrl.kudosSent.value ? c.textTertiary : c.emberText),
                   ]),
                 ),
-              ],
-              const SizedBox(height: 20),
               _DedicateCard(ctrl: ctrl),
-              const SizedBox(height: 12),
               if (ctrl.player.sessionId != null) OutlineButton('Read today’s dedications', key: const Key('read-dedications'), onPressed: ctrl.readDedications),
-              const SizedBox(height: 12),
-              PrimaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
-              const SizedBox(height: 8),
-              Center(child: TextLink('Share your sit', onPressed: ctrl.share, color: c.textSecondary)),
-            ]));
+              Column(children: [
+                PrimaryButton('Share your sit', key: const Key('share-sit'), icon: Icons.ios_share_rounded, onPressed: ctrl.share),
+                const SizedBox(height: 10),
+                SecondaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
+              ]),
+            ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
           }),
         ),
       ),
     );
   }
+}
+
+class _CheckRingPainter extends CustomPainter {
+  _CheckRingPainter(this.v, this.color, this.track);
+  final double v;
+  final Color color, track;
+  @override
+  void paint(Canvas canvas, Size s) {
+    final r = Rect.fromCircle(center: s.center(Offset.zero), radius: s.width / 2 - 4);
+    canvas.drawArc(r, 0, 6.2832, false, Paint()..style = PaintingStyle.stroke..strokeWidth = 4..color = track);
+    canvas.drawArc(r, -1.5708, 6.2832 * v, false, Paint()..style = PaintingStyle.stroke..strokeWidth = 4..strokeCap = StrokeCap.round..color = color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CheckRingPainter o) => o.v != v;
 }
 
 class _Stat extends StatelessWidget {
@@ -124,7 +162,10 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: AppText.title.copyWith(color: c.textPrimary)), Text(label, style: AppText.bodySmall.copyWith(color: c.textSecondary))]));
+    return Container(
+      padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(10)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5)), const SizedBox(height: 6), FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 18, fontFeatures: AppText.tabular)))]),
+    );
   }
 }
 

@@ -56,6 +56,8 @@ void main() {
     expect(find.text(r'$59.00'), findsOneWidget);
     expect(find.text(r'$9.99'), findsOneWidget);
     expect(find.text('Start 7-day free trial'), findsOneWidget);
+    await t.ensureVisible(find.byKey(const Key('plan-monthly')));
+    await t.pump();
     await t.tap(find.byKey(const Key('plan-monthly')));
     await t.pump();
     expect(Get.find<PaywallController>().selected.value, 'monthly');

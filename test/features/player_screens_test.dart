@@ -106,6 +106,7 @@ void main() {
     var now = DateTime.utc(2026, 10, 7, 8);
     await withClock(Clock(() => now), () async {
       final e = await openPlayer(t, motd());
+      t.view.physicalSize = const Size(1170, 4800); // the whole payoff is built
       now = now.add(const Duration(minutes: 10));
       e.engine.setStatus(EngineStatus.completed);
       await settle(t);

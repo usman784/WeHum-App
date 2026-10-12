@@ -63,7 +63,7 @@ class _SocialBtn extends StatelessWidget {
   final VoidCallback? onTap;
   final bool loading;
   @override
-  Widget build(BuildContext context) => OutlineButton(label, icon: icon, onPressed: onTap, loading: loading, height: Sizes.primaryButton);
+  Widget build(BuildContext context) => SecondaryButton(label, icon: icon, onPressed: onTap, loading: loading);
 }
 
 class LegalLine extends StatelessWidget {

@@ -203,7 +203,7 @@ void main() {
       expect(find.textContaining('120 already waiting'), findsOneWidget);
       e.socketServer.serverPushes('live:agg', {'total': 412, 'countries': 37, 'top': [], 'quiet': false, 'meditatedToday': 1280, 'vibration': 70, 'at': 1});
       await afterPush(t);
-      expect(find.textContaining('412 meditating now'), findsOneWidget);
+      expect(find.textContaining('412 MEDITATING NOW'), findsOneWidget);
       await t.tap(find.byKey(const Key('go-lobby')));
       await settle(t);
       expect(Get.currentRoute, AppRoutes.groupMeditationLobby);
