@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'package:flutter/material.dart';
 import '../../../core/widgets/painters.dart';
 import 'package:get/get.dart';
@@ -22,7 +23,7 @@ class SplashPage extends StatelessWidget {
           return Column(mainAxisSize: MainAxisSize.min, children: [
             const BrandLogo(size: 88),
             const SizedBox(height: 20),
-            Text('WeHum', style: AppText.display.copyWith(color: c.textPrimary)),
+            Text('${brandName()}', style: AppText.display.copyWith(color: c.textPrimary)),
             const SizedBox(height: 4),
             Text('by Raphael Reiter', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
             const SizedBox(height: 40),

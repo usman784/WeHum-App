@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -48,7 +49,7 @@ class StartPage extends StatelessWidget {
                     child: Text('FOUNDING 1,000 · ${a?.priceString ?? ''}/YEAR · ${f.left} SPOTS LEFT'.replaceAll(' · /YEAR', ''), style: AppText.overline.copyWith(color: c.emberText, fontSize: 11)),
                   ),
                 const SizedBox(height: 14),
-                Text('Everything in WeHum: the extended meditation library, Meditation of the Day, group meditations, a daily message from Raphael, customizable meditations, SoS sessions for hard times and the Silence Room.', style: AppText.body.copyWith(color: c.textBody)),
+                Text('Everything in ${brandName()}: the extended meditation library, Meditation of the Day, group meditations, a daily message from Raphael, customizable meditations, SoS sessions for hard times and the Silence Room.', style: AppText.body.copyWith(color: c.textBody)),
                 const SizedBox(height: 14),
                 if (a != null) ...[
                   Text('${a.trialDays} days free, then ${a.priceString}/year.', key: const Key('annual-line'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 20)),

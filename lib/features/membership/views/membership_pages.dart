@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'package:clock/clock.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
@@ -64,7 +65,7 @@ class PaywallPage extends StatelessWidget {
                   Icon(Icons.verified_rounded, color: c.emberText, size: 20),
                 ]),
                 const SizedBox(height: 12),
-                Text('“We built WeHum to be a daily sanctuary, not an algorithmic ad trap. If it helps you stay steady, join us.”', style: AppText.body.copyWith(color: c.textBody, fontStyle: FontStyle.italic, height: 1.5)),
+                Text('“We built ${brandName()} to be a daily sanctuary, not an algorithmic ad trap. If it helps you stay steady, join us.”', style: AppText.body.copyWith(color: c.textBody, fontStyle: FontStyle.italic, height: 1.5)),
                 const SizedBox(height: 6),
                 Text('Raphael Reiter', style: AppText.caption.copyWith(color: c.textSecondary, fontWeight: FontWeight.w700)),
               ]),
@@ -173,7 +174,7 @@ class PurchaseStatusPage extends StatelessWidget {
     final (icon, title, body, cta, ctaAction, secondary) = switch (state) {
       'loading' => (Icons.hourglass_top_rounded, 'Starting your membership…', 'This takes a few seconds. Please keep the app open.', null, null, null),
       'pending' => (Icons.family_restroom_rounded, 'Waiting for approval', 'A family organiser needs to approve this purchase (Ask to Buy). Membership opens as soon as it’s approved.', null, null, 'Continue free while you wait'),
-      'already' => (Icons.verified_outlined, 'You’re already a member', 'This store account already has WeHum. Restore your purchase to unlock everything on this phone.', 'Restore purchase', () => Get.offNamed(AppRoutes.restorePurchase), 'Continue free'),
+      'already' => (Icons.verified_outlined, 'You’re already a member', 'This store account already has ${brandName()}. Restore your purchase to unlock everything on this phone.', 'Restore purchase', () => Get.offNamed(AppRoutes.restorePurchase), 'Continue free'),
       'cancelled' => (Icons.favorite_border_rounded, 'No problem', 'Nothing was charged. Your Founding price is still here when you’re ready.', 'See the options again', () => Get.back<void>(), 'Continue free'),
       _ => (Icons.error_outline_rounded, 'Payment didn’t go through', 'You weren’t charged. Check your payment method in the ${Platform.isIOS ? 'App Store' : 'Play Store'} and try again.', 'Try again', ctrl.retry, 'Continue free for now'),
     };
@@ -240,9 +241,9 @@ class RestorePage extends StatelessWidget {
           final s = ctrl.state.value;
           final (icon, title, body) = switch (s) {
             'restored' => (Icons.check_circle_outline_rounded, 'Membership restored', 'Everything is unlocked again.'),
-            'notFound' => (Icons.search_off_rounded, 'No membership found', 'We couldn’t find a WeHum purchase on this ${Platform.isIOS ? 'Apple ID' : 'Google account'}. If you subscribed on another account, sign in to that store account and try again.'),
+            'notFound' => (Icons.search_off_rounded, 'No membership found', 'We couldn’t find a ${brandName()} purchase on this ${Platform.isIOS ? 'Apple ID' : 'Google account'}. If you subscribed on another account, sign in to that store account and try again.'),
             'failed' => (Icons.error_outline_rounded, 'Couldn’t check right now', 'Check your connection and try again.'),
-            _ => (Icons.hourglass_top_rounded, 'Checking your purchases…', 'Looking for a WeHum membership on this store account.'),
+            _ => (Icons.hourglass_top_rounded, 'Checking your purchases…', 'Looking for a ${brandName()} membership on this store account.'),
           };
           return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             const SizedBox(height: 32),
@@ -256,7 +257,7 @@ class RestorePage extends StatelessWidget {
             if (s == 'notFound') ...[
               PrimaryButton('See membership options', onPressed: () => Get.offNamed(AppRoutes.membershipPaywall, arguments: {'source': 'settings'})),
               const SizedBox(height: 8),
-              OutlineButton('Log in to your WeHum account', onPressed: () => Get.offNamed(AppRoutes.logIn)),
+              OutlineButton('Log in to your ${brandName()} account', onPressed: () => Get.offNamed(AppRoutes.logIn)),
             ],
             if (s == 'failed') PrimaryButton('Try again', onPressed: ctrl.run),
             if (s != 'checking' && s != 'idle') Center(child: TextLink('Close', onPressed: () => Get.back<void>(), color: c.textSecondary)),
@@ -290,7 +291,7 @@ class ManageMembershipPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text('Free meditations from Raphael’s online library stay available.', style: AppText.body.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 16),
-                PrimaryButton(s == MembershipState.ended ? 'Rejoin WeHum' : 'See membership options', onPressed: () => Get.toNamed(AppRoutes.membershipPaywall, arguments: {'source': 'settings'})),
+                PrimaryButton(s == MembershipState.ended ? 'Rejoin ${brandName()}' : 'See membership options', onPressed: () => Get.toNamed(AppRoutes.membershipPaywall, arguments: {'source': 'settings'})),
               ]))
             else
               AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -313,7 +314,7 @@ class ManageMembershipPage extends StatelessWidget {
             const SizedBox(height: 24),
             Text('How to cancel', style: AppText.navTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 6),
-            Text('Cancel in your ${Platform.isIOS ? 'App Store' : 'Google Play'} subscriptions. You keep access until the end of the paid period. Deleting your WeHum account does not cancel the subscription.', style: AppText.body.copyWith(color: c.textSecondary)),
+            Text('Cancel in your ${Platform.isIOS ? 'App Store' : 'Google Play'} subscriptions. You keep access until the end of the paid period. Deleting your ${brandName()} account does not cancel the subscription.', style: AppText.body.copyWith(color: c.textSecondary)),
           ]),
         );
       }),
@@ -419,7 +420,7 @@ class MembershipEndedPage extends StatelessWidget {
           const SizedBox(height: 6),
           Text('Meditation of the Day, extended library, group meditations, the Silence Room, daily message, downloads', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
           const Spacer(),
-          PrimaryButton('Rejoin WeHum', onPressed: () => Get.offNamed(AppRoutes.membershipPaywall, arguments: {'source': 'settings'})),
+          PrimaryButton('Rejoin ${brandName()}', onPressed: () => Get.offNamed(AppRoutes.membershipPaywall, arguments: {'source': 'settings'})),
           const SizedBox(height: 8),
           Center(child: TextLink('Continue free', onPressed: () => Get.offAllNamed(AppRoutes.todayFree), color: c.textSecondary)),
         ]),

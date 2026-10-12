@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'onboarding_store.dart';
 import '../data/contracts/bootstrap_repository.dart';
 import '../data/models/bootstrap.dart';
 import 'time_service.dart';
@@ -16,6 +17,7 @@ class ConfigService extends GetxService {
   Future<Bootstrap> refresh() async {
     final b = await _repo.bootstrap();
     current.value = b;
+    if (Get.isRegistered<OnboardingStore>()) Get.find<OnboardingStore>().brandName = b.branding.appName;
     _time.sync(b.serverTime);
     return b;
   }

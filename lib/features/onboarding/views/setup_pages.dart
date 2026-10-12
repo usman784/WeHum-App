@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -221,13 +222,13 @@ class ReminderPermissionPage extends StatelessWidget {
               const SizedBox(height: 12),
               Text('We will invite you to meditate at ${ctrl.timeLabel}.', key: const Key('reminder-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
               const SizedBox(height: 10),
-              Text('Next, your phone will ask if WeHum may send notifications. This is what we use them for:', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+              Text('Next, your phone will ask if ${brandName()} may send notifications. This is what we use them for:', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
               const SizedBox(height: 20),
               const _Use(Icons.notifications_none_rounded, 'Your daily reminder', 'Once a day at the time you chose, in your local time zone.'),
               const _Use(Icons.groups_2_outlined, 'Group meditation', 'A heads-up before the group starts, only if you ask for it.'),
               const _Use(Icons.mail_outline_rounded, 'Messages from Raphael', 'The daily message and news about your membership.'),
               const SizedBox(height: 8),
-              Text('No advertising. You can change this any time in Reminders or in your phone’s Settings, and WeHum works without notifications too.', key: const Key('permission-note'), style: AppText.bodySmall.copyWith(color: c.textTertiary)),
+              Text('No advertising. You can change this any time in Reminders or in your phone’s Settings, and ${brandName()} works without notifications too.', key: const Key('permission-note'), style: AppText.bodySmall.copyWith(color: c.textTertiary)),
             ]))),
     );
   }

@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import '../../../core/widgets/flex_scroll.dart';
@@ -34,7 +35,7 @@ class UpdateRequiredPage extends StatelessWidget {
               const SizedBox(height: 20),
               Text('Time for an update', textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
               const SizedBox(height: 10),
-              Text('This version of WeHum is no longer supported. Update to keep your progress, meditations and downloads in sync.', textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+              Text('This version of ${brandName()} is no longer supported. Update to keep your progress, meditations and downloads in sync.', textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
               const SizedBox(height: 28),
               PrimaryButton('Update WeHum', key: const Key('update-btn'), onPressed: () => launchUrl(Uri.parse(Platform.isIOS ? AppLinks.iosStore : AppLinks.androidStore), mode: LaunchMode.externalApplication)),
               const SizedBox(height: 16),
@@ -60,7 +61,7 @@ class MaintenancePage extends StatelessWidget {
             const SizedBox(height: 20),
             Text('We’ll be right back', textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 10),
-            Text('WeHum is being updated. Your downloads and the Silence Room still work.', textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+            Text('${brandName()} is being updated. Your downloads and the Silence Room still work.', textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
             const SizedBox(height: 28),
             PrimaryButton('Try again', key: const Key('maint-retry'), onPressed: () => Get.offAllNamed(AppRoutes.splash)),
             const SizedBox(height: 8),

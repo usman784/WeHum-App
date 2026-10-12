@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import '../../../core/widgets/motion.dart';
@@ -87,7 +88,7 @@ class YouPage extends StatelessWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Save your progress', style: AppText.navTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 4),
-                Text('Keep your minutes safe and use WeHum on another phone.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                Text('Keep your minutes safe and use ${brandName()} on another phone.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 12),
                 Row(children: [Expanded(child: PrimaryButton('Save progress', onPressed: () => Get.toNamed(ctrl.access.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser))), const SizedBox(width: 10), Expanded(child: OutlineButton('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn)))]),
               ]),
@@ -666,7 +667,7 @@ class HelpPage extends StatelessWidget {
         ListRow(title: 'Terms of use', onTap: () => open(AppLinks.terms)),
         ListRow(title: 'Privacy policy', onTap: () => open(AppLinks.privacy)),
         const SizedBox(height: 24),
-        Center(child: Column(children: [Text('WeHum by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () async { if (await ctrl.versionTapped() && context.mounted) AppSnack.success(context, 'Test event sent'); }, child: Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary)))), const SizedBox(height: 4), Text('Meditation training, not therapy.', style: AppText.caption.copyWith(color: c.textTertiary))])),
+        Center(child: Column(children: [Text('${brandName()} by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () async { if (await ctrl.versionTapped() && context.mounted) AppSnack.success(context, 'Test event sent'); }, child: Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary)))), const SizedBox(height: 4), Text('Meditation training, not therapy.', style: AppText.caption.copyWith(color: c.textTertiary))])),
       ]),
     );
   }

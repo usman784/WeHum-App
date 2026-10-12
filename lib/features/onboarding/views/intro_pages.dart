@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
@@ -70,7 +71,7 @@ class IntroPage extends StatelessWidget {
 
   List<Widget> _text(AppColors c) {
     final (title, body, small) = switch (step) {
-      1 => ('WeHum by Raphael Reiter', 'Natural, secular spirituality. Meditation is spiritual, and it’s also a skill that makes us better at being human.', 'Learn to manage your emotions and meet life with courage, temperance and understanding.'),
+      1 => ('${brandName()} by Raphael Reiter', 'Natural, secular spirituality. Meditation is spiritual, and it’s also a skill that makes us better at being human.', 'Learn to manage your emotions and meet life with courage, temperance and understanding.'),
       2 => ('You’re never meditating alone.', 'Transcendence is the deep understanding, and the feeling, that we are part of one interconnected system of nature.', 'Every meditation is shared with real people around the world, in real time.'),
       3 => ('One meditation a day. That’s the whole trick.', 'A new Meditation of the Day, group meditations, and a short daily message from Raphael.', ''),
       _ => ('Training, not therapy.', 'Free meditations from the channel, an exclusive premium library, meditations you build to your own length and sound, and SoS sessions for hard moments.', ''),

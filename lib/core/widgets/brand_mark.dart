@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../services/onboarding_store.dart';
 import '../services/config_service.dart';
 import 'painters.dart';
 
@@ -23,4 +24,8 @@ class BrandMark extends StatelessWidget {
 }
 
 /// The app name from the CMS ("WeHum" by default).
-String brandName() => Get.isRegistered<ConfigService>() ? (Get.find<ConfigService>().current.value?.branding.appName ?? 'WeHum') : 'WeHum';
+String brandName() {
+  final live = Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.branding.appName : null;
+  if (live != null) return live;
+  return Get.isRegistered<OnboardingStore>() ? Get.find<OnboardingStore>().brandName : 'WeHum';
+}

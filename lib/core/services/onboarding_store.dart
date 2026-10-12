@@ -39,6 +39,10 @@ class OnboardingStore extends GetxService {
   /// The first name as something screens can watch (the avatar initial must change the moment the person does).
   final nameRx = ''.obs;
 
+  /// The app name last set in the CMS, kept so the splash can show it before the first bootstrap answers.
+  String get brandName => _box.read<String>('brand_name') ?? 'WeHum';
+  set brandName(String v) => _box.write('brand_name', v);
+
   bool get done => _box.read<bool>('onboarding_done') ?? false;
   set done(bool v) => _box.write('onboarding_done', v);
 

@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../app/routes/app_routes.dart';
@@ -108,7 +109,7 @@ class PurchaseStatusController extends GetxController {
 class WelcomeController extends GetxController {
   AccessService get access => Get.find<AccessService>();
   String get name => Get.find<OnboardingStore>().name;
-  String get title => name.isEmpty ? 'Welcome to WeHum.' : 'Welcome to WeHum, $name.';
+  String get title => name.isEmpty ? 'Welcome to ${brandName()}.' : 'Welcome to ${brandName()}, $name.';
   DateTime? get trialEnds => access.entitlement.value.expiresAt;
 }
 

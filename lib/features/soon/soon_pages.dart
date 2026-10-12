@@ -1,3 +1,4 @@
+import '../../../core/widgets/brand_mark.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/widgets/flex_scroll.dart';
@@ -111,7 +112,7 @@ class GratitudePage extends StatelessWidget {
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
                 SingleChildScrollView(scrollDirection: Axis.horizontal, child: PillGroup<String>(options: GratitudeController.kinds, selected: {ctrl.kind.value}, onToggle: ctrl.select, labelOf: GratitudeController.label)),
                 const SizedBox(height: 12),
-                Text('One thing you’re grateful for today. Shared with everyone in WeHum.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                Text('One thing you’re grateful for today. Shared with everyone in ${brandName()}.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 8),
                 TextField(key: const Key('grat-field'), maxLength: 200, onChanged: (v) => ctrl.text.value = v, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: InputDecoration(hintText: 'What are you grateful for?', filled: true, fillColor: c.surfaceInput, counterText: '', border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border)))),
                 const SizedBox(height: 8),
@@ -298,7 +299,7 @@ class MilestonesPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text('THE WORLD SO FAR', style: AppText.overline.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 8),
-                for (final (k, label) in [('minutes', 'minutes meditated on WeHum'), ('meditations', 'meditations'), ('countries', 'countries'), ('dedications', 'dedications')])
+                for (final (k, label) in [('minutes', 'minutes meditated on ${brandName()}'), ('meditations', 'meditations'), ('countries', 'countries'), ('dedications', 'dedications')])
                   Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(children: [Text(_compact(d.world[k] ?? 0), style: AppText.title.copyWith(color: c.textPrimary)), const SizedBox(width: 10), Text(label, style: AppText.bodyLarge.copyWith(color: c.textSecondary))])),
               ]);
             }),
