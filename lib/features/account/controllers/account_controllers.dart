@@ -67,7 +67,8 @@ class SocialFlowController extends GetxController {
 
 /// 17 Sign up with email (link to the guest).
 class EmailSignUpController extends GetxController {
-  final first = ''.obs, email = ''.obs, password = ''.obs;
+  final first = ''.obs, email = ''.obs, password = ''.obs, username = ''.obs;
+  final usernameOk = false.obs;
   final busy = false.obs;
   final submitted = false.obs;
   final error = RxnString();
@@ -76,7 +77,8 @@ class EmailSignUpController extends GetxController {
   String? get emailError => submitted.value && !isEmail(email.value) ? 'Enter a valid email address' : null;
   String? get passwordErr => submitted.value ? passwordError(password.value) : null;
   String? get firstError => submitted.value && first.value.trim().isEmpty ? 'Please enter your first name' : null;
-  bool get valid => isEmail(email.value) && passwordError(password.value) == null && first.value.trim().isNotEmpty && first.value.trim().length <= 30;
+  String? get usernameErr => submitted.value && !usernameOk.value ? 'Pick a username that is free' : null;
+  bool get valid => isEmail(email.value) && passwordError(password.value) == null && first.value.trim().isNotEmpty && first.value.trim().length <= 30 && usernameOk.value;
 
   @override
   void onInit() {
@@ -90,7 +92,7 @@ class EmailSignUpController extends GetxController {
     exists.value = false;
     if (!valid || busy.value) return false;
     busy.value = true;
-    final r = await Get.find<AccountService>().linkEmail(email: email.value.trim().toLowerCase(), password: password.value, firstName: first.value.trim());
+    final r = await Get.find<AccountService>().linkEmail(email: email.value.trim().toLowerCase(), password: password.value, firstName: first.value.trim(), username: username.value);
     busy.value = false;
     switch (r) {
       case AccountOk():

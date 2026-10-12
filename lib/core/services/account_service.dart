@@ -72,9 +72,9 @@ class AccountService extends GetxService {
     }
   }
 
-  Future<AccountResult> linkEmail({required String email, required String password, String? firstName}) async {
+  Future<AccountResult> linkEmail({required String email, required String password, String? firstName, String? lastName, String? username}) async {
     try {
-      return _done(await repo.linkEmail(email: email, password: password, firstName: firstName), 'email');
+      return _done(await repo.linkEmail(email: email, password: password, firstName: firstName, lastName: lastName, username: username), 'email');
     } catch (e) {
       return _fail(e, provider: 'email');
     }

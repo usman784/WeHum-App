@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import '../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,7 +71,7 @@ class SosPage extends StatelessWidget {
             content: () => Obx(() {
               final s = ctrl.sos;
               final help = s.help;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
                 Text(s.title, key: const Key('sos-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 6),
                 Text('Select what you are feeling. Raphael’s voice begins within two seconds: no intro, no build-up.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
@@ -133,7 +134,7 @@ class SosPage extends StatelessWidget {
                     OutlineButton('Contact us', onPressed: () => launchUrl(Uri.parse(AppLinks.support), mode: LaunchMode.externalApplication)),
                   ]),
                 ),
-              ]);
+              ]));
             }),
           )),
     );

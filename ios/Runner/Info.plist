@@ -61,6 +61,10 @@
 		<string>WeHum adds the group meditation to your calendar when you tap Add to calendar.</string>
 		<key>NSContactsUsageDescription</key>
 		<string>The calendar screen can show your contacts if you choose to invite someone to the event. WeHum itself never reads your contacts.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Choose a profile photo. It is only used for your profile.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Take a profile photo. It is only used for your profile.</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
 		<string>WeHum saves the share image of your meditation to your photo library when you tap Save to Photos.</string>
 		<key>UIApplicationSceneManifest</key>

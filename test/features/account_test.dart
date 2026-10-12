@@ -30,6 +30,33 @@ void main() {
       await e.dispose();
     });
 
+    testWidgets('sign-up suggests a username, checks it live and refuses a taken one', (t) async {
+      phone(t);
+      final e = await TestEnv.create(onboardingDone: true, prefs: const {'first_name': 'Lena'});
+      await t.pumpWidget(e.app(initial: AppRoutes.signUpWithEmail));
+      await settle(t);
+      final field = find.byKey(const Key('username-field'));
+      expect(field, findsOneWidget);
+      expect((t.widget(field) as TextFormField).controller!.text, startsWith('lena')); // suggested from the first name, editable
+      expect(find.byKey(const Key('username-ok')), findsOneWidget);
+      await t.enterText(field, 'raphael');
+      await t.pump(const Duration(milliseconds: 600));
+      await t.pump();
+      expect(find.byKey(const Key('username-bad')), findsOneWidget);
+      expect(find.text('That username is taken'), findsOneWidget);
+      await t.enterText(find.byKey(const Key('su-email')), 'new2@example.com');
+      await t.enterText(find.byKey(const Key('su-password')), 'long-enough-1');
+      await t.tap(find.text('Create account'));
+      await settle(t);
+      expect(e.authRepo.calls, isNot(contains('linkEmail:new2@example.com'))); // blocked until a free name is chosen
+      await t.tap(find.byType(ActionChip).first);
+      await settle(t);
+      await t.tap(find.text('Create account'));
+      await settle(t);
+      expect(e.authRepo.calls, contains('linkEmail:new2@example.com'));
+      await e.dispose();
+    });
+
     test('existing account → AccountExists with the merge token; login then merges the guest into the account', () async {
       final e = await TestEnv.create();
       e.social.googleToken = 'exists';
@@ -119,6 +146,7 @@ void main() {
       await t.tap(find.text('Create account'));
       await settle(t);
       expect(e.authRepo.calls, contains('linkEmail:new@example.com'));
+      expect(e.authRepo.linkedUsername, matches(RegExp(r'^[a-z0-9._]{3,20}$')));
       expect(Get.currentRoute, AppRoutes.checkYourEmail);
       expect(find.textContaining('new@example.com'), findsOneWidget);
       await e.dispose();

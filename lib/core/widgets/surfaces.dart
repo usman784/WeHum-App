@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'motion.dart';
 import 'painters.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import '../theme/app_colors.dart';
@@ -24,7 +25,7 @@ class AppCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius), side: BorderSide(color: c.border)),
       child: InkWell(customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)), onTap: onTap, child: Padding(padding: padding, child: child)),
     );
-    return onTap == null ? card : Semantics(button: true, label: semanticLabel, child: card);
+    return onTap == null ? card : Pressable(scale: .985, child: Semantics(button: true, label: semanticLabel, child: card));
   }
 }
 
@@ -179,8 +180,8 @@ class LivePill extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(color: c.bgDeep.withValues(alpha: .7), borderRadius: BorderRadius.circular(Radii.pill)),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Container(width: 10, height: 10, decoration: BoxDecoration(color: quiet ? c.textTertiary : c.success, shape: BoxShape.circle)),
-            const SizedBox(width: 10),
+            quiet ? Container(width: 10, height: 10, decoration: BoxDecoration(color: c.textTertiary, shape: BoxShape.circle)) : PulseDot(color: c.success, size: 7),
+            const SizedBox(width: 6),
             Flexible(child: Text(text, style: AppText.bodySmall.copyWith(fontWeight: FontWeight.w700, color: c.textPrimary), overflow: TextOverflow.ellipsis)),
           ]),
         ),

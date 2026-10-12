@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/data/contracts/repositories.dart';
@@ -65,7 +66,7 @@ class CrisisDirectoryPage extends StatelessWidget {
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
               final d = ctrl.dir.value!;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
                 Text('You are not alone', key: const Key('crisis-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 8),
                 Text('If you are in severe distress or feeling unsafe, please reach out to a person now. These lines are free and confidential.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
@@ -135,7 +136,7 @@ class CrisisDirectoryPage extends StatelessWidget {
                 ],
                 const SizedBox(height: 16),
                 OutlineButton('Back to SoS', onPressed: () => Get.back<void>()),
-              ]);
+              ]));
             }),
           )),
     );

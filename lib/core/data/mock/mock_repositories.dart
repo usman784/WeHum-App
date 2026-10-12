@@ -38,9 +38,12 @@ class MockAuthRepository implements AuthRepository {
     return _acct(first: firstName);
   }
 
+  String? linkedUsername, linkedLastName;
   @override
-  Future<AuthSession> linkEmail({required String email, required String password, String? firstName}) async {
+  Future<AuthSession> linkEmail({required String email, required String password, String? firstName, String? lastName, String? username}) async {
     calls.add('linkEmail:$email');
+    linkedUsername = username;
+    linkedLastName = lastName;
     if (existingEmails.contains(email)) _exists('email');
     return _acct(first: firstName);
   }
@@ -204,10 +207,29 @@ class MockMeRepository implements MeRepository {
   Future<MeProfile> me() async => profile;
   @override
   Future<MeProfile> patch(Json changes) async => profile = MeProfile(
-      id: profile.id, firstName: (changes['firstName'] as String?) ?? profile.firstName, email: profile.email, isGuest: profile.isGuest,
+      id: profile.id, firstName: (changes['firstName'] as String?) ?? profile.firstName, lastName: changes.containsKey('lastName') ? changes['lastName'] as String? : profile.lastName,
+      username: (changes['username'] as String?) ?? profile.username, avatarUrl: profile.avatarUrl, usernameNextChangeAt: changes['username'] != null && changes['username'] != profile.username ? DateTime.now().add(const Duration(days: 7)) : profile.usernameNextChangeAt, email: profile.email, isGuest: profile.isGuest,
       theme: (changes['theme'] as String?) ?? profile.theme, reminderEnabled: (changes['reminderEnabled'] as bool?) ?? profile.reminderEnabled,
       reminderTime: (changes['reminderTime'] as String?) ?? profile.reminderTime, groupWarning: (changes['groupWarning'] as bool?) ?? profile.groupWarning,
       dailyMessagePush: (changes['dailyMessagePush'] as bool?) ?? profile.dailyMessagePush, showCountry: (changes['showCountry'] as bool?) ?? profile.showCountry, entitlement: profile.entitlement);
+  final taken = <String>{'raphael', 'admin', 'marcus'};
+  @override
+  Future<UsernameCheck> checkUsername(String username) async {
+    final u = username.trim().toLowerCase();
+    final ok = RegExp(r'^[a-z0-9][a-z0-9._]{1,18}[a-z0-9]$').hasMatch(u);
+    return UsernameCheck(available: ok && !taken.contains(u), reason: !ok ? 'Use 3 to 20 letters, numbers, dots or underscores' : (taken.contains(u) ? 'That username is taken' : null), suggestions: ['${u}_calm', '${u}42', 'still.$u']);
+  }
+
+  @override
+  Future<List<String>> suggestUsernames(String seed) async {
+    final b = seed.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    return ['${b.isEmpty ? 'sitter' : b}${b.length < 3 ? '' : '_'}calm', '${b.isEmpty ? 'sitter' : b}42', 'still.${b.isEmpty ? 'sitter' : b}', '${b.isEmpty ? 'sitter' : b}.zen'];
+  }
+
+  @override
+  Future<MeProfile> setAvatar(List<int> bytes, String contentType) async => profile = MeProfile(id: profile.id, firstName: profile.firstName, lastName: profile.lastName, username: profile.username, avatarUrl: 'https://example.com/avatar.jpg', email: profile.email, isGuest: profile.isGuest, theme: profile.theme, entitlement: profile.entitlement);
+  @override
+  Future<MeProfile> removeAvatar() async => profile = MeProfile(id: profile.id, firstName: profile.firstName, lastName: profile.lastName, username: profile.username, email: profile.email, isGuest: profile.isGuest, theme: profile.theme, entitlement: profile.entitlement);
   final devices = <DeviceRegistration>[];
   @override
   Future<String> registerDevice(DeviceRegistration d) async {

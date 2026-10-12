@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
@@ -47,7 +48,7 @@ class TodayPage extends StatelessWidget {
                 final d = ctrl.data.value;
                 final streak = d?.streak;
                 final belts = ctrl.belts;
-                return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
+                return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Expanded(child: Text(greetingFor(DateTime.now(), ctrl.name), key: const Key('greeting'), style: AppText.heroTitle.copyWith(color: c.textPrimary))),
                     if (streak != null && streak.current > 0) ...[const SizedBox(width: 10), Padding(padding: const EdgeInsets.only(top: 6), child: InfoChip(key: const Key('streak-chip'), text: '${streak.current}-day streak', icon: Icons.local_fire_department_rounded))],
@@ -74,7 +75,7 @@ class TodayPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     AccelRow(key: const Key('continue-last'), icon: Icons.replay_rounded, title: 'Continue last', subtitle: '${d!.continueLast!.title} · ${d.continueLast!.leftMin} min left', onTap: ctrl.continueLast),
                   ],
-                ]);
+                ]));
               }),
             ),
           ),

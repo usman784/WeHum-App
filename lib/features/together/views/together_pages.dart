@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
@@ -62,7 +63,7 @@ class MotdRoomPage extends StatelessWidget {
               final d = ctrl.data.value!;
               final m = d.motd!;
               final g = ctrl.group;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
                 HeroImageCard(image: m.cover?.url, blurHash: m.cover?.blurhash, seed: m.sessionId, height: 240, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
                   const SizedBox(height: 70),
                   const Overline('Meditation of the day'),
@@ -107,7 +108,7 @@ class MotdRoomPage extends StatelessWidget {
                   for (final x in ctrl.dedications.take(2)) DedicationLine(x),
                 const SizedBox(height: 8),
                 Text('You can meditate right away on your own, or wait and start together with everyone.', style: AppText.caption.copyWith(color: c.textTertiary)),
-              ]);
+              ]));
             }),
           ),
         ));
@@ -125,7 +126,7 @@ class WorldPage extends StatelessWidget {
       title: 'Global presence', action: const Padding(padding: EdgeInsets.only(right: 4), child: SosPill()),
       body: Obx(() {
         final trend = ctrl.trendPct;
-        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: [
+        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: staggered([
           Text(ctrl.kicker, key: const Key('world-kicker'), style: AppText.overline.copyWith(color: ctrl.paused || ctrl.quiet ? c.textTertiary : c.success)),
           const SizedBox(height: 4),
           Text(ctrl.big, key: const Key('world-big'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 56)),
@@ -179,7 +180,7 @@ class WorldPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           PrimaryButton('Join the global sit', onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
-        ]);
+        ]));
       }),
     );
   }

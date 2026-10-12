@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/download_engine.dart';
@@ -152,7 +153,7 @@ class SessionDetailPage extends StatelessWidget {
               final s = ctrl.s!;
               final d = ctrl.detail.value;
               final member = ctrl.access.isMember;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
                 HeroImageCard(image: s.cover?.url, blurHash: s.cover?.blurhash, seed: s.id, height: 220, child: Align(alignment: Alignment.topLeft, child: Row(children: [if (s.isPremium) const AppBadge(BadgeKind.premium), const SizedBox(width: 8), if (!s.isYoutube) AppBadge(s.isVideo ? BadgeKind.video : BadgeKind.audio)]))),
                 const SizedBox(height: 14),
                 Text(s.title, key: const Key('session-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
@@ -178,7 +179,7 @@ class SessionDetailPage extends StatelessWidget {
                   Row(children: [Text('Dedications', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('See all', onPressed: () => Get.toNamed('/dedications/${s.id}', arguments: {'sessionId': s.id}))]),
                   for (final x in d.dedications.take(2)) DedicationLine(x),
                 ],
-              ]);
+              ]));
             }),
           )),
     );

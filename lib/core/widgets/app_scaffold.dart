@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'painters.dart';
+import 'brand_mark.dart';
+import 'user_avatar.dart';
+import '../services/config_service.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../theme/app_colors.dart';
@@ -43,10 +45,10 @@ class TabHeader extends StatelessWidget {
     return ClampedText(child: Padding(
       padding: const EdgeInsets.fromLTRB(Gap.gutter, 12, Gap.gutter, 8),
       child: Row(children: [
-        const BrandLogo(size: 30),
+        const BrandMark(size: 30),
         const SizedBox(width: 10),
         // Expanded, not Flexible + Spacer: those two would split the free space and cut the name to "We…"
-        Expanded(child: Text('WeHum', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary))),
+        Expanded(child: Obx(() => Text(brandName(), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary)))),
         const SizedBox(width: 8),
         const SosPill(),
         const SizedBox(width: 8),
@@ -65,7 +67,7 @@ class TabHeader extends StatelessWidget {
           button: true, label: 'Profile',
           child: GestureDetector(
             onTap: onAvatar ?? () => Get.toNamed(AppRoutes.you),
-            child: Container(width: Sizes.touch, height: Sizes.touch, alignment: Alignment.center, decoration: BoxDecoration(color: c.teal, shape: BoxShape.circle), child: Text(initials.isEmpty ? '·' : initials, style: AppText.navTitle.copyWith(color: c.tealText, fontSize: 15))),
+            child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: initials, size: Sizes.touch, fontSize: 15)),
           ),
         ),
       ]),

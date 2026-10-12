@@ -97,6 +97,46 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('56 edit profile: last name, username once per 7 days, the e-mail is shown but locked, photo sheet', (t) async {
+    final e = await open(t, AppRoutes.editProfile, profile: MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', email: 'm@example.com', isGuest: false, providers: const ['google'], usernameNextChangeAt: DateTime.now().add(const Duration(days: 3))));
+    expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+    expect(find.text('m@example.com'), findsOneWidget);
+    expect(find.textContaining('You can change your username again on'), findsOneWidget);
+    expect((t.widget(find.byKey(const Key('profile-username'))) as TextFormField).enabled, isFalse);
+    await t.enterText(find.byKey(const Key('profile-last')), 'Aurelius');
+    await t.tap(find.byKey(const Key('profile-save')));
+    await settle(t);
+    expect(e.me.profile.lastName, 'Aurelius');
+    expect(e.me.profile.username, 'marcus.sits'); // locked: unchanged
+    await t.tap(find.byKey(const Key('profile-photo')));
+    await settle(t);
+    expect(find.text('Choose from library'), findsOneWidget);
+    expect(find.text('Take a photo'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('56 edit profile: a free username can be changed; a taken one is refused', (t) async {
+    final e = await open(t, AppRoutes.editProfile, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    final f = find.byKey(const Key('profile-username'));
+    await t.enterText(f, 'raphael');
+    await t.pump(const Duration(milliseconds: 600));
+    await t.pump();
+    expect(find.text('That username is taken'), findsOneWidget);
+    await t.tap(find.byKey(const Key('profile-save')));
+    await settle(t);
+    expect(e.me.profile.username, 'marcus.sits');
+    await t.enterText(f, 'marcus_calm');
+    await t.pump(const Duration(milliseconds: 600));
+    await t.pump();
+    await t.tap(find.byKey(const Key('profile-save')));
+    await settle(t);
+    expect(e.me.profile.username, 'marcus_calm');
+    expect(e.me.profile.usernameNextChangeAt, isNotNull);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('57 reminders: toggles are saved to the server; time sheet; notifications-off banner; wifi-only pref', (t) async {
     final e = await open(t, AppRoutes.reminders);
     await t.tap(find.byKey(const Key('sw-group')));

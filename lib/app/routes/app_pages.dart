@@ -50,7 +50,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.logIn, page: () => const LoginPage()),
     GetPage(name: AppRoutes.forgotPassword, page: () => const ForgotPasswordPage()),
     GetPage(name: AppRoutes.checkYourEmail, page: () => const CheckEmailPage()),
-    GetPage(name: AppRoutes.todayMember, page: () => const TodayForPlan()),
+    GetPage(name: AppRoutes.todayMember, page: () => const TodayForPlan(), transition: Transition.noTransition), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.motdRoom, page: () => const MotdRoomPage()),
     GetPage(name: AppRoutes.todayFree, page: () => const TodayForPlan()),
     GetPage(name: AppRoutes.worldMapWorldVibration, page: () => const WorldPage()),
@@ -58,7 +58,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.dailyMessage, page: () => const DailyMessagePage()),
     GetPage(name: AppRoutes.notifications, page: () => const NotificationsPage()),
     GetPage(name: AppRoutes.sosHowCanIHelp, page: () => const SosPage()),
-    GetPage(name: AppRoutes.library, page: () => const LibraryPage()),
+    GetPage(name: AppRoutes.library, page: () => const LibraryPage(), transition: Transition.noTransition), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.themePage, page: () => const ThemePage()),
     GetPage(name: AppRoutes.search, page: () => const SearchPage()),
     GetPage(name: AppRoutes.allPrograms, page: () => const ProgramsPage()),
@@ -76,11 +76,11 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.sessionDedications, page: () => const DedicationsPage()),
     GetPage(name: AppRoutes.silenceRoomSetup, page: () => const MembersOnly(title: 'Silence Room', child: SilenceSetupPage())),
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const MembersOnly(title: 'Silence Room', child: SilenceRunPage())),
-    GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
+    GetPage(name: AppRoutes.together, page: () => const TogetherPage(), transition: Transition.noTransition), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
     GetPage(name: AppRoutes.crisisDirectory, page: () => const CrisisDirectoryPage()),
     GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next sit', child: NextSitPage())),
-    GetPage(name: AppRoutes.you, page: () => const YouPage()),
+    GetPage(name: AppRoutes.you, page: () => const YouPage(), transition: Transition.noTransition), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),
     GetPage(name: AppRoutes.editProfile, page: () => const EditProfilePage()),
     GetPage(name: AppRoutes.reminders, page: () => const RemindersPage()),

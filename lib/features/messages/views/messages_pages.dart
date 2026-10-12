@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../app/routes/app_routes.dart';
@@ -40,7 +41,7 @@ class DailyMessagePage extends StatelessWidget {
               final m = ctrl.message.value!;
               final cur = ctrl.currentLine;
               final total = ctrl.duration.value.inSeconds > 0 ? ctrl.duration.value : Duration(seconds: m.durationSec ?? 0);
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
                 if (ctrl.hasVideoMode && ctrl.hasAudioMode)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -141,7 +142,7 @@ class DailyMessagePage extends StatelessWidget {
                 ],
                 const SizedBox(height: 16),
                 OutlineButton('Full archive', key: const Key('dm-archive'), onPressed: () => Get.toNamed(AppRoutes.exploreArchive)),
-              ]);
+              ]));
             }),
           )),
     );

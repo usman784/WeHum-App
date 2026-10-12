@@ -1,8 +1,11 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import '../../../core/widgets/painters.dart';
 import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/config/app_links.dart';
@@ -18,6 +21,8 @@ import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
 import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
+import '../../../core/widgets/user_avatar.dart';
+import '../../../core/widgets/username_field.dart';
 import '../../onboarding/views/setup_pages.dart' show TimeWheel;
 import '../../today/views/today_pages.dart' show tabHeader;
 import '../controllers/you_controllers.dart';
@@ -34,12 +39,13 @@ class YouPage extends StatelessWidget {
       body: Obx(() {
         final p = ctrl.profile.value;
         final guest = ctrl.access.isGuest.value;
-        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
+        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
           Row(children: [
-            CircleAvatar(radius: 28, backgroundColor: c.teal, child: Text(ctrl.initials.isEmpty ? '·' : ctrl.initials, style: AppText.title.copyWith(color: c.tealText))),
+            UserAvatar(url: p?.avatarUrl, initial: ctrl.initials, size: 56, fontSize: 22),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(ctrl.name.isEmpty ? 'You' : ctrl.name, key: const Key('you-name'), style: AppText.title.copyWith(color: c.textPrimary)),
+              if ((p?.username ?? '').isNotEmpty) Text('@${p!.username}', key: const Key('you-username'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
               Text(ctrl.access.isMember ? (ctrl.access.isTrial ? 'Member · free trial' : 'Member') : 'Free', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
             ])),
             TextLink('Edit', onPressed: () => Get.toNamed(AppRoutes.editProfile)),
@@ -110,7 +116,7 @@ class YouPage extends StatelessWidget {
             ]));
             if (ok == true) await ctrl.signOut();
           }),
-        ]);
+        ]));
       }),
     );
   }
@@ -237,6 +243,24 @@ class ProgressPage extends StatelessWidget {
 /// 56 Edit profile.
 class EditProfilePage extends StatelessWidget {
   const EditProfilePage({super.key});
+
+  InputDecoration _dec(AppColors c, String label, {String? error, String? helper}) => InputDecoration(
+      labelText: label, errorText: error, helperText: helper, helperMaxLines: 3, filled: true, fillColor: c.surfaceInput,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border)));
+
+  void _photoSheet(BuildContext context, EditProfileController ctrl) {
+    showModalBottomSheet<void>(
+      context: context, backgroundColor: context.colors.surface, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.sheet))),
+      builder: (_) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const SizedBox(height: 8),
+        ListTile(leading: const Icon(Icons.photo_library_outlined), title: const Text('Choose from library'), onTap: () { Get.back<void>(); ctrl.pickPhoto(ImageSource.gallery); }),
+        ListTile(leading: const Icon(Icons.photo_camera_outlined), title: const Text('Take a photo'), onTap: () { Get.back<void>(); ctrl.pickPhoto(ImageSource.camera); }),
+        if (ctrl.avatarUrl.value != null) ListTile(leading: Icon(Icons.delete_outline_rounded, color: context.colors.dangerText), title: Text('Remove photo', style: TextStyle(color: context.colors.dangerText)), onTap: () { Get.back<void>(); ctrl.removePhoto(); }),
+        const SizedBox(height: 8),
+      ])),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -244,18 +268,49 @@ class EditProfilePage extends StatelessWidget {
     return AppScaffold(
       title: 'Edit profile',
       body: Obx(() => ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
+            Center(child: GestureDetector(
+              key: const Key('profile-photo'), onTap: () => _photoSheet(context, ctrl),
+              child: Stack(children: [
+                UserAvatar(url: ctrl.avatarUrl.value, initial: ctrl.first.value.trim().isEmpty ? '' : ctrl.first.value.trim().substring(0, 1).toUpperCase(), size: 96, fontSize: 34),
+                Positioned(right: 0, bottom: 0, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle, border: Border.all(color: c.bg, width: 3)), child: ctrl.photoBusy.value ? Padding(padding: const EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth: 2, color: c.onEmber)) : Icon(Icons.edit_rounded, size: 16, color: c.onEmber))),
+              ]),
+            )),
+            const SizedBox(height: 6),
+            Center(child: TextLink('Change photo', onPressed: () => _photoSheet(context, ctrl))),
+            const SizedBox(height: 14),
             TextFormField(key: const Key('profile-first'), controller: ctrl.firstField, onChanged: (v) {
               ctrl.first.value = v;
               ctrl.saved.value = false;
-            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: InputDecoration(labelText: 'First name', errorText: ctrl.error.value, helperText: 'Shown with your dedications and gratitude posts.', filled: true, fillColor: c.surfaceInput, border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border)))),
+            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'First name', error: ctrl.error.value != null && ctrl.firstError != null ? ctrl.error.value : null)),
+            const SizedBox(height: 14),
+            TextFormField(key: const Key('profile-last'), controller: ctrl.lastField, onChanged: (v) {
+              ctrl.last.value = v;
+              ctrl.saved.value = false;
+            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'Last name (optional)', error: ctrl.lastError)),
+            const SizedBox(height: 14),
+            UsernameField(
+              fieldKey: const Key('profile-username'), autoFill: false, initial: ctrl.savedUsername.value, seed: ctrl.first.value, enabled: !ctrl.usernameLocked,
+              helper: ctrl.usernameLocked
+                  ? 'You can change your username again on ${DateFormat.MMMd().format(ctrl.nextUsernameChange.value!)}.'
+                  : 'Shown next to your dedications. You can change it once every 7 days.',
+              onChanged: (v, ok) {
+                ctrl.username.value = v;
+                ctrl.usernameOk.value = ok || v == ctrl.savedUsername.value;
+                ctrl.saved.value = false;
+              },
+            ),
             if (ctrl.email.value != null) ...[
-              const SizedBox(height: 16),
-              InputDecorator(decoration: InputDecoration(labelText: 'Email', helperText: ctrl.emailNote, filled: true, fillColor: c.surfaceInput, border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border))), child: Text(ctrl.email.value!, style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
+              const SizedBox(height: 14),
+              InputDecorator(decoration: _dec(c, 'Email', helper: ctrl.emailNote), child: Row(children: [
+                Expanded(child: Text(ctrl.email.value!, style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
+                Icon(Icons.lock_outline_rounded, size: 18, color: c.textTertiary),
+              ])),
             ],
             const SizedBox(height: 20),
             Text('THEME', style: AppText.overline.copyWith(color: c.textTertiary)),
             const SizedBox(height: 8),
             SegmentedControl<String>(options: const ['dark', 'light', 'system'], value: ctrl.theme.value, onChanged: ctrl.setTheme, labelOf: (v) => '${v[0].toUpperCase()}${v.substring(1)}'),
+            if (ctrl.error.value != null && ctrl.firstError == null) Padding(padding: const EdgeInsets.only(top: 14), child: Text(ctrl.error.value!, key: const Key('profile-error'), style: AppText.bodySmall.copyWith(color: c.dangerText))),
             const SizedBox(height: 24),
             PrimaryButton(ctrl.saved.value ? 'Saved' : 'Save', key: const Key('profile-save'), loading: ctrl.busy.value, onPressed: ctrl.save),
           ])),

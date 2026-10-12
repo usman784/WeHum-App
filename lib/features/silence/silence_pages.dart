@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../core/data/models/stitch.dart';
 import '../../core/theme/app_colors.dart';
@@ -33,7 +34,7 @@ class SilenceSetupPage extends StatelessWidget {
         final quiet = ctrl.quietRoom;
         final belts = ctrl.live.silence.value == null ? (info?.belts ?? const Belts()) : Belts(americas: ctrl.live.silence.value!.americas, emea: ctrl.live.silence.value!.emea, apac: ctrl.live.silence.value!.apac);
         final dur = ctrl.durations;
-        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: [
+        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: staggered([
           Row(children: [
             Container(width: 8, height: 8, decoration: BoxDecoration(color: quiet ? c.textTertiary : c.success, shape: BoxShape.circle)),
             const SizedBox(width: 8),
@@ -87,7 +88,7 @@ class SilenceSetupPage extends StatelessWidget {
           PrimaryButton(ctrl.openEnded ? 'Begin silent sit' : 'Begin silent sit · ${ctrl.minutes.value} min', key: const Key('silence-enter'), onPressed: ctrl.enter),
           const SizedBox(height: 10),
           Center(child: Text('No voice guidance. Part of membership. Others see only a count, never your name.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary))),
-        ]);
+        ]));
       }),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../../realtime/socket_events.dart';
 import '../contracts/repositories.dart';
 import '../models/activity.dart';
@@ -119,6 +120,22 @@ class MeApi extends ApiBase implements MeRepository {
   Future<MeProfile> me() async => MeProfile.fromJson(await getJson('/v1/me'));
   @override
   Future<MeProfile> patch(Json changes) async => MeProfile.fromJson(await call('PATCH', '/v1/me', body: changes));
+  @override
+  Future<UsernameCheck> checkUsername(String username) async {
+    final j = await getJson('/v1/me/username/check', query: {'u': username});
+    return UsernameCheck(available: j['available'] == true, reason: asStr(j['reason']), suggestions: [for (final s in ((j['suggestions'] as List?) ?? const [])) '$s']);
+  }
+
+  @override
+  Future<List<String>> suggestUsernames(String seed) async {
+    final j = await getJson('/v1/me/username/suggest', query: {'seed': seed});
+    return [for (final s in ((j['suggestions'] as List?) ?? const [])) '$s'];
+  }
+
+  @override
+  Future<MeProfile> setAvatar(List<int> bytes, String contentType) async => MeProfile.fromJson(await call('PUT', '/v1/me/avatar', body: {'contentType': contentType, 'data': base64Encode(bytes)}));
+  @override
+  Future<MeProfile> removeAvatar() async => MeProfile.fromJson(await call('DELETE', '/v1/me/avatar'));
   @override
   Future<String> registerDevice(DeviceRegistration d) async {
     final j = await call('POST', '/v1/me/devices', body: {

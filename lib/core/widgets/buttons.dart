@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'motion.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../theme/tokens.dart';
@@ -31,7 +32,9 @@ class _BtnBase extends StatelessWidget {
               ]),
             ),
           ]);
-    return Semantics(
+    return Pressable(
+      enabled: enabled,
+      child: Semantics(
       button: true, enabled: enabled, label: label,
       child: Opacity(
         opacity: onPressed == null ? .45 : 1,
@@ -47,7 +50,7 @@ class _BtnBase extends StatelessWidget {
           )),
         ),
       ),
-    );
+    ));
   }
 }
 

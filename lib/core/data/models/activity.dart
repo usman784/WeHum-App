@@ -221,20 +221,24 @@ class Entitlement {
 
 class MeProfile {
   const MeProfile({
-    required this.id, this.firstName, this.email, this.isGuest = true, this.providers = const [], this.country, this.timezone, this.theme = 'system',
+    required this.id, this.firstName, this.lastName, this.username, this.avatarUrl, this.usernameNextChangeAt, this.email, this.isGuest = true, this.providers = const [], this.country, this.timezone, this.theme = 'system',
     this.reminderEnabled = true, this.reminderTime = '07:00', this.groupWarning = false, this.dailyMessagePush = true, this.showCountry = true, this.entitlement = const Entitlement(),
   });
   final String id;
-  final String? firstName, email, country, timezone;
+  final String? firstName, lastName, username, avatarUrl, email, country, timezone;
+  /// A username can change once every 7 days: when the next change is allowed (null = now).
+  final DateTime? usernameNextChangeAt;
   final bool isGuest, reminderEnabled, groupWarning, dailyMessagePush, showCountry;
   final List<String> providers;
   final String theme, reminderTime;
   final Entitlement entitlement;
+  String get displayName => [firstName, lastName].where((e) => (e ?? '').trim().isNotEmpty).join(' ');
   String get initials => (firstName ?? '').trim().isEmpty ? '' : firstName!.trim().substring(0, 1).toUpperCase();
   factory MeProfile.fromJson(Json j) {
     final r = asJson(j['reminder']);
     return MeProfile(
-        id: j['id'] as String, firstName: asStr(j['firstName']), email: asStr(j['email']), isGuest: j['isGuest'] != false,
+        id: j['id'] as String, firstName: asStr(j['firstName']), lastName: asStr(j['lastName']), username: asStr(j['username']), avatarUrl: asStr(j['avatarUrl']),
+        usernameNextChangeAt: DateTime.tryParse(asStr(j['usernameNextChangeAt']) ?? '')?.toLocal(), email: asStr(j['email']), isGuest: j['isGuest'] != false,
         providers: [for (final p in ((j['providers'] as List?) ?? const [])) '$p'], country: asStr(j['country']), timezone: asStr(j['timezone']), theme: (j['theme'] ?? 'system') as String,
         reminderEnabled: r['enabled'] != false, reminderTime: (r['time'] ?? '07:00') as String, groupWarning: j['groupWarning'] == true, dailyMessagePush: j['dailyMessagePush'] != false,
         showCountry: j['showCountry'] != false, entitlement: Entitlement.fromJson(asJson(j['entitlement'])));

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
@@ -39,7 +40,7 @@ class ByoPage extends StatelessWidget {
               state: ctrl.state.value, onRetry: () => Get.back<void>(),
               content: () => Column(children: [
                 Expanded(
-                  child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 16), children: [
+                  child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 16), children: staggered([
                         _Blueprint(ctrl: ctrl),
                         const _Step('1 · PRACTICE LENGTH'),
                         PillGroup<int>(options: ByoController.lengths, selected: {ctrl.length.value}, onToggle: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
@@ -60,7 +61,7 @@ class ByoPage extends StatelessWidget {
                         PillGroup<int>(options: ByoController.intervals, selected: {ctrl.bellInterval.value}, onToggle: (v) => ctrl.bellInterval.value = v, labelOf: (v) => v == 0 ? 'No interval bell' : 'Every $v min'),
                         const SizedBox(height: 20),
                         AppCard(key: const Key('advanced'), onTap: () => Get.toNamed(AppRoutes.buildYourOwnAdvanced), child: const ListRow(title: 'Advanced builder', subtitle: 'Several blocks, OM and mantra loops, share by link', leading: IconTile(Icons.tune_rounded))),
-                      ])),
+                      ]))),
                 ),
                 _Footer(ctrl: ctrl),
               ]),

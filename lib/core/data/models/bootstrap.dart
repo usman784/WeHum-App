@@ -16,6 +16,7 @@ class Bootstrap {
     this.sitTimes = const [],
     this.downloadQuotaMb = 2400,
     this.hourlySits = false,
+    this.branding = const Branding(),
   });
 
   final DateTime serverTime;
@@ -31,6 +32,8 @@ class Bootstrap {
   final List<SitTimeBlock> sitTimes;
   final int downloadQuotaMb;
   final bool hourlySits;
+  /// App name, tagline and logo set in the CMS.
+  final Branding branding;
 
   bool feature(String key) => features[key] ?? false;
 
@@ -50,7 +53,16 @@ class Bootstrap {
         ],
         downloadQuotaMb: ((j['downloads'] as Map?)?['quotaMb'] as num?)?.toInt() ?? 2400,
         hourlySits: ((j['group'] as Map?)?['cadence']) == 'hourly',
+        branding: j['branding'] is Map ? Branding.fromJson((j['branding'] as Map).cast<String, dynamic>()) : const Branding(),
       );
+}
+
+/// `bootstrap.branding`: edited in the CMS (Settings → App content). Without a logo URL the bundled logo is used.
+class Branding {
+  const Branding({this.appName = 'WeHum', this.tagline = 'Meditate together', this.logoUrl});
+  final String appName, tagline;
+  final String? logoUrl;
+  factory Branding.fromJson(Map<String, dynamic> j) => Branding(appName: (j['appName'] as String?)?.trim().isNotEmpty == true ? j['appName'] as String : 'WeHum', tagline: (j['tagline'] as String?) ?? '', logoUrl: j['logoUrl'] as String?);
 }
 
 /// Founding 1,000 offer (`bootstrap.founding`); updates live through `config:changed`.

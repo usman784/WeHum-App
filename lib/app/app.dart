@@ -26,6 +26,8 @@ class WeHumApp extends StatelessWidget {
               ..tag('screen', name);
           }
         },
+        defaultTransition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 320),
         initialRoute: AppRoutes.splash,
         getPages: AppPages.pages,
         unknownRoute: AppPages.pages.firstWhere((p) => p.name == AppRoutes.notFound),

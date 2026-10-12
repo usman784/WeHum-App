@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../app/routes/app_routes.dart';
@@ -94,7 +95,7 @@ class ChallengeDetailPage extends StatelessWidget {
             content: () => Obx(() {
               final d = ctrl.data.value!;
               final today = d.today;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
                 const Overline('Cohort sprint'),
                 const SizedBox(height: 6),
                 Text(d.name, key: const Key('challenge-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
@@ -154,7 +155,7 @@ class ChallengeDetailPage extends StatelessWidget {
                   PrimaryButton('Join the cohort', key: const Key('join-challenge'), loading: ctrl.busy.value, onPressed: ctrl.join)
                 else if (today != null)
                   PrimaryButton('Begin day ${today.day}${today.minutes == null ? '' : ' (${today.minutes} min)'}', key: const Key('begin-day'), onPressed: () => ctrl.begin(today)),
-              ]);
+              ]));
             }),
           )),
     );

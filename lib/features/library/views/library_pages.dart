@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import '../../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
@@ -74,7 +75,7 @@ class LibraryPage extends StatelessWidget {
               final sm = ctrl.summary.value;
               final total = cat.sessions.length;
               final ch = ctrl.challenges.value;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
                 Text('Library', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 4),
                 Text(
@@ -206,7 +207,7 @@ class LibraryPage extends StatelessWidget {
                   if (cat.teachers.isNotEmpty)
                     AppCard(key: const Key('teacher-card'), onTap: () => Get.toNamed('/teacher/${cat.teachers.first.id}', arguments: {'id': cat.teachers.first.id}), child: Row(children: [ThumbImage(cat.teachers.first.photoUrl, width: 52, height: 52, radius: 26), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(cat.teachers.first.name, style: AppText.navTitle.copyWith(color: c.textPrimary)), Text('About your teacher', style: AppText.bodySmall.copyWith(color: c.textSecondary))])), Icon(Icons.chevron_right_rounded, color: c.textSecondary)])),
                 ],
-              ]);
+              ]));
             }),
           )),
     );

@@ -9,6 +9,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/sheets.dart';
+import '../../../core/widgets/username_field.dart';
 import '../controllers/account_controllers.dart';
 import 'account_widgets.dart';
 
@@ -66,6 +67,9 @@ class EmailSignUpPage extends StatelessWidget {
         padding: const EdgeInsets.all(Gap.gutterOnboarding),
         child: Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               AppField(label: 'First name', fieldKey: const Key('su-first'), initial: ctrl.first.value, onChanged: (v) => ctrl.first.value = v, error: ctrl.firstError, caps: TextCapitalization.words, action: TextInputAction.next),
+              const SizedBox(height: 14),
+              UsernameField(seed: ctrl.first.value, onChanged: (v, ok) { ctrl.username.value = v; ctrl.usernameOk.value = ok; }, helper: 'People see this next to your dedications. You can change it later, once every 7 days.'),
+              if (ctrl.usernameErr != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(ctrl.usernameErr!, style: AppText.bodySmall.copyWith(color: c.dangerText))),
               const SizedBox(height: 14),
               AppField(label: 'Email', fieldKey: const Key('su-email'), onChanged: (v) => ctrl.email.value = v, error: ctrl.emailError, keyboard: TextInputType.emailAddress, action: TextInputAction.next, autofill: const [AutofillHints.email]),
               const SizedBox(height: 14),

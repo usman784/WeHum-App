@@ -61,9 +61,26 @@ class DeviceRegistration {
   final String? pushToken, osVersion, model;
 }
 
+class UsernameCheck {
+  const UsernameCheck({required this.available, this.reason, this.suggestions = const []});
+  final bool available;
+  final String? reason;
+  final List<String> suggestions;
+}
+
 abstract class MeRepository {
   Future<MeProfile> me();
   Future<MeProfile> patch(Json changes);
+
+  /// Live check while typing a username: free and allowed? Always comes with a few alternatives.
+  Future<UsernameCheck> checkUsername(String username);
+
+  /// Instagram-style suggestions from a first name or e-mail.
+  Future<List<String>> suggestUsernames(String seed);
+
+  /// Uploads a profile photo (JPEG/PNG/WebP, about 512 px) and returns the new profile.
+  Future<MeProfile> setAvatar(List<int> bytes, String contentType);
+  Future<MeProfile> removeAvatar();
 
   /// Returns the device id; registering a token also subscribes the user topic on the server.
   Future<String> registerDevice(DeviceRegistration d);

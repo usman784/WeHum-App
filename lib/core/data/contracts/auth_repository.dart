@@ -23,7 +23,7 @@ abstract class AuthRepository {
   Future<AuthSession> linkSocial(String provider, String firebaseIdToken, {String? firstName});
 
   /// Create an email account on the current guest. Throws `ACCOUNT_EXISTS` when the email is taken.
-  Future<AuthSession> linkEmail({required String email, required String password, String? firstName});
+  Future<AuthSession> linkEmail({required String email, required String password, String? firstName, String? lastName, String? username});
   Future<AuthSession> emailLogin({required String email, required String password});
   Future<void> forgotPassword(String email);
   Future<void> resetPassword({required String token, required String password});

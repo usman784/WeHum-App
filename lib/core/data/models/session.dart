@@ -16,10 +16,10 @@ class AuthSession {
 }
 
 class Me {
-  const Me({required this.id, required this.isGuest, this.firstName, this.theme = 'system', this.timezone});
+  const Me({required this.id, required this.isGuest, this.firstName, this.lastName, this.username, this.avatarUrl, this.theme = 'system', this.timezone});
   final String id;
   final bool isGuest;
-  final String? firstName;
+  final String? firstName, lastName, username, avatarUrl;
   final String theme;
   final String? timezone;
 
@@ -27,6 +27,9 @@ class Me {
         id: j['id'] as String,
         isGuest: j['isGuest'] as bool? ?? true,
         firstName: j['firstName'] as String?,
+        lastName: j['lastName'] as String?,
+        username: j['username'] as String?,
+        avatarUrl: j['avatarUrl'] as String?,
         theme: j['theme'] as String? ?? 'system',
         timezone: j['timezone'] as String?,
       );

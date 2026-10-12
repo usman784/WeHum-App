@@ -71,8 +71,13 @@ class AuthApi implements AuthRepository {
       _saveJson(await _post('/v1/auth/link/$provider', _social(firebaseIdToken, firstName)));
 
   @override
-  Future<AuthSession> linkEmail({required String email, required String password, String? firstName}) async =>
-      _saveJson(await _post('/v1/auth/link/email', {'email': email, 'password': password, if (firstName != null && firstName.isNotEmpty) 'firstName': firstName}));
+  Future<AuthSession> linkEmail({required String email, required String password, String? firstName, String? lastName, String? username}) async =>
+      _saveJson(await _post('/v1/auth/link/email', {
+        'email': email, 'password': password,
+        if (firstName != null && firstName.isNotEmpty) 'firstName': firstName,
+        if (lastName != null && lastName.isNotEmpty) 'lastName': lastName,
+        if (username != null && username.isNotEmpty) 'username': username,
+      }));
 
   @override
   Future<AuthSession> emailLogin({required String email, required String password}) async => _saveJson(await _post('/v1/auth/email/login', {'email': email, 'password': password}));

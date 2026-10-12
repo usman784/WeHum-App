@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart' show TextEditingController, ThemeMode;
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart' show ImagePicker, ImageSource;
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../app/routes/app_routes.dart';
@@ -126,21 +127,28 @@ class ProgressController extends GetxController {
   String get chartTitle => switch (period.value) { Period.week => 'Minutes per day', Period.month => 'Minutes per week', Period.year => 'Minutes per month', Period.all => 'Minutes per month' };
 }
 
-/// 56 Edit profile.
+/// 56 Edit profile: photo, first and last name, username (once every 7 days). The e-mail is shown, never edited.
 class EditProfileController extends GetxController {
   late final MeRepository _me = Get.find();
-  final first = ''.obs;
+  final first = ''.obs, last = ''.obs, username = ''.obs;
+  final usernameOk = true.obs;
   final email = RxnString();
   final provider = RxnString();
+  final avatarUrl = RxnString();
+  final savedUsername = ''.obs;
+  final nextUsernameChange = Rxn<DateTime>();
   final theme = 'system'.obs;
   final busy = false.obs;
+  final photoBusy = false.obs;
   final error = RxnString();
   final saved = false.obs;
-  static final _ok = RegExp(r"^[\p{L}\p{M}' -]+$", unicode: true);
+  static final _ok = RegExp(r"^[\p{L}\p{M}' .-]+$", unicode: true);
 
-  /// The field's text. Filled from the phone at once and from the server when it answers (an `initialValue` would
+  /// The fields' text. Filled from the phone at once and from the server when it answers (an `initialValue` would
   /// be read before the profile arrives and leave the field empty).
-  final firstField = TextEditingController();
+  final firstField = TextEditingController(), lastField = TextEditingController();
+
+  bool get usernameLocked => nextUsernameChange.value?.isAfter(DateTime.now()) ?? false;
 
   void _setFirst(String v) {
     first.value = v;
@@ -157,15 +165,25 @@ class EditProfileController extends GetxController {
   @override
   void onClose() {
     firstField.dispose();
+    lastField.dispose();
     super.onClose();
+  }
+
+  void _apply(MeProfile p) {
+    if ((p.firstName ?? '').isNotEmpty) _setFirst(p.firstName!);
+    last.value = p.lastName ?? '';
+    if (lastField.text != last.value) lastField.text = last.value;
+    username.value = p.username ?? '';
+    savedUsername.value = p.username ?? '';
+    nextUsernameChange.value = p.usernameNextChangeAt;
+    avatarUrl.value = p.avatarUrl;
+    email.value = p.email;
+    provider.value = p.providers.isEmpty ? null : p.providers.first;
   }
 
   Future<void> _load() async {
     try {
-      final p = await _me.me();
-      if ((p.firstName ?? '').isNotEmpty) _setFirst(p.firstName!);
-      email.value = p.email;
-      provider.value = p.providers.isEmpty ? null : p.providers.first;
+      _apply(await _me.me());
       theme.value = Get.find<ThemeController>().mode.value.name; // what this phone actually shows
     } catch (_) {/* offline: the name from this phone is already in the field */}
   }
@@ -178,22 +196,71 @@ class EditProfileController extends GetxController {
     return null;
   }
 
-  String? get emailNote => email.value == null ? null : (provider.value == 'apple' ? 'Signed in with Apple. Never shown to other people.' : (provider.value == 'google' ? 'Signed in with Google. Never shown to other people.' : 'Never shown to other people.'));
+  String? get lastError {
+    final t = last.value.trim();
+    if (t.isEmpty) return null;
+    if (t.length > 30) return 'At most 30 characters';
+    if (!_ok.hasMatch(t)) return 'Letters and spaces only';
+    return null;
+  }
+
+  String? get emailNote => email.value == null ? null : (provider.value == 'apple' ? 'Signed in with Apple. Never shown to other people. It cannot be changed.' : (provider.value == 'google' ? 'Signed in with Google. Never shown to other people. It cannot be changed.' : 'Never shown to other people. It cannot be changed.'));
+
+  /// Opens the library or the camera; the picture is cut to about 512 px before it is sent.
+  Future<void> pickPhoto(ImageSource source) async {
+    try {
+      final f = await ImagePicker().pickImage(source: source, maxWidth: 512, maxHeight: 512, imageQuality: 85);
+      if (f == null) return;
+      photoBusy.value = true;
+      final bytes = await f.readAsBytes();
+      final type = f.path.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      final p = await _me.setAvatar(bytes, type);
+      avatarUrl.value = p.avatarUrl;
+      await Get.find<ConfigService>().refresh();
+    } catch (e) {
+      error.value = ApiClient.map(e).code == ErrorCode.network ? 'You’re offline. Try again when you’re back.' : 'Couldn’t update the photo. Please try again.';
+    } finally {
+      photoBusy.value = false;
+    }
+  }
+
+  Future<void> removePhoto() async {
+    photoBusy.value = true;
+    try {
+      final p = await _me.removeAvatar();
+      avatarUrl.value = p.avatarUrl;
+      await Get.find<ConfigService>().refresh();
+    } catch (_) {
+      error.value = 'Couldn’t remove the photo. Please try again.';
+    } finally {
+      photoBusy.value = false;
+    }
+  }
 
   Future<bool> save() async {
-    if (firstError != null) {
-      error.value = firstError;
+    if (firstError != null || lastError != null) {
+      error.value = firstError ?? lastError;
+      return false;
+    }
+    final changingUsername = !usernameLocked && username.value.isNotEmpty && username.value != savedUsername.value;
+    if (changingUsername && !usernameOk.value) {
+      error.value = 'Pick a username that is free.';
       return false;
     }
     busy.value = true;
     error.value = null;
     try {
-      await _me.patch({'firstName': first.value.trim()});
+      final p = await _me.patch({'firstName': first.value.trim(), 'lastName': last.value.trim().isEmpty ? null : last.value.trim(), if (changingUsername) 'username': username.value});
       Get.find<OnboardingStore>().name = first.value.trim();
+      _apply(p);
+      await Get.find<ConfigService>().refresh();
       saved.value = true;
       return true;
     } catch (e) {
-      error.value = ApiClient.map(e).code == ErrorCode.network ? 'You’re offline. Try again when you’re back.' : 'Couldn’t save. Please try again.';
+      final err = ApiClient.map(e);
+      error.value = err.code == ErrorCode.network
+          ? 'You’re offline. Try again when you’re back.'
+          : ((err.message ?? '').isNotEmpty && (err.code == ErrorCode.rateLimited || err.code == ErrorCode.validationFailed || err.code == ErrorCode.alreadyExists) ? err.message! : 'Couldn’t save. Please try again.');
       return false;
     } finally {
       busy.value = false;

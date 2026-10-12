@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/data/contracts/repositories.dart';
@@ -46,7 +47,7 @@ class SearchPage extends StatelessWidget {
               ]);
             }
             if (ctrl.doneFor.value != ctrl.q.value.trim()) return const SizedBox.shrink(); // results for this text are still being found
-            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: [
+            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: staggered([
               Text('MEDITATIONS · ${ctrl.results.length}', key: const Key('result-count'), style: AppText.overline.copyWith(color: c.textTertiary)),
               for (final s in ctrl.results) SessionRow(s: s, onTap: () {
                 ctrl.remember();
@@ -58,7 +59,7 @@ class SearchPage extends StatelessWidget {
                 Text('DAILY MESSAGES · ${ctrl.messages.length}', style: AppText.overline.copyWith(color: c.textTertiary)),
                 for (final m in ctrl.messages) ListTile(contentPadding: EdgeInsets.zero, title: Text(m.title), subtitle: Text(m.date), onTap: () => Get.toNamed('/message/${m.date}', arguments: {'date': m.date})),
               ],
-            ]);
+            ]));
           }),
         ),
       ]),

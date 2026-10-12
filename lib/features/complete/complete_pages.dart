@@ -3,6 +3,7 @@ import '../../core/utils/countries.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../../../core/widgets/motion.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
@@ -45,7 +46,7 @@ class CompletePage extends StatelessWidget {
             final busy = ctrl.busy;
             final st = ctrl.streak;
             final hr = ctrl.hrDelta;
-            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 24), children: [
+            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 24), children: staggered([
               const SizedBox(height: 8),
               if (busy) WorldDotMap(hot: ctrl.hot, height: 130), // where people are meditating right now (live), nothing when nobody is
               if (busy) const SizedBox(height: 16),
@@ -109,7 +110,7 @@ class CompletePage extends StatelessWidget {
               PrimaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
               const SizedBox(height: 8),
               Center(child: TextLink('Share your sit', onPressed: ctrl.share, color: c.textSecondary)),
-            ]);
+            ]));
           }),
         ),
       ),
