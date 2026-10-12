@@ -34,6 +34,7 @@ final screens = <Screen>[
   const Screen(AppRoutes.updateRequired), const Screen(AppRoutes.maintenance), const Screen(AppRoutes.notFound), const Screen(AppRoutes.challenges), const Screen(AppRoutes.gratitude),
   const Screen(AppRoutes.breathwork), const Screen(AppRoutes.breathPattern), const Screen(AppRoutes.milestones), const Screen(AppRoutes.intent), const Screen(AppRoutes.pushPreview),
   const Screen(AppRoutes.resetPassword, {'token': 'x'}),
+  const Screen('/preview/s-sleep', {'id': 's-sleep'}), const Screen('/challenge/c7', {'id': 'c7'}), const Screen(AppRoutes.crisisDirectory), const Screen(AppRoutes.nextSit),
 ];
 
 void main() {

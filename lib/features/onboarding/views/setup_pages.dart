@@ -91,7 +91,7 @@ class TimePage extends StatelessWidget {
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Container(width: 8, height: 8, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
                 const SizedBox(width: 8),
-                Text('${groupedInt(n)} ${n == 1 ? 'member sits' : 'members sit'} together in this block', key: const Key('members-line'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                Flexible(child: Text('${groupedInt(n)} ${n == 1 ? 'member sits' : 'members sit'} together in this block', key: const Key('members-line'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary))),
               ]),
             );
           }),

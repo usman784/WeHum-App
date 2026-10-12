@@ -9,6 +9,8 @@ import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/local/app_database.dart';
 import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/json.dart';
+import '../../../core/data/models/stitch.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/errors/error_code.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/session_store.dart';
@@ -52,6 +54,10 @@ class YouController extends GetxController {
   }
 
   int get daysThisWeek => week.value?.daysThisWeek.where((d) => d).length ?? 0;
+
+  /// The forgiving streak (null when the server has the streaks flag off).
+  StreakInfo? get streak => week.value?.streak;
+  bool get challengesOn => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature('challenges');
 
   Future<void> signOut() async {
     signingOut.value = true;

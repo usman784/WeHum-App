@@ -29,9 +29,15 @@ void main() {
     final e = await open(t, AppRoutes.you);
     expect(find.byKey(const Key('you-name')), findsOneWidget);
     expect(find.text('Marcus'), findsWidgets);
-    expect(find.text('days this week'), findsOneWidget);
-    expect(find.text('COMING SOON'), findsNWidgets(3));
     expect(find.byKey(const Key('guest-card')), findsOneWidget); // the mock profile is a guest
+    expect(find.byKey(const Key('streak-block')), findsOneWidget);
+    expect(find.text('days, current'), findsOneWidget);
+    expect(find.text('Weekly cadence'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('hr-shift')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text('64'), findsOneWidget); // lifetime sits
+    expect(find.text('-14 bpm'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('r-breath')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text('COMING SOON'), findsAtLeastNWidgets(2));
     await t.drag(find.byType(ListView).first, const Offset(0, -500)); // clear of the bottom bar
     await t.pump();
     await t.tap(find.byKey(const Key('r-reminders')));

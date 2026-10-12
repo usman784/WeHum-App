@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/config/app_links.dart';
 import '../../../core/data/models/activity.dart';
+import '../../../core/data/models/stitch.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -56,17 +57,45 @@ class YouPage extends StatelessWidget {
               ]),
             ),
           if (guest) const SizedBox(height: 16),
+          if (ctrl.streak != null) _StreakBlock(streak: ctrl.streak!),
+          if (ctrl.streak != null) const SizedBox(height: 12),
+          AppCard(
+            key: const Key('week-chart'), onTap: () => Get.toNamed(AppRoutes.yourProgress),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Expanded(child: Text('Weekly cadence', style: AppText.navTitle.copyWith(color: c.textPrimary))),
+                Text('${ctrl.week.value?.minutes ?? 0} min', key: const Key('week-minutes'), style: AppText.navTitle.copyWith(color: c.emberText, fontFeatures: AppText.tabular)),
+                Icon(Icons.chevron_right_rounded, color: c.textSecondary),
+              ]),
+              const SizedBox(height: 12),
+              _WeekBars(bars: ctrl.week.value?.bars ?? const [], strip: ctrl.streak?.week ?? const []),
+            ]),
+          ),
+          const SizedBox(height: 12),
           AdaptiveGrid(baseExtent: 92, children: [
-            _Tile('${ctrl.daysThisWeek}', ctrl.daysThisWeek == 1 ? 'day this week' : 'days this week'),
+            _Tile('${ctrl.lifetime.value?.lifetime?.sits ?? ctrl.lifetime.value?.meditations ?? 0}', 'sits'),
             _Tile('${ctrl.lifetime.value?.minutes ?? 0}', 'minutes'),
-            _Tile('${ctrl.lifetime.value?.meditations ?? 0}', 'meditations'),
-            _Tile('${ctrl.lifetime.value?.together ?? 0}', 'together'),
+            _Tile('${ctrl.lifetime.value?.lifetime?.together ?? ctrl.lifetime.value?.together ?? 0}', ctrl.lifetime.value?.lifetime == null ? 'together' : 'together · ${ctrl.lifetime.value!.lifetime!.togetherPct}%'),
+            _Tile(ctrl.lifetime.value?.lifetime == null ? '${ctrl.lifetime.value?.average ?? 0}' : ctrl.lifetime.value!.lifetime!.avgMin.toStringAsFixed(1), 'min per sit'),
           ]),
-          const SizedBox(height: 8),
-          AppCard(key: const Key('week-chart'), onTap: () => Get.toNamed(AppRoutes.yourProgress), child: Row(children: [Expanded(child: Text('Your progress', style: AppText.navTitle.copyWith(color: c.textPrimary))), BarsMini(bars: ctrl.week.value?.bars ?? const []), const SizedBox(width: 8), Icon(Icons.chevron_right_rounded, color: c.textSecondary)])),
+          if (ctrl.lifetime.value?.lifetime?.hrShiftBpm != null) ...[
+            const SizedBox(height: 8),
+            AppCard(
+              key: const Key('hr-shift'),
+              child: Row(children: [
+                Icon(Icons.monitor_heart_outlined, color: c.emberText),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Mean heart-rate shift', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                  Text('Across the sits where your phone supplied it', style: AppText.caption.copyWith(color: c.textSecondary)),
+                ])),
+                Text('${ctrl.lifetime.value!.lifetime!.hrShiftBpm! > 0 ? '+' : ''}${ctrl.lifetime.value!.lifetime!.hrShiftBpm} bpm', style: AppText.title.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+              ]),
+            ),
+          ],
           const SizedBox(height: 12),
           for (final (key, title, route, badge) in [
-            ('r-challenges', 'Challenges', AppRoutes.challenges, true), ('r-milestones', 'Milestones', AppRoutes.milestones, true), ('r-breath', 'Breathwork', AppRoutes.breathwork, true),
+            ('r-challenges', 'Challenges', AppRoutes.challenges, !ctrl.challengesOn), ('r-milestones', 'Milestones', AppRoutes.milestones, true), ('r-breath', 'Breathwork', AppRoutes.breathwork, true),
             ('r-reminders', 'Reminders', AppRoutes.reminders, false), ('r-membership', 'Membership', AppRoutes.manageMembership, false), ('r-downloads', 'Downloads', AppRoutes.downloads, false),
             ('r-recipes', 'My Meditations', AppRoutes.myMeditations, false), ('r-notifications', 'Notifications', AppRoutes.notifications, false), ('r-privacy', 'Privacy & data', AppRoutes.privacyData, false), ('r-help', 'Help', AppRoutes.helpAbout, false),
           ])
@@ -83,6 +112,66 @@ class YouPage extends StatelessWidget {
           }),
         ]);
       }),
+    );
+  }
+}
+
+/// Current run, record and the weekly grace day, with an honest explainer.
+class _StreakBlock extends StatelessWidget {
+  const _StreakBlock({required this.streak});
+  final StreakInfo streak;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AppCard(
+      key: const Key('streak-block'),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const SectionLabel('Practice ritual'),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(child: StatTile(value: '${streak.current}', label: streak.current == 1 ? 'day, current' : 'days, current', accent: true)),
+          Expanded(child: StatTile(value: '${streak.record}', label: 'days, record')),
+          Expanded(child: StatTile(value: '${streak.graceLeft}', label: 'grace left')),
+        ]),
+        const SizedBox(height: 12),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.verified_user_outlined, size: 18, color: c.tealText),
+          const SizedBox(width: 8),
+          Expanded(child: Text(
+            streak.graceLeft > 0 ? 'One grace day each week. A missed day uses it first, so the run keeps going without a punitive reset.' : 'Your grace day is used this week. Sit tomorrow to keep the run.',
+            style: AppText.caption.copyWith(color: c.textSecondary))),
+        ]),
+      ]),
+    );
+  }
+}
+
+/// Minutes per day for the week, with "REST" where a grace day kept the run.
+class _WeekBars extends StatelessWidget {
+  const _WeekBars({required this.bars, required this.strip});
+  final List<ProgressBar> bars;
+  final List<StreakDay> strip;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final max = bars.fold<int>(1, (m, b) => b.minutes > m ? b.minutes : m);
+    return SizedBox(
+      height: 96,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        for (final (i, b) in bars.indexed)
+          Expanded(
+            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+              if (i < strip.length && strip[i].state == DayState.rest)
+                Text('REST', style: AppText.badge.copyWith(color: c.tealText))
+              else
+                Text(b.minutes > 0 ? '${b.minutes}m' : '', style: AppText.micro.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+              const SizedBox(height: 4),
+              Container(margin: const EdgeInsets.symmetric(horizontal: 4), height: 4 + 44 * b.minutes / max, decoration: BoxDecoration(color: b.current ? c.ember : c.track, borderRadius: BorderRadius.circular(4))),
+              const SizedBox(height: 4),
+              Text(b.label.isEmpty ? '' : b.label.substring(0, 1), style: AppText.micro.copyWith(color: c.textTertiary)),
+            ]),
+          ),
+      ]),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../../core/widgets/buttons.dart';
 import '../../core/widgets/controls.dart';
 import '../../core/widgets/sheets.dart';
 import '../../core/widgets/states.dart';
+import '../../core/widgets/stitch.dart';
 import '../../core/widgets/surfaces.dart';
 import 'byo_controller.dart';
 
@@ -39,11 +40,12 @@ class ByoPage extends StatelessWidget {
               content: () => Column(children: [
                 Expanded(
                   child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 16), children: [
-                        const _Step('1 · LENGTH'),
+                        _Blueprint(ctrl: ctrl),
+                        const _Step('1 · PRACTICE LENGTH'),
                         PillGroup<int>(options: ByoController.lengths, selected: {ctrl.length.value}, onToggle: (v) => ctrl.length.value = v, labelOf: (v) => '$v min'),
-                        const _Step('2 · OPENING'),
+                        const _Step('2 · OPENING GUIDE'),
                         if (ctrl.openings.isEmpty) const _Missing('Openings are not available yet.') else PillGroup<String?>(options: [null, ...ctrl.openings.map((b) => b.id)], selected: {ctrl.openingId.value}, onToggle: (v) => ctrl.openingId.value = v, labelOf: (id) => id == null ? 'None' : ctrl.block(id)?.name ?? ''),
-                        const _Step('3 · SOUND'),
+                        const _Step('3 · BACKGROUND AMBIENCE'),
                         if (ctrl.sounds.isEmpty) const _Missing('Background sounds are not available yet.') else ...[
                           PillGroup<String?>(options: [null, ...ctrl.sounds.map((b) => b.id)], selected: {ctrl.soundId.value}, onToggle: (v) => ctrl.soundId.value = v, labelOf: (id) => id == null ? 'Silence' : ctrl.block(id)?.name ?? ''),
                           if (ctrl.soundId.value != null) ...[
@@ -52,9 +54,9 @@ class ByoPage extends StatelessWidget {
                             SegmentedControl<String>(options: const ['simple', 'rich'], value: ctrl.texture.value, onChanged: (v) => ctrl.texture.value = v, labelOf: (v) => '${v[0].toUpperCase()}${v.substring(1)}'),
                           ],
                         ],
-                        const _Step('4 · BELLS'),
-                        Row(children: [Expanded(child: Text('At the start', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellStart.value, onChanged: (v) => ctrl.bellStart.value = v, label: 'Bell at the start')]),
-                        Row(children: [Expanded(child: Text('At the end', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellEnd.value, onChanged: (v) => ctrl.bellEnd.value = v, label: 'Bell at the end')]),
+                        const _Step('4 · BELLS & CHIMES'),
+                        Row(children: [Expanded(child: Text('Opening chime', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellStart.value, onChanged: (v) => ctrl.bellStart.value = v, label: 'Bell at the start')]),
+                        Row(children: [Expanded(child: Text('Closing chime', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(value: ctrl.bellEnd.value, onChanged: (v) => ctrl.bellEnd.value = v, label: 'Bell at the end')]),
                         PillGroup<int>(options: ByoController.intervals, selected: {ctrl.bellInterval.value}, onToggle: (v) => ctrl.bellInterval.value = v, labelOf: (v) => v == 0 ? 'No interval bell' : 'Every $v min'),
                         const SizedBox(height: 20),
                         AppCard(key: const Key('advanced'), onTap: () => Get.toNamed(AppRoutes.buildYourOwnAdvanced), child: const ListRow(title: 'Advanced builder', subtitle: 'Several blocks, OM and mantra loops, share by link', leading: IconTile(Icons.tune_rounded))),
@@ -64,6 +66,35 @@ class ByoPage extends StatelessWidget {
               ]),
             )),
       ),
+    );
+  }
+}
+
+/// What will be built: total length, how it splits (opening, core, closing) and a proportional bar.
+class _Blueprint extends StatelessWidget {
+  const _Blueprint({required this.ctrl});
+  final ByoController ctrl;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final total = ctrl.length.value * 60;
+    final op = ctrl.block(ctrl.openingId.value)?.durationSec ?? 0;
+    final closing = ctrl.bellEnd.value ? 15 : 0;
+    final opening = op.clamp(0, total ~/ 2);
+    final core = (total - opening - closing).clamp(0, total);
+    String m(int sec) => sec < 60 ? '${sec}s' : '${(sec / 60).round()}m';
+    Widget seg(int flex, Color col) => Expanded(flex: flex < 1 ? 1 : flex, child: Container(height: 10, margin: const EdgeInsets.only(right: 2), decoration: BoxDecoration(color: col, borderRadius: BorderRadius.circular(5))));
+    return AppCard(
+      key: const Key('blueprint'),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const SectionLabel('Session blueprint'),
+        const SizedBox(height: 8),
+        Text('${ctrl.length.value} min', key: const Key('blueprint-title'), style: AppText.title.copyWith(color: c.textPrimary)),
+        const SizedBox(height: 12),
+        Row(children: [if (opening > 0) seg(opening, c.ember), seg(core, c.tealText), if (closing > 0) seg(closing, c.emberText)]),
+        const SizedBox(height: 8),
+        Text('${opening > 0 ? 'Opening ${m(opening)} · ' : ''}Core ${m(core)}${closing > 0 ? ' · Closing ${m(closing)}' : ''}', key: const Key('blueprint-breakdown'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+      ]),
     );
   }
 }
@@ -100,7 +131,7 @@ class _Footer extends StatelessWidget {
               Row(children: [
                 Expanded(child: OutlineButton('Save', key: const Key('byo-save'), loading: ctrl.busy.value, onPressed: () => _askName(context, ctrl))),
                 const SizedBox(width: 10),
-                Expanded(flex: 2, child: PrimaryButton('Build it', key: const Key('byo-build'), onPressed: ctrl.build)),
+                Expanded(flex: 2, child: PrimaryButton('Build & sit now', key: const Key('byo-build'), onPressed: ctrl.build)),
               ]),
             ])),
       ),

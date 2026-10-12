@@ -114,7 +114,10 @@ void main() {
     await t.scrollUntilVisible(find.byKey(const Key('sos-help')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Need more help?'), findsOneWidget);
     expect(find.text('Book a personal session'), findsOneWidget);
-    await t.scrollUntilVisible(find.byKey(const Key('sos-Anxious')), -300, scrollable: find.byType(Scrollable).first);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, 900));
+    await t.pump();
+    await t.ensureVisible(find.byKey(const Key('sos-Anxious')));
+    await t.pump();
     await t.tap(find.byKey(const Key('sos-Anxious')));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.membershipPaywall);
