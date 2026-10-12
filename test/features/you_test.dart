@@ -31,8 +31,8 @@ void main() {
     expect(find.text('Marcus'), findsWidgets);
     expect(find.byKey(const Key('guest-card')), findsOneWidget); // the mock profile is a guest
     expect(find.byKey(const Key('streak-block')), findsOneWidget);
-    expect(find.text('days, current'), findsOneWidget);
-    expect(find.text('Weekly cadence'), findsOneWidget);
+    expect(find.text('CURRENT'), findsOneWidget);
+    expect(find.text('WEEKLY CADENCE (MINUTES)'), findsOneWidget);
     await t.scrollUntilVisible(find.byKey(const Key('hr-shift')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('64'), findsOneWidget); // lifetime sits
     expect(find.text('-14 bpm'), findsOneWidget);

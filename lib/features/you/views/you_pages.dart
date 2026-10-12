@@ -20,6 +20,7 @@ import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
 import '../../../core/widgets/stitch.dart';
+import '../../../core/realtime/live_service.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../../core/widgets/user_avatar.dart';
 import '../../../core/widgets/username_field.dart';
@@ -27,9 +28,10 @@ import '../../onboarding/views/setup_pages.dart' show TimeWheel;
 import '../../today/views/today_pages.dart' show tabHeader;
 import '../controllers/you_controllers.dart';
 
-/// 54 You.
+/// 54 You: the personal dashboard (Stitch): profile, forgiving streak, weekly cadence, lifetime volume, settings and offline.
 class YouPage extends StatelessWidget {
   const YouPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -39,18 +41,46 @@ class YouPage extends StatelessWidget {
       body: Obx(() {
         final p = ctrl.profile.value;
         final guest = ctrl.access.isGuest.value;
-        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
-          Row(children: [
-            UserAvatar(url: p?.avatarUrl, initial: ctrl.initials, size: 56, fontSize: 22),
-            const SizedBox(width: 14),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(ctrl.name.isEmpty ? 'You' : ctrl.name, key: const Key('you-name'), style: AppText.title.copyWith(color: c.textPrimary)),
-              if ((p?.username ?? '').isNotEmpty) Text('@${p!.username}', key: const Key('you-username'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-              Text(ctrl.access.isMember ? (ctrl.access.isTrial ? 'Member · free trial' : 'Member') : 'Free', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-            ])),
-            TextLink('Edit', onPressed: () => Get.toNamed(AppRoutes.editProfile)),
-          ]),
-          const SizedBox(height: 16),
+        final live = Get.isRegistered<LiveService>() ? (Get.find<LiveService>().agg.value?.total ?? 0) : 0;
+        final life = ctrl.lifetime.value;
+        final l = life?.lifetime;
+        final label = ctrl.access.isMember ? (p?.entitlement.isFounding == true ? 'FOUNDING MEMBER' : (ctrl.access.isTrial ? 'MEMBER · FREE TRIAL' : 'MEMBER')) : 'FREE';
+        return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 28), children: staggered([
+          // ── profile
+          AppCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: [
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Stack(children: [
+                  UserAvatar(url: p?.avatarUrl, initial: ctrl.initials, size: 64, fontSize: 26),
+                  Positioned(right: 0, bottom: 0, child: Container(width: 16, height: 16, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle, border: Border.all(color: c.surface, width: 3)))),
+                ]),
+                const SizedBox(width: 14),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(p?.displayName.isNotEmpty == true ? p!.displayName : (ctrl.name.isEmpty ? 'You' : ctrl.name), key: const Key('you-name'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                  if ((p?.username ?? '').isNotEmpty) Text('@${p!.username}', key: const Key('you-username'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                  const SizedBox(height: 6),
+                  Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.emberDeep, borderRadius: BorderRadius.circular(4)), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    if (label.startsWith('FOUNDING')) ...[Icon(Icons.local_fire_department_rounded, size: 12, color: c.emberText), const SizedBox(width: 4)],
+                    Text(label, key: const Key('you-plan'), style: AppText.overline.copyWith(color: c.emberText, fontSize: 10)),
+                  ])),
+                ])),
+                TextLink('Edit', onPressed: () => Get.toNamed(AppRoutes.editProfile)),
+              ]),
+              if (live > 0) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(10)),
+                  child: Row(children: [
+                    PulseDot(color: c.success, size: 3.5),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text('Live now', style: AppText.navTitle.copyWith(color: c.success, fontSize: 13))),
+                    Text('${groupedInt(live)} sitting now', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                  ]),
+                ),
+              ],
+            ]),
+          ),
           if (guest)
             AppCard(
               key: const Key('guest-card'),
@@ -62,51 +92,68 @@ class YouPage extends StatelessWidget {
                 Row(children: [Expanded(child: PrimaryButton('Save progress', onPressed: () => Get.toNamed(ctrl.access.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser))), const SizedBox(width: 10), Expanded(child: OutlineButton('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn)))]),
               ]),
             ),
-          if (guest) const SizedBox(height: 16),
-          if (ctrl.streak != null) _StreakBlock(streak: ctrl.streak!),
-          if (ctrl.streak != null) const SizedBox(height: 12),
+          // ── streak
+          if (ctrl.streak != null) ...[
+            _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
+            _StreakBlock(streak: ctrl.streak!),
+          ],
           AppCard(
-            key: const Key('week-chart'), onTap: () => Get.toNamed(AppRoutes.yourProgress),
+            key: const Key('week-chart'), onTap: () => Get.toNamed(AppRoutes.yourProgress), padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Expanded(child: Text('Weekly cadence', style: AppText.navTitle.copyWith(color: c.textPrimary))),
-                Text('${ctrl.week.value?.minutes ?? 0} min', key: const Key('week-minutes'), style: AppText.navTitle.copyWith(color: c.emberText, fontFeatures: AppText.tabular)),
-                Icon(Icons.chevron_right_rounded, color: c.textSecondary),
+                Expanded(child: Text('WEEKLY CADENCE (MINUTES)', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
+                Text('${ctrl.week.value?.minutes ?? 0}', key: const Key('week-minutes'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+                Text(' MIN TOTAL', style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5)),
               ]),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _WeekBars(bars: ctrl.week.value?.bars ?? const [], strip: ctrl.streak?.week ?? const []),
             ]),
           ),
-          const SizedBox(height: 12),
-          AdaptiveGrid(baseExtent: 92, children: [
-            _Tile('${ctrl.lifetime.value?.lifetime?.sits ?? ctrl.lifetime.value?.meditations ?? 0}', 'sits'),
-            _Tile('${ctrl.lifetime.value?.minutes ?? 0}', 'minutes'),
-            _Tile('${ctrl.lifetime.value?.lifetime?.together ?? ctrl.lifetime.value?.together ?? 0}', ctrl.lifetime.value?.lifetime == null ? 'together' : 'together · ${ctrl.lifetime.value!.lifetime!.togetherPct}%'),
-            _Tile(ctrl.lifetime.value?.lifetime == null ? '${ctrl.lifetime.value?.average ?? 0}' : ctrl.lifetime.value!.lifetime!.avgMin.toStringAsFixed(1), 'min per sit'),
+          // ── lifetime
+          _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
+          Row(children: [
+            Expanded(child: _Metric('TOTAL SITS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
+            const SizedBox(width: 10),
+            Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
           ]),
-          if (ctrl.lifetime.value?.lifetime?.hrShiftBpm != null) ...[
-            const SizedBox(height: 8),
+          Row(children: [
+            Expanded(child: _Metric('TOGETHER', '${l?.together ?? life?.together ?? 0}', l == null ? 'Shared group sits' : 'Shared group sits (${l.togetherPct}%)', Icons.groups_2_outlined)),
+            const SizedBox(width: 10),
+            Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per sit', Icons.donut_large_rounded)),
+          ]),
+          if (l?.hrShiftBpm != null)
             AppCard(
               key: const Key('hr-shift'),
               child: Row(children: [
-                Icon(Icons.monitor_heart_outlined, color: c.emberText),
+                Container(width: 40, height: 40, decoration: BoxDecoration(color: c.emberDeep, shape: BoxShape.circle), child: Icon(Icons.monitor_heart_outlined, color: c.emberText)),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Mean heart-rate shift', style: AppText.navTitle.copyWith(color: c.textPrimary)),
                   Text('Across the sits where your phone supplied it', style: AppText.caption.copyWith(color: c.textSecondary)),
                 ])),
-                Text('${ctrl.lifetime.value!.lifetime!.hrShiftBpm! > 0 ? '+' : ''}${ctrl.lifetime.value!.lifetime!.hrShiftBpm} bpm', style: AppText.title.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+                Text('${l!.hrShiftBpm! > 0 ? '+' : ''}${l.hrShiftBpm} bpm', style: AppText.title.copyWith(color: c.success, fontFeatures: AppText.tabular)),
               ]),
             ),
-          ],
-          const SizedBox(height: 12),
-          for (final (key, title, route, badge) in [
-            ('r-challenges', 'Challenges', AppRoutes.challenges, !ctrl.challengesOn), ('r-milestones', 'Milestones', AppRoutes.milestones, true), ('r-breath', 'Breathwork', AppRoutes.breathwork, true),
-            ('r-reminders', 'Reminders', AppRoutes.reminders, false), ('r-membership', 'Membership', AppRoutes.manageMembership, false), ('r-downloads', 'Downloads', AppRoutes.downloads, false),
-            ('r-recipes', 'My Meditations', AppRoutes.myMeditations, false), ('r-notifications', 'Notifications', AppRoutes.notifications, false), ('r-privacy', 'Privacy & data', AppRoutes.privacyData, false), ('r-help', 'Help', AppRoutes.helpAbout, false),
-          ])
-            ListRow(key: Key(key), title: title, trailing: badge ? const AppBadge(BadgeKind.comingSoon) : null, onTap: () => Get.toNamed(route)),
-          const SizedBox(height: 8),
+          // ── settings & offline
+          _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
+          AppCard(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Column(children: [
+              for (final (key, title, sub, route, badge) in [
+                ('r-downloads', 'Downloaded meditations', 'Listen without internet', AppRoutes.downloads, null),
+                ('r-reminders', 'Reminders & sounds', 'Daily sit reminder, bells, group warnings', AppRoutes.reminders, null),
+                ('r-membership', 'Membership', ctrl.access.isMember ? (ctrl.access.isTrial ? 'Free trial' : 'Active') : 'Free plan', AppRoutes.manageMembership, null),
+                ('r-recipes', 'My meditations', 'Your saved blends', AppRoutes.myMeditations, null),
+                ('r-notifications', 'Notifications', 'Messages from Raphael and group sits', AppRoutes.notifications, null),
+                ('r-challenges', 'Challenges', 'Cohort sprints with a grace day', AppRoutes.challenges, !ctrl.challengesOn),
+                ('r-milestones', 'Milestones', 'Awards for your practice', AppRoutes.milestones, true),
+                ('r-breath', 'Breathwork', 'Guided breathing lessons', AppRoutes.breathwork, true),
+                ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
+                ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),
+              ])
+                ListRow(key: Key(key), title: title, subtitle: sub, trailing: badge == true ? const AppBadge(BadgeKind.comingSoon) : null, onTap: () => Get.toNamed(route)),
+            ]),
+          ),
           if (!guest || p != null) DangerButton('Sign out', key: const Key('sign-out'), loading: ctrl.signingOut.value, onPressed: () async {
             final ok = await showAppSheet<bool>(context, title: 'Sign out?', builder: (ctx) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               Text('Your downloads stay on this phone. You can log in again any time.', style: AppText.body.copyWith(color: ctx.colors.textSecondary)),
@@ -116,8 +163,50 @@ class YouPage extends StatelessWidget {
             ]));
             if (ok == true) await ctrl.signOut();
           }),
-        ]));
+        ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
       }),
+    );
+  }
+}
+
+String _hm(int minutes) => minutes >= 60 ? '${minutes ~/ 60}h ${(minutes % 60).toString().padLeft(2, '0')}m' : '${minutes}m';
+
+class _SecHead extends StatelessWidget {
+  const _SecHead(this.icon, this.title, this.tag);
+  final IconData icon;
+  final String title, tag;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Icon(icon, size: 20, color: c.emberText),
+        const SizedBox(width: 8),
+        Expanded(child: Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17, height: 1.25))),
+        const SizedBox(width: 8),
+        Text(tag, style: AppText.overline.copyWith(color: c.textTertiary, fontSize: 10)),
+      ]),
+    );
+  }
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric(this.label, this.value, this.sub, this.icon);
+  final String label, value;
+  final String? sub;
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))), Icon(icon, size: 16, color: c.textSecondary)]),
+        const SizedBox(height: 10),
+        CountUp(value: int.tryParse(value) ?? -1, builder: (_, n) => Text(int.tryParse(value) == null ? value : '$n', style: AppText.display.copyWith(color: c.emberText, fontSize: 30, fontFeatures: AppText.tabular))),
+        if (sub != null) Text(sub!, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)),
+      ]),
     );
   }
 }
@@ -129,30 +218,47 @@ class _StreakBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    Widget tile(String label, IconData icon, String value, String unit, {bool accent = false}) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(12)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [Icon(icon, size: 13, color: accent ? c.emberText : c.textSecondary), const SizedBox(width: 4), Flexible(child: Text(label, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))]),
+              const SizedBox(height: 6),
+              FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                Text(value, style: AppText.display.copyWith(color: c.textPrimary, fontSize: 34, fontFeatures: AppText.tabular)),
+                const SizedBox(width: 4),
+                Text(unit, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10)),
+              ])),
+            ]),
+          ),
+        );
     return AppCard(
-      key: const Key('streak-block'),
+      key: const Key('streak-block'), padding: const EdgeInsets.all(14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SectionLabel('Practice ritual'),
-        const SizedBox(height: 10),
         Row(children: [
-          Expanded(child: StatTile(value: '${streak.current}', label: streak.current == 1 ? 'day, current' : 'days, current', accent: true)),
-          Expanded(child: StatTile(value: '${streak.record}', label: 'days, record')),
-          Expanded(child: StatTile(value: '${streak.graceLeft}', label: 'grace left')),
+          tile('CURRENT', Icons.local_fire_department_rounded, '${streak.current}', streak.current == 1 ? 'DAY' : 'DAYS', accent: true),
+          const SizedBox(width: 8),
+          tile('RECORD', Icons.emoji_events_outlined, '${streak.record}', 'DAYS'),
+          const SizedBox(width: 8),
+          tile('GRACE', Icons.chevron_left_rounded, '${streak.graceLeft}', 'LEFT'),
         ]),
         const SizedBox(height: 12),
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(Icons.verified_user_outlined, size: 18, color: c.tealText),
-          const SizedBox(width: 8),
-          Expanded(child: Text(
-            streak.graceLeft > 0 ? 'One grace day each week. A missed day uses it first, so the run keeps going without a punitive reset.' : 'Your grace day is used this week. Sit tomorrow to keep the run.',
-            style: AppText.caption.copyWith(color: c.textSecondary))),
-        ]),
+        Container(
+          padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(12)),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.verified_user_outlined, size: 18, color: c.success),
+            const SizedBox(width: 10),
+            Expanded(child: Text(
+              streak.graceLeft > 0 ? 'One grace day each week. A missed day uses it first, so the run keeps going without a punitive reset.' : 'Your grace day is used this week. Sit tomorrow to keep the run.',
+              style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45))),
+          ]),
+        ),
       ]),
     );
   }
 }
 
-/// Minutes per day for the week, with "REST" where a grace day kept the run.
+/// Minutes per day for the week: ember bars, a check on rest days, a dot for days to come.
 class _WeekBars extends StatelessWidget {
   const _WeekBars({required this.bars, required this.strip});
   final List<ProgressBar> bars;
@@ -162,7 +268,7 @@ class _WeekBars extends StatelessWidget {
     final c = context.colors;
     final max = bars.fold<int>(1, (m, b) => b.minutes > m ? b.minutes : m);
     return SizedBox(
-      height: 96,
+      height: 112,
       child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         for (final (i, b) in bars.indexed)
           Expanded(
@@ -172,9 +278,16 @@ class _WeekBars extends StatelessWidget {
               else
                 Text(b.minutes > 0 ? '${b.minutes}m' : '', style: AppText.micro.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
               const SizedBox(height: 4),
-              Container(margin: const EdgeInsets.symmetric(horizontal: 4), height: 4 + 44 * b.minutes / max, decoration: BoxDecoration(color: b.current ? c.ember : c.track, borderRadius: BorderRadius.circular(4))),
-              const SizedBox(height: 4),
-              Text(b.label.isEmpty ? '' : b.label.substring(0, 1), style: AppText.micro.copyWith(color: c.textTertiary)),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: b.minutes == 0 ? 0 : (b.minutes / max)), duration: const Duration(milliseconds: 700), curve: Curves.easeOutCubic,
+                builder: (_, v, __) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4), height: 6 + 58 * v, alignment: Alignment.center,
+                  decoration: BoxDecoration(color: b.minutes == 0 ? (b.current ? c.teal : c.surfaceAlt) : (b.current ? c.ember : c.ember.withValues(alpha: .9)), borderRadius: BorderRadius.circular(6)),
+                  child: b.minutes == 0 && b.current ? Container(width: 5, height: 5, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle)) : null,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(b.label.isEmpty ? '' : b.label.substring(0, 1), style: AppText.overline.copyWith(color: b.current ? c.emberText : c.textSecondary, fontSize: 11)),
             ]),
           ),
       ]),

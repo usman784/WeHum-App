@@ -333,7 +333,7 @@ class LobbyPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(LobbyController());
     return AppScaffold(
-      title: 'Group meditation',
+      title: 'Scheduled sit', stitch: true,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
@@ -344,24 +344,43 @@ class LobbyPage extends StatelessWidget {
               final startsAt = ctrl.startsAt ?? g.startsAt;
               final belts = ctrl.belts;
               final focus = g.focus;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
-                Row(children: [
-                  Icon(Icons.public_rounded, size: 18, color: c.success),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text('${groupNumber(ctrl.waiting)} in the lobby${ctrl.countries > 0 ? ' · ${ctrl.countries} countries' : ''}', key: const Key('lobby-count'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular))),
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 28), children: staggered([
+                Column(children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      PulseDot(color: c.success, size: 4),
+                      const SizedBox(width: 6),
+                      Flexible(child: Text('${groupNumber(ctrl.waiting)} PRACTITIONERS IN LOBBY${ctrl.countries > 0 ? ' · ${ctrl.countries} COUNTRIES' : ''}', key: const Key('lobby-count'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5))),
+                    ]),
+                  ),
+                  if (ctrl.regions.isNotEmpty)
+                    Padding(padding: const EdgeInsets.only(top: 8), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.public_rounded, size: 14, color: c.success),
+                      const SizedBox(width: 6),
+                      Flexible(child: Text('${ctrl.regions.take(4).map((r) => r.region).join(', ')} gathering…', style: AppText.caption.copyWith(color: c.textSecondary))),
+                    ])),
                 ]),
-                if (ctrl.regions.isNotEmpty)
-                  Padding(padding: const EdgeInsets.only(top: 2, left: 26), child: Text('${ctrl.regions.take(4).map((r) => r.region).join(', ')} gathering…', style: AppText.caption.copyWith(color: c.textSecondary))),
-                const SizedBox(height: 16),
-                Text(g.hourly ? 'HOURLY SYNCHRONISED SIT · ${ctrl.startLabel}' : 'SYNCHRONISED DAILY SIT · ${ctrl.startLabel}', style: AppText.overline.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 8),
-                Center(child: _CountdownRing(target: startsAt, opens: g.lobbyOpensAt, now: ctrl.time.now)),
-                const SizedBox(height: 8),
-                Center(child: Text('until it starts', style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
-                const SizedBox(height: 8),
-                Text('${ctrl.doorsLine}The sit starts by itself, for everyone at the same moment. Joining late? You land where the group is.', key: const Key('lobby-doors'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                if (!belts.isEmpty || ctrl.regions.isNotEmpty) ...[
-                  const SizedBox(height: 16),
+                AppCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(children: [
+                    Text(g.hourly ? 'HOURLY SYNCHRONISED SIT · ${ctrl.startLabel}' : 'SYNCHRONISED DAILY SIT · ${ctrl.startLabel}', textAlign: TextAlign.center, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
+                    const SizedBox(height: 14),
+                    _CountdownRing(target: startsAt, opens: g.lobbyOpensAt, now: ctrl.time.now),
+                    const SizedBox(height: 16),
+                    Container(width: 44, height: 44, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle), child: Icon(Icons.graphic_eq_rounded, color: c.onEmber)),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: c.bgDeep.withValues(alpha: .6), borderRadius: BorderRadius.circular(10)),
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Icon(Icons.all_inclusive_rounded, size: 18, color: c.textSecondary),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text('${ctrl.doorsLine}The sit starts by itself, for everyone at the same moment. Joining late? You land where the group is.', key: const Key('lobby-doors'), style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45))),
+                      ]),
+                    ),
+                  ]),
+                ),
+                if (!belts.isEmpty || ctrl.regions.isNotEmpty)
                   AppCard(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       if (!belts.isEmpty) BeltCounts(key: const Key('lobby-belts'), belts: belts),
@@ -369,42 +388,53 @@ class LobbyPage extends StatelessWidget {
                       for (final r in ctrl.regions) Padding(padding: const EdgeInsets.symmetric(vertical: 3), child: Row(children: [Expanded(child: Text(r.region, style: AppText.body.copyWith(color: c.textSecondary))), Text('${r.n}', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15))])),
                     ]),
                   ),
-                ],
-                const SizedBox(height: 12),
                 AppCard(
-                  key: const Key('focus-card'),
+                  key: const Key('focus-card'), padding: const EdgeInsets.all(16),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('TODAY’S FOCUS · ${g.lengthMin} MIN', style: AppText.overline.copyWith(color: c.emberText)),
-                    const SizedBox(height: 6),
-                    Text(focus?.title ?? g.title ?? 'Meditation of the Day', style: AppText.title.copyWith(color: c.textPrimary)),
+                    Row(children: [
+                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.tealSoft.withValues(alpha: .18), borderRadius: BorderRadius.circular(4)), child: Text('TODAY’S FOCUS', style: AppText.overline.copyWith(color: c.success, fontSize: 10))),
+                      const SizedBox(width: 8),
+                      Text('· ${g.lengthMin} MIN', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+                    ]),
+                    const SizedBox(height: 10),
+                    Text(focus?.title ?? g.title ?? 'Meditation of the Day', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 19)),
+                    const SizedBox(height: 2),
                     Text(focus?.summary.isNotEmpty == true ? focus!.summary : 'Meditation of the Day · Raphael', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                     if ((focus?.quote ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text('“${focus!.quote}”${focus.attribution.isEmpty ? '' : ' — ${focus.attribution}'}', style: AppText.body.copyWith(color: c.textBody, fontStyle: FontStyle.italic)),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: c.bgDeep.withValues(alpha: .6), borderRadius: BorderRadius.circular(10)),
+                        child: Text('“${focus!.quote}”${focus.attribution.isEmpty ? '' : ' — ${focus.attribution}'}', style: AppText.bodySmall.copyWith(color: c.textBody, fontStyle: FontStyle.italic, height: 1.45)),
+                      ),
                     ],
                   ]),
                 ),
-                const SizedBox(height: 12),
-                const SectionLabel('Before you sit'),
-                const SizedBox(height: 6),
-                const _CheckRow(icon: Icons.headphones_rounded, title: 'Headphones, if you have them', body: 'Better for presence. Speakers work too.'),
-                const _CheckRow(icon: Icons.notifications_off_outlined, title: 'Do Not Disturb', body: 'Silence incoming notifications for the sit.'),
-                Row(children: [
-                  const Expanded(child: _CheckRow(icon: Icons.alarm_on_rounded, title: 'Remind me', body: '10 minutes before it starts.')),
-                  AppToggle(key: const Key('lobby-remind'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Remind me 10 minutes before'),
+                AppCard(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('SIT READINESS CHECKLIST', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+                    const SizedBox(height: 10),
+                    const _CheckRow(icon: Icons.headphones_rounded, title: 'Headphones, if you have them', body: 'Better for presence. Speakers work too.'),
+                    const _CheckRow(icon: Icons.notifications_off_outlined, title: 'Do Not Disturb', body: 'Silence incoming notifications for the sit.'),
+                    Row(children: [
+                      const Expanded(child: _CheckRow(icon: Icons.alarm_on_rounded, title: 'Remind me', body: '10 minutes before it starts.')),
+                      AppToggle(key: const Key('lobby-remind'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Remind me 10 minutes before'),
+                    ]),
+                  ]),
+                ),
+                Column(children: [
+                  PrimaryButton('You’re in the lobby', key: const Key('wait-lobby'), icon: Icons.lock_outline_rounded, onPressed: () {}),
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    Expanded(child: OutlineButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: startsAt.toLocal(), endDate: startsAt.toLocal().add(Duration(minutes: g.lengthMin)))))),
+                    const SizedBox(width: 10),
+                    Expanded(child: OutlineButton('Leave the lobby', key: const Key('leave-lobby'), onPressed: () {
+                      ctrl.leave();
+                      Get.back<void>();
+                    })),
+                  ]),
                 ]),
-                const SizedBox(height: 8),
-                PrimaryButton('You’re in the lobby', key: const Key('wait-lobby'), onPressed: () {}),
-                const SizedBox(height: 8),
-                Row(children: [
-                  Expanded(child: OutlineButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: startsAt.toLocal(), endDate: startsAt.toLocal().add(Duration(minutes: g.lengthMin)))))),
-                  const SizedBox(width: 10),
-                  Expanded(child: OutlineButton('Leave the lobby', key: const Key('leave-lobby'), onPressed: () {
-                    ctrl.leave();
-                    Get.back<void>();
-                  })),
-                ]),
-              ]);
+              ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
             }),
           )),
     );
@@ -440,80 +470,155 @@ class NextSitPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(NextSitController());
     return AppScaffold(
-      title: 'Next sit',
+      title: 'Upcoming sit', stitch: true,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
               final g = ctrl.group.value!;
               final w = ctrl.waiting;
               final total = g.waiting > w.total ? g.waiting : w.total;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
-                Text(g.hourly ? 'HOURLY SYNCHRONISED SIT · STARTS AT ${ctrl.startLabel}' : 'SYNCHRONISED SIT · STARTS AT ${ctrl.startLabel}', key: const Key('nextsit-kicker'), style: AppText.overline.copyWith(color: c.emberText)),
-                const SizedBox(height: 10),
-                Center(child: CountdownText(target: g.startsAt, now: ctrl.time.now, style: AppText.display.copyWith(color: c.textPrimary, fontSize: 64))),
-                const SizedBox(height: 6),
-                Text('The doors open ${g.doorsOpenSec} seconds before the start. The sit begins by itself.', textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 16),
+              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 28), children: staggered([
+                Center(child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    PulseDot(color: c.success, size: 3.5),
+                    const SizedBox(width: 6),
+                    Flexible(child: Text(g.hourly ? 'HOURLY SYNCHRONISED SIT · STARTS AT ${ctrl.startLabel}' : 'SYNCHRONISED SIT · STARTS AT ${ctrl.startLabel}', key: const Key('nextsit-kicker'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
+                  ]),
+                )),
+                Column(children: [
+                  CountdownText(target: g.startsAt, now: ctrl.time.now, style: AppText.display.copyWith(color: c.textPrimary, fontSize: 56)),
+                  const SizedBox(height: 8),
+                  Text('The doors open ${g.doorsOpenSec} seconds before the start. The sit begins by itself.', textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                ]),
                 AppCard(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('${groupedInt(total)} ${total == 1 ? 'meditator' : 'meditators'} waiting', key: const Key('waiting-count'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
-                    if (!w.isEmpty) ...[const SizedBox(height: 12), BeltCounts(belts: w)],
+                  padding: const EdgeInsets.all(18),
+                  child: Column(children: [
+                    SizedBox(height: 150, child: _OrbitDots(count: total.clamp(0, 9))),
+                    const SizedBox(height: 10),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Container(width: 8, height: 8, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
+                      const SizedBox(width: 8),
+                      Text('${groupedInt(total)} ${total == 1 ? 'meditator' : 'meditators'} waiting', key: const Key('waiting-count'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontFeatures: AppText.tabular)),
+                    ]),
+                    if (!w.isEmpty) ...[const SizedBox(height: 10), BeltCounts(belts: w)],
                   ]),
                 ),
-                const SizedBox(height: 12),
                 AppCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Expanded(child: Text('SYNCHRONISED PROTOCOL', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5))),
+                      Container(padding: const EdgeInsets.fromLTRB(4, 4, 10, 4), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Container(width: 22, height: 22, alignment: Alignment.center, decoration: BoxDecoration(color: c.teal, shape: BoxShape.circle), child: Text('R', style: AppText.badge.copyWith(color: c.tealText))),
+                        const SizedBox(width: 6),
+                        Text('Raphael', style: AppText.caption.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600)),
+                      ])),
+                    ]),
+                    const SizedBox(height: 8),
+                    Text(g.focus?.title ?? g.title ?? 'Meditation of the Day', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
+                    const SizedBox(height: 2),
+                    Text('with Raphael · ${g.lengthMin} min', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                  ]),
+                ),
+                if (g.intentions.isNotEmpty)
+                  AppCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [Expanded(child: Text('INTENTION FOR THIS SIT', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))), Icon(Icons.track_changes_rounded, size: 18, color: c.textSecondary)]),
+                      const SizedBox(height: 12),
+                      Wrap(spacing: 8, runSpacing: 8, children: [
+                        for (final i in g.intentions)
+                          GestureDetector(
+                            key: Key('intent-$i'), onTap: () => ctrl.pick(i),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(color: ctrl.intention.value == i ? c.ember : c.surfaceAlt, borderRadius: BorderRadius.circular(Radii.pill)),
+                              child: Text(i, style: AppText.bodySmall.copyWith(color: ctrl.intention.value == i ? c.onEmber : c.textPrimary, fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                      ]),
+                    ]),
+                  ),
+                AppCard(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
                   child: Row(children: [
-                    const IconTile(Icons.self_improvement_rounded),
+                    Container(width: 40, height: 40, decoration: BoxDecoration(color: c.bgDeep, shape: BoxShape.circle), child: Icon(Icons.timer_outlined, size: 20, color: c.textSecondary)),
                     const SizedBox(width: 12),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(g.focus?.title ?? g.title ?? 'Meditation of the Day', style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                      Text('with Raphael · ${g.lengthMin} min', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                      Text('Notify me before it starts', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15)),
+                      Text('A single heads-up, ${g.reminderMin} minutes before', style: AppText.caption.copyWith(color: c.textSecondary)),
                     ])),
+                    AppToggle(key: const Key('nextsit-notify'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Notify me before the sit starts'),
                   ]),
                 ),
-                if (g.intentions.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  const SectionLabel('Intention for this sit'),
-                  const SizedBox(height: 8),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final i in g.intentions)
-                      GestureDetector(
-                        key: Key('intent-$i'), onTap: () => ctrl.pick(i),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(color: ctrl.intention.value == i ? c.emberTint : c.surface, borderRadius: BorderRadius.circular(Radii.pill), border: Border.all(color: ctrl.intention.value == i ? c.ember : c.border)),
-                          child: Text(i, style: AppText.bodySmall.copyWith(color: ctrl.intention.value == i ? c.emberText : c.textPrimary, fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                  ]),
-                ],
-                const SizedBox(height: 18),
-                Row(children: [
-                  const Icon(Icons.timer_outlined),
-                  const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Notify me before it starts', style: AppText.bodyLarge.copyWith(color: c.textPrimary)),
-                    Text('A single heads-up, ${g.reminderMin} minutes before', style: AppText.caption.copyWith(color: c.textSecondary)),
-                  ])),
-                  AppToggle(key: const Key('nextsit-notify'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Notify me before the sit starts'),
+                Column(children: [
+                  PrimaryButton('Enter the lobby', key: const Key('nextsit-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby)),
+                  const SizedBox(height: 10),
+                  SecondaryButton('Sit in silence while you wait', key: const Key('nextsit-silence'), icon: Icons.air_rounded, onPressed: () => Get.toNamed(AppRoutes.silenceRoomSetup)),
+                  const SizedBox(height: 10),
+                  SecondaryButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: g.startsAt.toLocal(), endDate: g.startsAt.toLocal().add(Duration(minutes: g.lengthMin))))),
                 ]),
-                const SizedBox(height: 14),
-                PrimaryButton('Enter the lobby', key: const Key('nextsit-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby)),
-                const SizedBox(height: 8),
-                OutlineButton('Sit in silence while you wait', key: const Key('nextsit-silence'), onPressed: () => Get.toNamed(AppRoutes.silenceRoomSetup)),
-                const SizedBox(height: 8),
-                OutlineButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: g.startsAt.toLocal(), endDate: g.startsAt.toLocal().add(Duration(minutes: g.lengthMin))))),
-                const SizedBox(height: 14),
-                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Icon(Icons.sensors_rounded, size: 18, color: c.textTertiary),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text('No cameras. No talking. Just shared presence with everyone sitting at the same moment.', style: AppText.caption.copyWith(color: c.textTertiary))),
+                Column(children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.sensors_rounded, size: 14, color: c.textSecondary), const SizedBox(width: 6), Text('STRICT PRESENCE TELEMETRY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))]),
+                  const SizedBox(height: 4),
+                  Text('No cameras. No talking. Just shared presence with everyone sitting at the same moment.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
                 ]),
-              ]);
+              ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
             }),
           )),
     );
   }
+}
+
+/// Soft orbit of dots around a centre: one dot per person waiting (up to nine), slowly turning.
+class _OrbitDots extends StatefulWidget {
+  const _OrbitDots({required this.count});
+  final int count;
+  @override
+  State<_OrbitDots> createState() => _OrbitDotsState();
+}
+
+class _OrbitDotsState extends State<_OrbitDots> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 40))..repeat();
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) => CustomPaint(size: Size.infinite, painter: _OrbitPainter(widget.count, reduceMotion(context) ? 0 : _c.value, c.success, c.ember, c.border)),
+    );
+  }
+}
+
+class _OrbitPainter extends CustomPainter {
+  _OrbitPainter(this.n, this.t, this.green, this.ember, this.line);
+  final int n;
+  final double t;
+  final Color green, ember, line;
+  @override
+  void paint(Canvas canvas, Size s) {
+    final ctr = s.center(Offset.zero), r = s.shortestSide / 2 - 8;
+    canvas.drawCircle(ctr, r, Paint()..shader = RadialGradient(colors: [ember.withValues(alpha: .10), ember.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: ctr, radius: r)));
+    canvas.drawCircle(ctr, r * .55, Paint()..style = PaintingStyle.stroke..strokeWidth = .8..color = line);
+    canvas.drawCircle(ctr, r, Paint()..style = PaintingStyle.stroke..strokeWidth = .8..color = line.withValues(alpha: .6));
+    canvas.drawCircle(ctr, 9, Paint()..color = ember);
+    canvas.drawCircle(ctr, 3.5, Paint()..color = const Color(0xFF0B0D0E));
+    for (var i = 0; i < n; i++) {
+      final ring = i.isEven ? r : r * .55;
+      final a = 2 * math.pi * (i / math.max(n, 1)) + t * 2 * math.pi * (i.isEven ? 1 : -1) * .25;
+      canvas.drawCircle(ctr + Offset(math.cos(a), math.sin(a)) * ring, 4 + (i % 3) * .8, Paint()..color = green);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _OrbitPainter old) => old.t != t || old.n != n;
 }
 
 class _CountdownRing extends StatefulWidget {
@@ -528,35 +633,21 @@ class _CountdownRingState extends State<_CountdownRing> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return SizedBox(
-      width: 220, height: 220,
-      child: StreamBuilder<int>(
-        stream: Stream.periodic(const Duration(seconds: 1), (i) => i),
-        builder: (_, __) {
-          final total = widget.target.difference(widget.opens).inSeconds.clamp(1, 1 << 30);
-          final left = widget.target.difference(widget.now()).inSeconds.clamp(0, 1 << 30); // the text always shows the real time left
-          final progress = (1 - left / total).clamp(0.0, 1.0); // the ring only fills once the lobby is open
-          return CustomPaint(
-            painter: _RingPainter(progress, c.ember, c.track),
-            child: Center(child: Text(formatCountdown(Duration(seconds: left)), key: const Key('lobby-countdown'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 44))),
-          );
-        },
-      ),
+    return StreamBuilder<int>(
+      stream: Stream.periodic(const Duration(seconds: 1), (i) => i),
+      builder: (_, __) {
+        final total = widget.target.difference(widget.opens).inSeconds.clamp(1, 1 << 30);
+        final left = widget.target.difference(widget.now()).inSeconds.clamp(0, 1 << 30); // the text always shows the real time left
+        final progress = (1 - left / total).clamp(0.0, 1.0); // the bar only fills once the lobby is open
+        return Column(mainAxisSize: MainAxisSize.min, children: [
+          Text('STARTS IN', style: AppText.overline.copyWith(color: c.textSecondary, letterSpacing: 1.6)),
+          const SizedBox(height: 4),
+          Text(formatCountdown(Duration(seconds: left)), key: const Key('lobby-countdown'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 54, fontFeatures: AppText.tabular)),
+          const SizedBox(height: 12),
+          ClipRRect(borderRadius: BorderRadius.circular(4), child: SizedBox(width: 200, child: LinearProgressIndicator(value: progress, minHeight: 4, backgroundColor: c.track, color: c.ember))),
+        ]);
+      },
     );
   }
 }
 
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.progress, this.color, this.track);
-  final double progress;
-  final Color color, track;
-  @override
-  void paint(Canvas canvas, Size s) {
-    final r = Rect.fromCircle(center: s.center(Offset.zero), radius: s.width / 2 - 8);
-    canvas.drawArc(r, 0, math.pi * 2, false, Paint()..style = PaintingStyle.stroke..strokeWidth = 8..color = track);
-    canvas.drawArc(r, -math.pi / 2, math.pi * 2 * progress, false, Paint()..style = PaintingStyle.stroke..strokeWidth = 8..strokeCap = StrokeCap.round..color = color);
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter o) => o.progress != progress;
-}

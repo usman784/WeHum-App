@@ -49,7 +49,7 @@ void main() {
         'date': Get.find<LobbyController>().date, 'waiting': 312, 'countries': 29, 'regions': [{'r': 'Europe', 'n': 148}, {'r': 'Americas', 'n': 102}, {'r': 'Asia-Pacific', 'n': 62}], 'startsAt': DateTime.now().toUtc().add(const Duration(minutes: 2)).toIso8601String(),
       });
       await afterPush(t);
-      expect(find.text('312 in the lobby · 29 countries'), findsOneWidget);
+      expect(find.text('312 PRACTITIONERS IN LOBBY · 29 COUNTRIES'), findsOneWidget);
       expect(find.text('Europe'), findsOneWidget);
       expect(find.text('148'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
