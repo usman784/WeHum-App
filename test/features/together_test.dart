@@ -44,7 +44,7 @@ void main() {
     testWidgets('joins lobby:{date} over the socket, shows counts and regions from lobby:state, leaves on pop', (t) async {
       final e = await openLobby(t);
       expect(e.socketServer.sentData('lobby:join'), isNotEmpty);
-      expect(find.text('Group meditation · ${Get.find<LobbyController>().startLabel}'), findsOneWidget);
+      expect(find.text('SYNCHRONISED DAILY SIT · ${Get.find<LobbyController>().startLabel}'), findsOneWidget);
       e.socketServer.serverPushes('lobby:state', {
         'date': Get.find<LobbyController>().date, 'waiting': 312, 'countries': 29, 'regions': [{'r': 'Europe', 'n': 148}, {'r': 'Americas', 'n': 102}, {'r': 'Asia-Pacific', 'n': 62}], 'startsAt': DateTime.now().toUtc().add(const Duration(minutes: 2)).toIso8601String(),
       });
@@ -168,14 +168,18 @@ void main() {
       expect(find.text('LIVE'), findsOneWidget);
       expect(find.text('412'), findsOneWidget);
       expect(find.text('412 people meditating now · 37 countries'.replaceFirst('412 ', '')), findsOneWidget);
-      expect(find.text('70 · Strong'), findsOneWidget);
+      expect(find.text('/ 100 · Strong'), findsOneWidget);
+      expect(find.text('70'), findsOneWidget);
+      await t.scrollUntilVisible(find.text('Germany'), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text('Germany'), findsOneWidget);
       expect(find.text('United States'), findsOneWidget);
       e.socketServer.serverPushes('live:agg', {'total': 4, 'countries': 2, 'top': [], 'quiet': true, 'meditatedToday': 1280, 'vibration': 20, 'at': 2});
       await afterPush(t);
+      await t.drag(find.byType(Scrollable).first, const Offset(0, 900));
+      await t.pump();
       expect(find.text('QUIET RIGHT NOW'), findsOneWidget);
       expect(find.text('1,280'), findsOneWidget);
-      expect(find.text('20 · Quiet'), findsOneWidget);
+      expect(find.text('/ 100 · Quiet'), findsOneWidget);
       e.socketServer.serverDrops();
       await t.pump(const Duration(seconds: 11));
       expect(find.text('LIVE COUNTS PAUSED'), findsOneWidget);
@@ -196,7 +200,7 @@ void main() {
       await t.pumpWidget(e.app(initial: AppRoutes.together));
       await settle(t);
       expect(find.byKey(const Key('next-group')), findsOneWidget);
-      expect(find.text('120 already in the lobby'), findsOneWidget);
+      expect(find.textContaining('120 already waiting'), findsOneWidget);
       e.socketServer.serverPushes('live:agg', {'total': 412, 'countries': 37, 'top': [], 'quiet': false, 'meditatedToday': 1280, 'vibration': 70, 'at': 1});
       await afterPush(t);
       expect(find.textContaining('412 meditating now'), findsOneWidget);

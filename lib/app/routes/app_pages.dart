@@ -77,6 +77,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const MembersOnly(title: 'Silence Room', child: SilenceRunPage())),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage()),
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
+    GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next sit', child: NextSitPage())),
     GetPage(name: AppRoutes.you, page: () => const YouPage()),
     GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),
     GetPage(name: AppRoutes.editProfile, page: () => const EditProfilePage()),

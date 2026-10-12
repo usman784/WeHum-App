@@ -97,7 +97,10 @@ class MockTodayRepository implements TodayRepository {
   @override
   Future<GroupInfo> groupNext() async => MockData.group(DateTime.now().toIso8601String().substring(0, 10), startsIn: groupStartsIn, myIntention: intentions.values.firstOrNull);
   @override
-  Future<DailyMessage> dailyMessage(String date) async => DailyMessage(
+  Future<DailyMessage> dailyMessage(String date) async {
+    // premium messages are for members (free ones are open to everyone, see the server's `access`)
+    if (!member) throw ApiException(ErrorCode.premiumRequired, status: 403);
+    return DailyMessage(
       date: date, type: 'audio', title: 'Releasing Cognitive Friction', text: 'You do not have to solve your mind. Let it settle.', themeTag: 'Focus', durationSec: 255, hasMedia: true,
       listenersToday: 3840, saved: savedMessages.contains(date), transcript: const [
         TranscriptLine(t: 0, text: 'Notice where your shoulders are sitting right now.', section: 'Arrive'),
@@ -107,6 +110,7 @@ class MockTodayRepository implements TodayRepository {
         WeekMessage(date: date, title: 'Releasing Cognitive Friction', durationSec: 255, state: 'today'),
         const WeekMessage(date: '2099-01-01', state: 'upcoming', locked: true),
       ]);
+  }
   final savedMessages = <String>{};
   final intentions = <String, String>{};
   final completed = <String>[];

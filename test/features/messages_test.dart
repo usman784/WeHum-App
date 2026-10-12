@@ -62,7 +62,10 @@ void main() {
     await settle(t);
     expect(find.text('Releasing Cognitive Friction'), findsOneWidget);
     expect(find.text('Monday, October 5 · from Raphael'), findsOneWidget);
-    expect(find.text('Explore archive'), findsOneWidget);
+    expect(find.byKey(const Key('dm-play')), findsOneWidget);
+    expect(find.text('3,840 listened today'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('dm-archive')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('dm-archive')), findsOneWidget);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
 
@@ -71,7 +74,7 @@ void main() {
     await settle(t);
     Get.toNamed('/message/2026-10-05', arguments: {'date': '2026-10-05'});
     await settle(t);
-    expect(find.text('The daily message is part of membership'), findsOneWidget);
+    expect(find.text('This daily message is part of membership'), findsOneWidget);
     await f.dispose();
   });
 

@@ -12,11 +12,13 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/painters.dart' show Overline;
 import '../../../core/widgets/states.dart';
+import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
+import '../../today/controllers/today_controller.dart' show groupNumber;
 import '../../today/views/today_widgets.dart';
 import '../controllers/messages_controllers.dart';
 
-/// 26 Daily message.
+/// 26 Daily message with the interactive transcript (Stitch).
 class DailyMessagePage extends StatelessWidget {
   const DailyMessagePage({super.key});
   @override
@@ -25,6 +27,7 @@ class DailyMessagePage extends StatelessWidget {
     final date = (args['date'] ?? Get.parameters['date'] ?? '') as String;
     final ctrl = Get.put(DailyMessageController(date), tag: date);
     final c = context.colors;
+    String mmss(Duration d) => '${d.inMinutes.toString().padLeft(2, '0')}:${d.inSeconds.remainder(60).toString().padLeft(2, '0')}';
     return AppScaffold(
       title: 'Daily message',
       body: Obx(() => StateSwitcher(
@@ -32,26 +35,121 @@ class DailyMessagePage extends StatelessWidget {
             empty: const EmptyState(title: 'No message yet', body: 'Raphael’s next message will appear here.', icon: Icons.mail_outline_rounded),
             content: () => Obx(() {
               if (ctrl.locked.value) {
-                return EmptyState(title: 'The daily message is part of membership', body: 'A short note from Raphael, every day.', icon: Icons.lock_outline_rounded, ctaLabel: 'See membership options', onCta: () => openPaywall('lock'));
+                return EmptyState(title: 'This daily message is part of membership', body: 'A short note from Raphael, every day. Some past messages are free.', icon: Icons.lock_outline_rounded, ctaLabel: 'See membership options', onCta: () => openPaywall('lock'));
               }
               final m = ctrl.message.value!;
+              final cur = ctrl.currentLine;
+              final total = ctrl.duration.value.inSeconds > 0 ? ctrl.duration.value : Duration(seconds: m.durationSec ?? 0);
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: [
-                Text(ctrl.dateLine, key: const Key('dm-date'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                if (ctrl.hasVideoMode && ctrl.hasAudioMode)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SegmentedControl<bool>(options: const [false, true], value: ctrl.videoMode.value, onChanged: (v) => ctrl.videoMode.value = v, labelOf: (v) => v ? 'Video' : 'Audio'),
+                  ),
+                Row(children: [
+                  Expanded(child: Text(ctrl.dateLine, key: const Key('dm-date'), style: AppText.bodySmall.copyWith(color: c.textSecondary))),
+                  if (m.isFree) const AppBadge(BadgeKind.freeForYou),
+                ]),
                 if (m.themeTag != null) Padding(padding: const EdgeInsets.only(top: 8), child: Overline(m.themeTag!, color: c.tealText)),
                 const SizedBox(height: 6),
                 Text(m.title, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 if (m.imageUrl != null) Padding(padding: const EdgeInsets.only(top: 14), child: ThumbImage(m.imageUrl, height: 180, radius: Radii.card, width: double.infinity)),
                 if (m.hasMedia && m.type != 'text') ...[
                   const SizedBox(height: 16),
-                  PrimaryButton(m.type == 'video' ? 'Watch${m.durationSec == null ? '' : ' · ${(m.durationSec! / 60).ceil()} min'}' : 'Listen${m.durationSec == null ? '' : ' · ${(m.durationSec! / 60).ceil()} min'}', key: const Key('dm-play'), icon: Icons.play_arrow_rounded, onPressed: ctrl.play),
+                  AppCard(
+                    key: const Key('dm-player'),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        GestureDetector(
+                          key: const Key('dm-play'), onTap: ctrl.toggle,
+                          child: Container(width: 56, height: 56, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle), child: ctrl.audioLoading.value ? Padding(padding: const EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 3, color: c.onEmber)) : Icon(ctrl.playing.value ? Icons.pause_rounded : Icons.play_arrow_rounded, color: c.onEmber, size: 32)),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(ctrl.videoMode.value ? 'Watch' : 'Listen', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                          Text('${m.durationSec == null ? '' : '${(m.durationSec! / 60).ceil()} min · '}${m.hasVideo || m.type == 'video' ? 'audio & video' : 'audio'}', style: AppText.caption.copyWith(color: c.textSecondary)),
+                        ])),
+                        if (ctrl.playing.value || ctrl.position.value > Duration.zero) ...[
+                          Semantics(button: true, label: 'Back 15 seconds', child: IconButton(onPressed: () => ctrl.skip(-15), icon: const Icon(Icons.replay_10_rounded))),
+                          Semantics(button: true, label: 'Forward 15 seconds', child: IconButton(onPressed: () => ctrl.skip(15), icon: const Icon(Icons.forward_10_rounded))),
+                        ],
+                      ]),
+                      if (total > Duration.zero) ...[
+                        const SizedBox(height: 12),
+                        AppProgressBar(ctrl.position.value.inMilliseconds / total.inMilliseconds),
+                        const SizedBox(height: 6),
+                        Row(children: [
+                          Text(mmss(ctrl.position.value), key: const Key('dm-pos'), style: AppText.micro.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
+                          const Spacer(),
+                          Text('-${mmss(total - ctrl.position.value < Duration.zero ? Duration.zero : total - ctrl.position.value)}', style: AppText.micro.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
+                        ]),
+                      ],
+                      if (ctrl.audioError.value) Padding(padding: const EdgeInsets.only(top: 8), child: Text('This message couldn’t load. Check your connection and try again.', style: AppText.caption.copyWith(color: c.dangerText))),
+                    ]),
+                  ),
+                  if (m.listenersToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupNumber(m.listenersToday)} listened today', key: const Key('dm-listeners'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
                 ],
-                if (m.text != null) ...[const SizedBox(height: 16), Text(m.text!, style: AppText.bodyLarge.copyWith(color: c.textBody, height: 1.6))],
-                const SizedBox(height: 24),
-                OutlineButton('Explore archive', onPressed: () => Get.toNamed(AppRoutes.exploreArchive)),
+                if (m.text != null && m.text!.isNotEmpty) ...[const SizedBox(height: 16), Text(m.text!, style: AppText.bodyLarge.copyWith(color: c.textBody, height: 1.6))],
+                if (m.transcript.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  Row(children: [
+                    Icon(Icons.subject_rounded, size: 18, color: c.textSecondary),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('INTERACTIVE TRANSCRIPT', style: AppText.overline.copyWith(color: c.textSecondary))),
+                  ]),
+                  const SizedBox(height: 8),
+                  TextField(
+                    key: const Key('transcript-search'), onChanged: (v) => ctrl.search.value = v, style: AppText.bodySmall.copyWith(color: c.textPrimary),
+                    decoration: InputDecoration(isDense: true, hintText: 'Search the transcript', prefixIcon: const Icon(Icons.search_rounded, size: 20), filled: true, fillColor: c.surfaceInput, border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.pill), borderSide: BorderSide(color: c.border))),
+                  ),
+                  const SizedBox(height: 8),
+                  for (final i in ctrl.visibleLines)
+                    InkWell(
+                      key: Key('line-$i'), onTap: () => ctrl.seekTo(m.transcript[i].t),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 3), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(color: i == cur ? c.emberTint : Colors.transparent, borderRadius: BorderRadius.circular(Radii.input), border: Border.all(color: i == cur ? c.ember : c.border)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(children: [
+                            Text('${(m.transcript[i].t ~/ 60).toString().padLeft(2, '0')}:${(m.transcript[i].t % 60).toString().padLeft(2, '0')}', style: AppText.micro.copyWith(color: i == cur ? c.emberText : c.textTertiary, fontFeatures: AppText.tabular, fontWeight: FontWeight.w700)),
+                            if (m.transcript[i].section != null) ...[const SizedBox(width: 8), Text(m.transcript[i].section!.toUpperCase(), style: AppText.badge.copyWith(color: c.tealText))],
+                          ]),
+                          const SizedBox(height: 4),
+                          Text(m.transcript[i].text, style: AppText.body.copyWith(color: i == cur ? c.textPrimary : c.textBody)),
+                        ]),
+                      ),
+                    ),
+                ],
+                const SizedBox(height: 16),
+                Row(children: [
+                  Expanded(child: OutlineButton(m.saved ? 'Saved to notes' : 'Save to notes', key: const Key('dm-save'), icon: m.saved ? Icons.bookmark_rounded : Icons.bookmark_add_outlined, onPressed: ctrl.toggleSave)),
+                  const SizedBox(width: 10),
+                  Expanded(child: OutlineButton('Share', key: const Key('dm-share'), icon: Icons.ios_share_rounded, onPressed: ctrl.share)),
+                ]),
+                if (m.week.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const SectionLabel('This week'),
+                  const SizedBox(height: 6),
+                  for (final w in m.week)
+                    ListRow(
+                      key: Key('week-${w.date}'), title: w.title ?? 'Coming ${_short(w.date)}',
+                      subtitle: w.state == 'today' ? 'Today' : (w.state == 'upcoming' ? 'Unlocks ${_short(w.date)}' : _short(w.date)),
+                      leading: Icon(w.locked ? Icons.lock_outline_rounded : (w.state == 'today' ? Icons.check_circle_rounded : Icons.play_circle_outline_rounded), color: w.state == 'today' ? c.emberText : c.textSecondary),
+                      showChevron: !w.locked && w.state != 'today',
+                      onTap: w.state == 'upcoming' ? null : (w.locked ? () => openPaywall('lock') : (w.state == 'today' ? null : () => Get.toNamed('/message/${w.date}', arguments: {'date': w.date}))),
+                    ),
+                ],
+                const SizedBox(height: 16),
+                OutlineButton('Full archive', key: const Key('dm-archive'), onPressed: () => Get.toNamed(AppRoutes.exploreArchive)),
               ]);
             }),
           )),
     );
+  }
+
+  static String _short(String date) {
+    final d = DateTime.tryParse(date);
+    return d == null ? date : DateFormat('EEE, MMM d').format(d);
   }
 }
 
@@ -114,13 +212,14 @@ class _ArchiveRow extends StatelessWidget {
     final c = context.colors;
     final d = DateTime.tryParse(m.date);
     return InkWell(
-      onTap: () => Get.toNamed('/message/${m.date}', arguments: {'date': m.date}),
+      onTap: m.locked ? () => openPaywall('lock') : () => Get.toNamed('/message/${m.date}', arguments: {'date': m.date}),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(children: [
           SizedBox(width: 44, child: Column(children: [Text(d == null ? '' : '${d.day}', style: AppText.title.copyWith(color: c.textPrimary)), Text(d == null ? '' : DateFormat('EEE').format(d).toUpperCase(), style: AppText.micro.copyWith(color: c.textTertiary))])),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(m.title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text('${m.type[0].toUpperCase()}${m.type.substring(1)}${m.themeTag == null ? '' : ' · ${m.themeTag}'}', style: AppText.bodySmall.copyWith(color: c.textSecondary))])),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(m.title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text('${m.type[0].toUpperCase()}${m.type.substring(1)}${m.durationSec == null ? '' : ' · ${(m.durationSec! / 60).ceil()} min'}${m.themeTag == null ? '' : ' · ${m.themeTag}'}${m.isFree ? ' · Free' : ''}', style: AppText.bodySmall.copyWith(color: c.textSecondary))])),
+          if (m.locked) Icon(Icons.lock_outline_rounded, size: 18, color: c.textSecondary) else if (m.isFree) const AppBadge(BadgeKind.freeForYou),
         ]),
       ),
     );
