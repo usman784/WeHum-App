@@ -8,3 +8,7 @@
    - the socket service;
    - the routes.
 4. Backend contract: `../backend/starter/openapi/openapi.yaml` and backend spec §7 (sockets).
+
+## Oct 12 — Stitch redesign
+- What changed: `WeHum_App_Spec.md` §0.2, screen list §12b, phases §14b. Map to backend and CMS: `../stitch-export/SCREEN_MAP.md`.
+- Design files: `design/stitch/screens/` (PNG) and `design/stitch/source/` (HTML) for the 29 built screens; `design/screens/` + `design/source/` are the earlier 74-screen canvas, kept for screens Stitch does not redraw.

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121415;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-container": "#ff7a45", "error-container": "#93000a", "surface-tint": "#ffb59a", "on-background": "#e2e2e3", "secondary-fixed": "#c0ebe7", "surface": "#121415", "inverse-on-surface": "#2f3132", "inverse-surface": "#e2e2e3", "tertiary": "#4de082", "on-error-container": "#ffdad6", "on-primary-container": "#672000", "inverse-primary": "#a73a05", "on-secondary": "#0a3634", "on-primary": "#5b1b00", "surface-container-low": "#1a1c1d", "outline": "#a78b81", "on-secondary-fixed-variant": "#254d4b", "surface-container-lowest": "#0c0e0f", "primary-fixed": "#ffdbcf", "tertiary-container": "#0ab960", "secondary-fixed-dim": "#a5cecb", "surface-container-highest": "#333536", "primary-fixed-dim": "#ffb59a", "surface-dim": "#121415", "secondary-container": "#254d4b", "on-secondary-container": "#94bdba", "error": "#ffb4ab", "surface-bright": "#38393a", "on-tertiary-fixed-variant": "#005227", "on-surface-variant": "#dfc0b5", "surface-variant": "#333536", "on-primary-fixed": "#380d00", "primary": "#ffb59a", "surface-container": "#1e2021", "secondary": "#a5cecb", "on-tertiary-container": "#00411d", "on-tertiary-fixed": "#00210c", "on-surface": "#e2e2e3", "outline-variant": "#58423a", "on-tertiary": "#003919", "surface-container-high": "#282a2b", "tertiary-fixed-dim": "#4de082", "on-error": "#690005", "background": "#121415", "on-secondary-fixed": "#00201f", "on-primary-fixed-variant": "#802900", "tertiary-fixed": "#6dfe9c" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "1rem", "space-md": "1rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "gutter": "1rem" }, fontFamily: { "headline-sm": ["Inter"], "label-numeric": ["Inter"], "body-md": ["Inter"], "label-caps": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "display-hero-mobile": ["Inter"], "display-hero": ["Inter"], "headline-lg": ["Inter"], "headline-lg-mobile": ["Inter"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-numeric": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "400" }], "display-hero-mobile": ["40px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "display-hero": ["56px", { "lineHeight": "60px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }] } } } };</script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><button aria-label="Back" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface active:bg-surface-container-high transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="Brand logo. - Primary color: #ff7a45
+- Font: inter
+- Mode: dark
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1VG7TnfztIHtYk9YlVx43V3MtlQIiklwJ3AElfJmCedoxipJoblTaNtZUsH7XVaKjKutHyXTC3-KoixD3SQ_Pq6Ab7KRE4DLEg3k9IcFKh-UrnbhaCgx4PzmlHS_JKZQhw_0ivCKvlrBnZoNDLheJjyTbz-N3lh1UnR1-NlwmDk0oVGSX1VSKoUTQdeKPwg0id7eoRX6glbjah7hwym2yDwnlMHAw4JXd7jixhDT7Kxu9C-VYlRd3gUaR7e"/><span class="font-headline-sm text-headline-sm text-on-surface truncate">Sos</span></div><div class="flex items-center gap-space-sm flex-shrink-0"><a class="h-8 px-space-sm bg-surface-container-high rounded-full flex items-center gap-space-xs active:scale-95 transition-transform" data-path="sos" href="#"><span class="w-2 h-2 rounded-full bg-error animate-pulse"></span><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface">RESET</span></a><div class="w-8 h-8 rounded-full overflow-hidden"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XNUHfoMDG4y72fr_vryEBm0Hxh0qMM-25LSjjM0fiWzcGjPg9Y2_x7sXqACF_gQZ83KzgKNpz4xlrQwOtuD58joLPN65kuTJw3YMx811KXvppo-yeJjrldDS308EaR-VrCj-E5oxiqyJJzqXuK7P3eupydBmHKvOs4J0c8Nd1NJjmVbWMdWxrgOwwRip7dyViypuM7-Mpqmd-3WsrosxM3ShVrydkp7LIFVGIkptINHGiWzvvdUGGX4snT"/></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full px-margin pb-space-xl">
+<div class="w-full flex items-center justify-between py-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Immediate Audio Dispatch</span>
+</div>
+<a class="font-label-numeric text-label-numeric text-primary hover:underline flex items-center gap-1" href="#crisis-support">
+      Crisis Directory
+      <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+</a>
+</div>
+<section class="mt-space-sm mb-space-lg flex flex-col gap-space-xs">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">
+      Ground your nervous system.
+    </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+      Select what you are feeling. Voice audio begins within two seconds. No intro music or build-up.
+    </p>
+</section>
+<div class="mb-space-lg w-full bg-surface-container-low rounded-xl p-space-md flex items-center gap-space-md shadow-sm">
+<div class="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
+<svg class="w-12 h-12 transform -rotate-90" viewbox="0 0 48 48">
+<circle class="text-surface-container-highest" cx="24" cy="24" fill="none" r="20" stroke="currentColor" stroke-width="3"></circle>
+<circle class="text-primary-container transition-all duration-700 ease-in-out" cx="24" cy="24" fill="none" id="live-pacing-ring" r="20" stroke="currentColor" stroke-dasharray="125.6" stroke-dashoffset="60" stroke-width="3"></circle>
+</svg>
+<span class="material-symbols-outlined absolute text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">air</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Sync Breath Right Now</span>
+<span class="font-label-numeric text-label-numeric text-primary" id="breath-cue">Inhale (4s)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface truncate">Steady slow cadence active in background</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-md w-full">
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Panic Attack', '04:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">4 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Panic Attack</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Grounding breath & sensory 5-4-3-2-1</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Acute Anxiety', '06:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">6 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Acute Anxiety</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Vagal nerve exhale reset</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Can\'t Stop Thinking', '05:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">5 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Can't Stop Thinking</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Cognitive defusion & stillness</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Low Mood / Heaviness', '08:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">8 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Low Mood</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Gentle spacious awareness</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Anger & Frustration', '05:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">5 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Anger & Tension</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Physical release & tension softening</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Can\'t Sleep', '08:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">8 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Can't Sleep</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Heavy body progressive descent</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Work Overwhelm', '04:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">4 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Overwhelm</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Rapid priority reset & focus</p>
+</div>
+</button>
+<button class="sos-card group relative text-left bg-surface-container p-space-md rounded-xl flex flex-col justify-between h-[178px] transition-all duration-200 active:scale-[0.98] shadow-sm overflow-hidden focus:outline-none" onclick="triggerTrack(this, 'Grief & Loss', '07:00')" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-active:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-start justify-between w-full">
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-numeric text-label-numeric">7 min</span>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Grief & Loss</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Steady holding & gentle breathing</p>
+</div>
+</button>
+</div>
+<section class="mt-space-lg w-full bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Sound Bed Baseline</span>
+<span class="font-label-numeric text-label-numeric text-secondary" id="active-sound-label">Low Brown Noise</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="sound-chip px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-body-sm text-body-sm active:scale-95 transition-all" onclick="setDrone(this, 'Low Brown Noise')">Brown Noise</button>
+<button class="sound-chip px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-body-sm text-body-sm active:scale-95 transition-all" onclick="setDrone(this, 'Delta Wave (2.5Hz)')">Delta Wave</button>
+<button class="sound-chip px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-body-sm text-body-sm active:scale-95 transition-all" onclick="setDrone(this, 'Pure Voice Silence')">No Drone</button>
+</div>
+</section>
+<section class="mt-space-xl pt-space-md flex flex-col gap-space-md" id="crisis-support">
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[24px] mt-0.5">support_agent</span>
+<div class="flex flex-col gap-0.5">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Need immediate human support?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">If you are in crisis, you are not alone. Professional help is free, confidential, and available 24/7.</p>
+</div>
+</div>
+<a class="w-full bg-surface-container-high hover:bg-surface-container-highest active:scale-[0.99] transition-all rounded-lg p-space-md flex items-center justify-between shadow-sm" href="tel:988">
+<div class="flex flex-col min-w-0">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-primary">One-Tap Direct Dial</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Local Crisis Line (988)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">US & CA: 988 • UK: 111 & 999 • AU: 13 11 14</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">call</span>
+</div>
+</a>
+<div class="flex items-center justify-between text-on-surface-variant px-1">
+<span class="font-body-sm text-body-sm">Global resources & SMS lines</span>
+<a class="font-label-numeric text-label-numeric text-secondary hover:underline flex items-center gap-1" href="https://findahelpline.com" rel="noopener noreferrer" target="_blank">
+          Open International Directory
+          <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+</div>
+</section>
+<div class="hidden fixed bottom-4 left-4 right-4 z-40 bg-surface-container-highest/95 backdrop-blur-md rounded-xl p-space-md shadow-xl flex items-center justify-between" id="sticky-rescue-player">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 animate-pulse">
+<span class="material-symbols-outlined text-[20px]" id="mini-play-icon">graphic_eq</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-wide">Playing Rescue Track</span>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate" id="player-track-name">Panic Attack</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<span class="font-label-numeric text-label-numeric text-on-surface-variant mr-1" id="player-track-time">04:00</span>
+<button aria-label="Dismiss audio" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface active:scale-95 transition-transform" onclick="stopTrack()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  let activeTrackElement = null;
+  let countdownInterval = null;
+
+  function triggerTrack(element, title, duration) {
+    if (activeTrackElement && activeTrackElement !== element) {
+      const prevIcon = activeTrackElement.querySelector('.play-icon');
+      if (prevIcon) prevIcon.textContent = 'play_arrow';
+      activeTrackElement.classList.remove('bg-surface-container-high');
+      activeTrackElement.classList.add('bg-surface-container');
+    }
+
+    activeTrackElement = element;
+    const playIcon = element.querySelector('.play-icon');
+    const isPlaying = playIcon.textContent === 'pause';
+
+    if (isPlaying) {
+      stopTrack();
+      return;
+    }
+
+    playIcon.textContent = 'pause';
+    element.classList.remove('bg-surface-container');
+    element.classList.add('bg-surface-container-high');
+
+    const player = document.getElementById('sticky-rescue-player');
+    const titleEl = document.getElementById('player-track-name');
+    const timeEl = document.getElementById('player-track-time');
+
+    titleEl.textContent = title;
+    timeEl.textContent = duration;
+    player.classList.remove('hidden');
+
+    let [mins, secs] = duration.split(':').map(Number);
+    let totalSeconds = mins * 60 + secs;
+
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    countdownInterval = setInterval(() => {
+      if (totalSeconds <= 0) {
+        stopTrack();
+        return;
+      }
+      totalSeconds--;
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      timeEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }, 1000);
+  }
+
+  function stopTrack() {
+    if (countdownInterval) clearInterval(countdownInterval);
+    const player = document.getElementById('sticky-rescue-player');
+    player.classList.add('hidden');
+
+    if (activeTrackElement) {
+      const icon = activeTrackElement.querySelector('.play-icon');
+      if (icon) icon.textContent = 'play_arrow';
+      activeTrackElement.classList.remove('bg-surface-container-high');
+      activeTrackElement.classList.add('bg-surface-container');
+      activeTrackElement = null;
+    }
+  }
+
+  function setDrone(chip, name) {
+    document.querySelectorAll('.sound-chip').forEach(btn => {
+      btn.classList.remove('bg-surface-container-high', 'text-on-surface');
+      btn.classList.add('bg-surface-container', 'text-on-surface-variant');
+    });
+    chip.classList.remove('bg-surface-container', 'text-on-surface-variant');
+    chip.classList.add('bg-surface-container-high', 'text-on-surface');
+    document.getElementById('active-sound-label').textContent = name;
+  }
+
+  (function initPacingBreath() {
+    const ring = document.getElementById('live-pacing-ring');
+    const cue = document.getElementById('breath-cue');
+    let state = 0; // 0 = Inhale, 1 = Hold, 2 = Exhale
+    const cycle = () => {
+      if (!ring || !cue) return;
+      if (state === 0) {
+        cue.textContent = 'Inhale (4s)';
+        ring.style.strokeDashoffset = '10';
+        state = 1;
+        setTimeout(cycle, 4000);
+      } else if (state === 1) {
+        cue.textContent = 'Hold (2s)';
+        state = 2;
+        setTimeout(cycle, 2000);
+      } else {
+        cue.textContent = 'Exhale (6s)';
+        ring.style.strokeDashoffset = '125.6';
+        state = 0;
+        setTimeout(cycle, 6000);
+      }
+    };
+    cycle();
+  })();
+</script></main></body></html>

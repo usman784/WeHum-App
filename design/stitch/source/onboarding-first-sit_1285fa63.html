@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121415;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-container": "#ff7a45", "error-container": "#93000a", "surface-tint": "#ffb59a", "on-background": "#e2e2e3", "secondary-fixed": "#c0ebe7", "surface": "#121415", "inverse-on-surface": "#2f3132", "inverse-surface": "#e2e2e3", "tertiary": "#4de082", "on-error-container": "#ffdad6", "on-primary-container": "#672000", "inverse-primary": "#a73a05", "on-secondary": "#0a3634", "on-primary": "#5b1b00", "surface-container-low": "#1a1c1d", "outline": "#a78b81", "on-secondary-fixed-variant": "#254d4b", "surface-container-lowest": "#0c0e0f", "primary-fixed": "#ffdbcf", "tertiary-container": "#0ab960", "secondary-fixed-dim": "#a5cecb", "surface-container-highest": "#333536", "primary-fixed-dim": "#ffb59a", "surface-dim": "#121415", "secondary-container": "#254d4b", "on-secondary-container": "#94bdba", "error": "#ffb4ab", "surface-bright": "#38393a", "on-tertiary-fixed-variant": "#005227", "on-surface-variant": "#dfc0b5", "surface-variant": "#333536", "on-primary-fixed": "#380d00", "primary": "#ffb59a", "surface-container": "#1e2021", "secondary": "#a5cecb", "on-tertiary-container": "#00411d", "on-tertiary-fixed": "#00210c", "on-surface": "#e2e2e3", "outline-variant": "#58423a", "on-tertiary": "#003919", "surface-container-high": "#282a2b", "tertiary-fixed-dim": "#4de082", "on-error": "#690005", "background": "#121415", "on-secondary-fixed": "#00201f", "on-primary-fixed-variant": "#802900", "tertiary-fixed": "#6dfe9c" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "1rem", "space-md": "1rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "gutter": "1rem" }, fontFamily: { "headline-sm": ["Inter"], "label-numeric": ["Inter"], "body-md": ["Inter"], "label-caps": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "display-hero-mobile": ["Inter"], "display-hero": ["Inter"], "headline-lg": ["Inter"], "headline-lg-mobile": ["Inter"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-numeric": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "400" }], "display-hero-mobile": ["40px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "display-hero": ["56px", { "lineHeight": "60px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }] } } } };</script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><button aria-label="Back" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface active:bg-surface-container-high transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="Brand logo. - Primary color: #ff7a45
+- Font: inter
+- Mode: dark
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1VG7TnfztIHtYk9YlVx43V3MtlQIiklwJ3AElfJmCedoxipJoblTaNtZUsH7XVaKjKutHyXTC3-KoixD3SQ_Pq6Ab7KRE4DLEg3k9IcFKh-UrnbhaCgx4PzmlHS_JKZQhw_0ivCKvlrBnZoNDLheJjyTbz-N3lh1UnR1-NlwmDk0oVGSX1VSKoUTQdeKPwg0id7eoRX6glbjah7hwym2yDwnlMHAw4JXd7jixhDT7Kxu9C-VYlRd3gUaR7e"/><span class="font-headline-sm text-headline-sm text-on-surface truncate">Onboarding</span></div><div class="flex items-center gap-space-sm flex-shrink-0"><a class="h-8 px-space-sm bg-surface-container-high rounded-full flex items-center gap-space-xs active:scale-95 transition-transform" data-path="sos" href="#"><span class="w-2 h-2 rounded-full bg-error animate-pulse"></span><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface">RESET</span></a><div class="w-8 h-8 rounded-full overflow-hidden"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XNUHfoMDG4y72fr_vryEBm0Hxh0qMM-25LSjjM0fiWzcGjPg9Y2_x7sXqACF_gQZ83KzgKNpz4xlrQwOtuD58joLPN65kuTJw3YMx811KXvppo-yeJjrldDS308EaR-VrCj-E5oxiqyJJzqXuK7P3eupydBmHKvOs4J0c8Nd1NJjmVbWMdWxrgOwwRip7dyViypuM7-Mpqmd-3WsrosxM3ShVrydkp7LIFVGIkptINHGiWzvvdUGGX4snT"/></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full">
+<!-- Progress Header Context -->
+<div class="px-margin pt-space-sm pb-space-xs flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-surface-tint">Step 1 of 3</span>
+<span class="text-outline-variant">•</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Intent & Setup</span>
+</div>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface px-space-xs py-space-xs rounded transition-colors active:scale-95" type="button">
+      SKIP
+    </button>
+</div>
+<!-- Micro Segmented Progress Bar -->
+<div class="px-margin mb-space-md">
+<div class="w-full h-1 bg-surface-container rounded-full overflow-hidden flex">
+<div class="w-1/3 h-full bg-primary-container rounded-full"></div>
+<div class="w-2/3 h-full bg-transparent"></div>
+</div>
+</div>
+<div class="px-margin flex flex-col gap-space-lg pb-space-xl">
+<!-- Teacher Trust Banner (Athletic / Direct) -->
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm">
+<div class="flex items-start gap-space-md">
+<div class="relative flex-shrink-0">
+<img class="w-12 h-12 rounded-full object-cover shadow-sm bg-surface-container-high" data-alt="Editorial close-up portrait of Raphael, a disciplined mindfulness coach in his late 30s. Dramatic directional natural light against a deep obsidian dark gray wall. Crisp athletic posture, focused calm gaze, wearing a minimalist matte black crewneck. Modern warm cinematic tone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO2xnO-gENTczsDDwU2EvndUSGW09vT9pbch9MC7nN7h5jucxYdcLkqinb9L6Ydfw3i8QWdAeNWD_5-RbFkaXqKYNCF2ki12QLYW_Xg8Na0odnNAB5atVfW0m4PgW50GJT6gSX-oEm8UArP_SzPo9j2HUZrt7TTxxPbXdSo9xBJS9MIRJlqeevMXM3MdutwSUm9AYz0Aa_dSfQnPyon5oO2bt4QdGY4OQKczzujktyEaMvB4Wk7mD4Vg"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-tertiary rounded-full ring-2 ring-surface-container flex items-center justify-center">
+<span class="w-1.5 h-1.5 bg-surface rounded-full"></span>
+</div>
+</div>
+<div class="min-w-0 flex-1">
+<p class="font-body-md text-body-md text-on-surface italic leading-snug mb-space-xs">
+            “Meditation without the incense. And you're never sitting alone.”
+          </p>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-numeric text-label-numeric text-primary-fixed-dim">Raphael</span>
+<span class="text-outline-variant font-body-sm text-body-sm">•</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Lead Conditioning</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Active Sitters Telemetry Counter -->
+<div class="flex items-center justify-between bg-surface-container-low px-space-md py-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-label-numeric text-label-numeric text-on-surface">1,420 sitting now</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">Global Collective</span>
+</div>
+<!-- SECTION 1: Intent Selection -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex flex-col">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">
+          What brings you to sit today?
+        </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+          Select primary objective. Tailors audio tone and cadence.
+        </p>
+</div>
+<div aria-label="Meditation intent" class="grid grid-cols-1 gap-space-sm mt-space-xs" id="intent-selector" role="radiogroup">
+<!-- Option 1 -->
+<button aria-checked="true" class="intent-card text-left p-space-md rounded-xl bg-surface-container-high transition-all active:scale-[0.99] flex items-center justify-between shadow-sm" data-intent="stress" role="radio" type="button">
+<div class="min-w-0 pr-space-sm">
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Stress & Anxiety</span>
+<span class="intent-pill px-1.5 py-0.5 rounded-full text-[10px] font-label-caps uppercase bg-primary-container text-on-primary-container">Selected</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+              Calming the autonomic nervous system
+            </p>
+</div>
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 intent-icon">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</button>
+<!-- Option 2 -->
+<button aria-checked="false" class="intent-card text-left p-space-md rounded-xl bg-surface-container transition-all active:scale-[0.99] flex items-center justify-between shadow-sm" data-intent="focus" role="radio" type="button">
+<div class="min-w-0 pr-space-sm">
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Deep Focus</span>
+<span class="intent-pill hidden px-1.5 py-0.5 rounded-full text-[10px] font-label-caps uppercase bg-primary-container text-on-primary-container">Selected</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+              Single-pointed concentration for deep work
+            </p>
+</div>
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center flex-shrink-0 intent-icon">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</button>
+<!-- Option 3 -->
+<button aria-checked="false" class="intent-card text-left p-space-md rounded-xl bg-surface-container transition-all active:scale-[0.99] flex items-center justify-between shadow-sm" data-intent="sleep" role="radio" type="button">
+<div class="min-w-0 pr-space-sm">
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Sleep & Evening Calm</span>
+<span class="intent-pill hidden px-1.5 py-0.5 rounded-full text-[10px] font-label-caps uppercase bg-primary-container text-on-primary-container">Selected</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+              Decompressing mental clutter before rest
+            </p>
+</div>
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center flex-shrink-0 intent-icon">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</button>
+<!-- Option 4 -->
+<button aria-checked="false" class="intent-card text-left p-space-md rounded-xl bg-surface-container transition-all active:scale-[0.99] flex items-center justify-between shadow-sm" data-intent="deeper" role="radio" type="button">
+<div class="min-w-0 pr-space-sm">
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Going Deeper</span>
+<span class="intent-pill hidden px-1.5 py-0.5 rounded-full text-[10px] font-label-caps uppercase bg-primary-container text-on-primary-container">Selected</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+              Longer unguided practice and spacious awareness
+            </p>
+</div>
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center flex-shrink-0 intent-icon">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</button>
+</div>
+</section>
+<!-- Visual Anchor / Cadence Atmosphere -->
+<div class="relative w-full h-24 rounded-xl overflow-hidden shadow-md">
+<div class="bg-cover bg-center w-full h-full" data-alt="Monolithic textured slate concrete block in a dark studio atmosphere with low soft atmospheric fog and a single subtle directional amber beam of light. Quiet masculine monastic architectural aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNGpD8zm7Hest8hJG-oRHltXeIx0HOK9M04x_igayxBHyvD-VHentdFhp5MY6u5lgPMkO-zvAErrBaVZGrLDWQ_ipaJNVVdFQGuOWDWMuKtmU4amYfLfLHOHpKh78LKYOtfm7LwxyOj6hmm6-CcgNDW02GtD1aMB-WnobYvtmB7PH4VrVF8DqsmDuYFBnEGa2QANdL8EtC4-125IKhCrty4CeR2kzqaJM2X4gNZ42D1uE6KB7KkLlUIQ')"></div>
+<div class="absolute inset-0 bg-surface-container-lowest/80 flex items-center justify-between px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[20px]">graphic_eq</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Live Acoustic Drone</span>
+<p class="font-body-sm text-body-sm text-on-surface">432Hz Grounding Base Active</p>
+</div>
+</div>
+<span class="font-label-numeric text-label-numeric text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">Synchronized</span>
+</div>
+</div>
+<!-- SECTION 2: Daily Sit Time -->
+<section class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Daily Sit Time</h3>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Routine Lock</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Start your day steady before notifications begin.
+      </p>
+<!-- Time Wheel Selector Card -->
+<div class="bg-surface-container rounded-xl p-space-md mt-space-xs flex flex-col gap-space-md shadow-sm">
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<button aria-label="Earlier time" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface active:bg-surface-container-high transition-transform active:scale-95" id="time-prev" type="button">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<div class="flex items-baseline gap-space-xs select-none">
+<span class="font-display-hero-mobile text-display-hero-mobile text-on-surface font-bold tracking-tight" id="sit-time-display">07:00</span>
+<span class="font-headline-sm text-headline-sm text-primary-container font-semibold" id="sit-period-display">AM</span>
+</div>
+<button aria-label="Later time" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface active:bg-surface-container-high transition-transform active:scale-95" id="time-next" type="button">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<!-- Quick Shift Pills -->
+<div class="grid grid-cols-3 gap-space-xs">
+<button class="time-preset py-space-xs px-space-xs text-center rounded-lg bg-surface-container-low text-on-surface-variant font-label-numeric text-label-numeric hover:bg-surface-container-high transition-colors" data-preset="06:30 AM" type="button">
+            06:30 AM
+          </button>
+<button class="time-preset py-space-xs px-space-xs text-center rounded-lg bg-primary-container text-on-primary-container font-label-numeric text-label-numeric font-bold transition-colors" data-preset="07:00 AM" type="button">
+            07:00 AM
+          </button>
+<button class="time-preset py-space-xs px-space-xs text-center rounded-lg bg-surface-container-low text-on-surface-variant font-label-numeric text-label-numeric hover:bg-surface-container-high transition-colors" data-preset="08:15 AM" type="button">
+            08:15 AM
+          </button>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Gentle Reminder Permission -->
+<section class="bg-surface-container rounded-xl p-space-md flex items-start gap-space-md shadow-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary-fixed-dim flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">notifications_active</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">Daily Sit Reminder</span>
+<!-- Custom Minimalist Switch -->
+<button aria-checked="true" class="w-11 h-6 bg-tertiary-container rounded-full p-0.5 transition-colors relative flex items-center" id="reminder-toggle" role="switch" type="button">
+<span class="w-5 h-5 bg-on-tertiary rounded-full transform translate-x-5 transition-transform" id="reminder-thumb"></span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Your daily sit reminder. We only ping you at <span class="text-on-surface font-semibold" id="reminder-time-text">07:00 AM</span> when today's room opens. No marketing noise.
+        </p>
+</div>
+</section>
+<!-- Bottom Action Stack -->
+<div class="flex flex-col items-center gap-space-sm pt-space-xs">
+<button class="w-full h-14 bg-primary-container text-on-primary-container font-headline-sm text-headline-sm font-semibold rounded-full flex items-center justify-center gap-space-xs shadow-md active:scale-[0.98] transition-all hover:opacity-95" id="start-sit-btn" type="button">
+<span>Start 3-Minute First Sit</span>
+<span class="material-symbols-outlined text-[22px]">play_arrow</span>
+</button>
+<div class="flex items-center justify-center gap-space-xs text-center">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Free • Zero payment required • No account needed for first practice
+        </p>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Intent Card Selection
+    const cards = document.querySelectorAll('.intent-card');
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        cards.forEach(c => {
+          c.setAttribute('aria-checked', 'false');
+          c.classList.remove('bg-surface-container-high');
+          c.classList.add('bg-surface-container');
+          
+          const pill = c.querySelector('.intent-pill');
+          if (pill) pill.classList.add('hidden');
+          
+          const iconContainer = c.querySelector('.intent-icon');
+          if (iconContainer) {
+            iconContainer.className = 'w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center flex-shrink-0 intent-icon';
+            iconContainer.innerHTML = '<span class="material-symbols-outlined text-[18px]">arrow_forward</span>';
+          }
+        });
+
+        card.setAttribute('aria-checked', 'true');
+        card.classList.remove('bg-surface-container');
+        card.classList.add('bg-surface-container-high');
+
+        const activePill = card.querySelector('.intent-pill');
+        if (activePill) activePill.classList.remove('hidden');
+
+        const activeIcon = card.querySelector('.intent-icon');
+        if (activeIcon) {
+          activeIcon.className = 'w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 intent-icon';
+          activeIcon.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span>';
+        }
+      });
+    });
+
+    // Time Wheel Logic
+    let currentHour = 7;
+    let currentMinute = 0;
+    let currentPeriod = 'AM';
+
+    const timeDisplay = document.getElementById('sit-time-display');
+    const periodDisplay = document.getElementById('sit-period-display');
+    const reminderTimeText = document.getElementById('reminder-time-text');
+    const prevBtn = document.getElementById('time-prev');
+    const nextBtn = document.getElementById('time-next');
+    const presets = document.querySelectorAll('.time-preset');
+
+    function updateTimeDisplay() {
+      const hStr = currentHour.toString().padStart(2, '0');
+      const mStr = currentMinute.toString().padStart(2, '0');
+      timeDisplay.textContent = `${hStr}:${mStr}`;
+      periodDisplay.textContent = currentPeriod;
+      reminderTimeText.textContent = `${hStr}:${mStr} ${currentPeriod}`;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      currentMinute -= 15;
+      if (currentMinute < 0) {
+        currentMinute = 45;
+        currentHour -= 1;
+        if (currentHour < 1) currentHour = 12;
+      }
+      updateTimeDisplay();
+      clearPresetStyles();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentMinute += 15;
+      if (currentMinute >= 60) {
+        currentMinute = 0;
+        currentHour += 1;
+        if (currentHour > 12) currentHour = 1;
+      }
+      updateTimeDisplay();
+      clearPresetStyles();
+    });
+
+    function clearPresetStyles() {
+      presets.forEach(p => {
+        p.className = 'time-preset py-space-xs px-space-xs text-center rounded-lg bg-surface-container-low text-on-surface-variant font-label-numeric text-label-numeric hover:bg-surface-container-high transition-colors';
+      });
+    }
+
+    presets.forEach(p => {
+      p.addEventListener('click', () => {
+        clearPresetStyles();
+        p.className = 'time-preset py-space-xs px-space-xs text-center rounded-lg bg-primary-container text-on-primary-container font-label-numeric text-label-numeric font-bold transition-colors';
+        const val = p.getAttribute('data-preset');
+        const [time, period] = val.split(' ');
+        const [h, m] = time.split(':');
+        currentHour = parseInt(h, 10);
+        currentMinute = parseInt(m, 10);
+        currentPeriod = period;
+        updateTimeDisplay();
+      });
+    });
+
+    // Reminder Permission Toggle
+    const reminderToggle = document.getElementById('reminder-toggle');
+    const reminderThumb = document.getElementById('reminder-thumb');
+    let reminderActive = true;
+
+    reminderToggle.addEventListener('click', () => {
+      reminderActive = !reminderActive;
+      reminderToggle.setAttribute('aria-checked', reminderActive.toString());
+      if (reminderActive) {
+        reminderToggle.className = 'w-11 h-6 bg-tertiary-container rounded-full p-0.5 transition-colors relative flex items-center';
+        reminderThumb.className = 'w-5 h-5 bg-on-tertiary rounded-full transform translate-x-5 transition-transform';
+      } else {
+        reminderToggle.className = 'w-11 h-6 bg-surface-container-high rounded-full p-0.5 transition-colors relative flex items-center';
+        reminderThumb.className = 'w-5 h-5 bg-on-surface-variant rounded-full transform translate-x-0 transition-transform';
+      }
+    });
+
+    // Primary CTA micro-haptic simulation
+    const startBtn = document.getElementById('start-sit-btn');
+    startBtn.addEventListener('click', () => {
+      startBtn.classList.add('scale-95');
+      setTimeout(() => {
+        startBtn.classList.remove('scale-95');
+      }, 150);
+    });
+  })();
+</script></div></main></body></html>

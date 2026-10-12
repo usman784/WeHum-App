@@ -7,6 +7,8 @@
 > - REST: `../backend/starter/openapi/openapi.yaml` (generate the Dart client from it).
 > - Sockets: backend spec §7 and `../backend/starter/src/realtime/socket-events.ts`.
 >
+> **Oct 12 update — Stitch redesign.** The client's Stitch project (31 screens) and the 7-sprint roadmap supersede parts of §1.3. Read **§0.2** (what changed), **§12b** (screen-by-screen build list) and **§14b** (phases). Design files for these screens are in `design/stitch/`; the old 74-screen canvas stays in `design/screens/` for screens Stitch does not redraw.
+>
 > **Starter code:** `app/starter/` (theme tokens, API client with token refresh, socket service, routes).
 
 ---
@@ -26,6 +28,25 @@
 4. Every screen must implement **all states**: loading (skeleton), content, empty, error (retry), offline. No screen may be missing a state.
 5. When the spec and the design disagree, the **latest client notes (§1.3)** win; log the decision in §16.
 6. The backend is built in parallel. Until an endpoint exists, use the **mock implementations** in `core/data/mock/`, which return the payloads from backend spec §5.4. Switching to real data is a binding change only.
+
+---
+
+## 0.2 Stitch redesign — what changed (Oct 12)
+
+Where this section and §1.3 disagree, **this section wins**. Source: `../stitch-export/SCREEN_MAP.md`.
+
+| Topic | Rule now |
+|---|---|
+| Wording | "sit / sitting / sat" on the Stitch screens ("meditation" stays as the content noun). "Disciplines" instead of "Themes" |
+| Streaks | Forgiving streak: current, record, **one grace day per week**, weekly goal (default 5). Shown on Today, You, Payoff, Challenge detail. No "failed" language: a missed day with grace left reads "Rest" |
+| Preview | Free users can preview a locked premium meditation for 30 s (sheet, then paywall) |
+| Onboarding | Intent + 3-minute first sit are **not built** (dropped by the client). Flow stays: intro 1–5 → name → sit time (with suggested blocks) → reminder → start |
+| Group sits | Daily (as before) or **hourly** with an intention picker; lobby shows waiting counts by region |
+| Heart rate | Optional, device-only (Apple Health / Health Connect), behind `features.heartRate`. Without a source the heart-rate cards are hidden; nothing is invented |
+| Challenges | Live behind `features.challenges`: cohort sprint with daily unlock time, grace day, graduation badge |
+| Honest numbers | Never shown without a source: sync latency, "harmonic cadence", "autonomic" scores. Counts, minutes, streak, region belts and heart-rate shift are real |
+
+Data fields and endpoints: backend spec §4.5, §5.6, §7.6.
 
 ---
 
@@ -155,7 +176,9 @@ App Store rule (Guideline 5.1.1): **no login before purchase**. Account is optio
 
 Membership unlocks: extended meditation library, MOTD in 10/30/45 min, group meditations, daily message, customizable meditations (Build your own), SoS sessions for hard times, Silence Room, offline downloads, posting dedications.
 
-### 1.3 Latest client decisions (Oct 5) — must be respected
+### 1.3 Client decisions (Oct 5) — partly superseded by §0.2 (Oct 12)
+> Superseded: the wording rule, "no streaks", "no 30-second previews" and "intent skipped / Challenges coming soon". Everything else below still holds.
+
 - Wording: "meditate / meditating / meditations" everywhere. Never "sit / sitting / sits".
 - No streaks, no grace days, no rest days. Show **progress** (minutes, meditations, days this week).
 - No 30-second previews.
@@ -705,6 +728,15 @@ Never unlock from client receipt parsing. Never call `purchasePackage()` for a p
 | `push_open` | `key`, `notification_id` |
 | `socket_state` | `state` (connected/paused/reconnected), `down_sec` |
 | `media_unavailable` | `session_id` |
+| `streak_view`, `streak_extended`, `streak_grace_used`, `streak_reset` | `current`, `record` |
+| `preview_start`, `preview_end`, `preview_unlock_tap` | `session_id`, `seconds` |
+| `sit_intention_set`, `sit_notify_toggle`, `sit_calendar_add` | `intention`, `minutes_before` |
+| `kudos_sent` | `session_id`, `count` |
+| `transcript_open`, `transcript_seek`, `message_save` | `date`, `t` |
+| `crisis_directory_open`, `crisis_line_tap` | `region`, `line_id` |
+| `privacy_export`, `privacy_purge_cache`, `privacy_anonymize` | `bytes?`, `count?` |
+| `challenge_view`, `challenge_join`, `challenge_day_begin` | `challenge_id`, `day` |
+| `sit_time_block_pick` | `time`, `source` (suggested/wheel) |
 
 User properties are sent once per session as the `user_props` event: `plan`, `is_guest`, `country`, `theme`, `flavor`.
 Beta focus metrics (closed beta): onboarding drop-off per step, first-meditation completion.
@@ -850,6 +882,40 @@ Also required but not drawn: **Maintenance** screen, **Permission denied** helpe
 
 ---
 
+## 12b. Stitch screens — build list (sprint order)
+
+Each row says what changes on the existing screen. Screenshots: `design/stitch/screens/`, source: `design/stitch/source/`. States (L loading · E empty · Er error · O offline) are required on every row.
+
+| Sprint | Stitch screen | Route | What the screen must do | Data |
+|---|---|---|---|---|
+| S1 | Today | `/today` | Header: logo, live count pill (`live.total`), SoS chip. Greeting + **streak chip** ("Day 18"). Hero: today's sit (length, "N sitting now", "N sat today", **Join the sit**). Global presence card (Americas / EMEA / APAC counts, Explore map → `/world`). **Raphael's note** (daily message teaser, audio length). **Streak strip** (M–S, today highlighted, "1 sit to reach weekly goal"). **Quick accelerators**: Silence Room (people sitting in silence), Build your own, **Continue last** (minutes left) | `/v1/today` `streak`, `presence`, `continueLast`, `dailyMessage` |
+| S1 | Account creation | `/account/save` | Back, SoS chip; title "Save your practice ritual."; Apple / Google / email; "Continue anonymously for now"; privacy line. No first-sit telemetry (first sit is not built) | existing auth |
+| S1 | Sit time & reminder | `/setup/time` | Wheel (AM/PM or 24 h by locale), "N members sit together in this block", **Suggested prime blocks** (4 tiles), "Allow daily sit chime" toggle (10-minute heads-up), CTA "Lock time", secondary "Decide later" | `GET /v1/community/members-at`, `bootstrap.sitTimes` |
+| S2 | Library (A+B) | `/library` | Header counts (practitioners, regions), search + filter, chips (All, Free back-catalogue, Challenges, Disciplines…), **Active protocols** (programs/challenges in progress, resume), **Disciplines** list (icon, name, blurb, minutes range, tracks, "N sat today"), **Top protocols today** (free / masterclass cards, "N completed", Sit now / 30 s preview), filters sheet (Duration, Teacher voice, Soundscape, Downloaded only), free-user banner "Every masterclass previewable · 30 s pass" | `/v1/library/summary` + catalog |
+| S2 | Session player | `/player` | Presence ring with region chips, title, teacher • day, **phase label** ("Phase 2 · Anchoring breath · Part 2/3"), progress/remaining, ±15 s, play/pause, **mixer sheet** (guide, undercurrent), chime every 5 m toggle, haptics toggle, "End practice early", downloaded badge | catalog `phases`, `session:live` |
+| S2 | 30 s preview | sheet `/preview/:id` | Mini player with 0:00 / 0:30 cut-off markers, quote, "N completed this today", entitlement matrix Free vs Members, **Unlock** CTA with founding/regular price + trial, Replay 30 s, Dismiss | `POST /v1/media/preview-url`, RevenueCat |
+| S2 | Downloads manager | `/downloads` | Storage ring (used / quota / free), Wi-Fi-only toggle, Clear all, grouped list with size + delete, built-in bell assets row, sync note, "Browse library" | local DB, `bootstrap.downloads` |
+| S3 | Silence Room | `/silence` | Live count + region split, "View global presence", duration chips (5–60, Open), cadence line (4 s / 6 s), bell pickers (opening, interval, closing), dim note, **Begin silent sit**. Quiet variant (low traffic): cumulative today, "N quietly right now", honest-presence note, bell choice cards | `GET /v1/silence`, socket `silence:live` |
+| S3 | Silence run (dimmed) | `/silence/run` | Breathing cue (4 s in / 6 s out), remaining time, "N sitting with you", next chime, +5 min, Pause, Chime on/off; dims after 5 s, tap to wake | timer is timestamp-based |
+| S3 | Scheduled sit lobby | `/lobby` | Count in lobby + regions, countdown, today's focus card, quote, readiness checklist (audio connected, Do Not Disturb, daily alert), Leave lobby | `/v1/group/next`, lobby sockets |
+| S3 | Next sit countdown | `/sit/next` | Hourly sit header, big countdown, doors-open note, waiting by region, protocol card, **Intention** chips, notify me N min before, Enter silent room while waiting, add to calendar | `/v1/group/next`, `PUT /v1/group/intention` |
+| S3 | Daily message + transcript | `/message/:date` | Audio/Video toggle, title, tag, length, player with total remaining, mixer, "N practitioners completed", **interactive transcript** (timed, tap to seek, search, copy, current section highlight), Sit with today's insight, Save to notes, Share clip, this week's list (Today / locked), full archive (locked rows → paywall) | message endpoints |
+| S3 | End-of-session payoff | `/complete` | Busy: heat-map of regions, "You sat with N people across M countries", cumulative minutes, duration, streak, optional HR shift, fellow finishers + **Send kudos**, dedication prompt, Share (9:16), Done. Quiet/solo: compact summary (A) | `POST /v1/meditations` response |
+| S4 | World map & gauge | `/world` | Total, countries, gauge 0–100 with trend, minutes today, belts list (country, sitting now, minutes, sync %), privacy guarantee, Join global practice, Dedicate | `GET /v1/live/world` |
+| S4 | Privacy & data | `/privacy` | Transparency matrix (4 cards), export archive (JSON + CSV zip by email), purge offline cache (shows MB), anonymise past dedications, delete account (typed confirm sheet) | `me/export`, `me/dedications/anonymize`, `DELETE /v1/me` |
+| S4 | Crisis directory | `/sos/directory` | Region picker, 24/7 note, primary lines with Call / Text actions, international list, grounding tip, back to SoS | `GET /v1/sos/directory` |
+| S4 | SoS | `/sos` | "Ground your nervous system." tiles with minutes, **Sync breath right now** card, sound-bed baseline picker, "Need immediate human support?" card, now-playing bar | `/v1/sos` |
+| S4 | Paywall | `/membership` | Raphael quote, three benefit lines, Founding card (price, "N of 1,000 left"), Annual standard, Monthly, CTA, reminder line, Terms · Privacy · Restore | RevenueCat + `bootstrap.founding` |
+| S5 | Build your own | `/byo` | Blueprint (length, nodes, timeline), opening guide choices, background ambience + mix level, spatial treatment, bells (opening, interval, closing), summary bar, **Build & sit now**, Save | recipes |
+| S5 | Together | `/together` | Live count, daily collective sit card (Join), next scheduled (Notify me), Silence Room card (durations), **Shared intent** feed (place, time, text, "Holding this with you (N)", save), composer hint | `/v1/community/feed` |
+| S5 | Dedication composer | sheet | "Sit complete · N min · N co-sitters", statement (200), identity (real first name), **location** switch (city / Worldwide), community note, Post / Skip | `POST /v1/dedications` |
+| S7 | You | `/you` | Header (name, Founding badge, since), **streak card** (current, record, grace left, rest day explainer), weekly cadence bars with REST, lifetime tiles (sits, minutes, together, average), HR shift (if data), preferences rows (downloads, bells, daily reminder, membership, privacy & data, export), export payoff card | `GET /v1/me/progress` |
+| S7 | Challenge detail | `/challenge/:id` | Cohort sprint header, lead, cohort size + regions, cumulative trajectory, grace day, schedule (done / active / locked with unlock time), cohort mechanics, Begin day N | `GET /v1/challenges/{id}` |
+| S7 | Story share 9:16 | `/share` | Card preview, toggles (include HR if available, show dedication), Save image, Share to stories / WhatsApp | local render |
+| S7 | Lock screen / Live Activity | native | Lock-screen controls (title, teacher, progress, ±15 s), iOS Live Activity during a sit, call-interruption handling, instant payoff on completion | `audio_service`, ActivityKit |
+
+---
+
 ## 13. Feature logic details
 
 - **Empty-room rule:** if the live total is below `today.emptyRoomThreshold` (10), the server sets `quiet: true`. The app then shows "N meditated today" with a grey dot; otherwise "N meditating now" with a green dot. Never fake, never round up.
@@ -893,6 +959,17 @@ Also required but not drawn: **Maintenance** screen, **Permission denied** helpe
 | **P10 Silence, BYO, SoS** | 30, 39, 40, 50, 51, recipes API, share slug deep link | Timer accuracy (background 30 min ±1 s); BYO length ±1 s |
 | **P11 Hardening & release** | Attestation on guest create, accessibility pass, performance budgets, edge-case suite §10, analytics validation (events reach backend), store assets, privacy labels, release builds | Crash-free ≥ 99.5 % in beta; perf within targets; all §10 cases checked |
 | **P12 Coming soon** (after V1) | 69–74 behind flags | Flag on/off via `config:changed` live |
+
+### 14b. Stitch phases (order = `roadmap/wehum-roadmap.html`)
+| Phase | Sprint | Screens | Exit tests |
+|---|---|---|---|
+| **S1** | 19–30 Oct | Today, Account creation, Sit time & reminder | widget tests (streak strip states), onboarding integration vs local backend, goldens |
+| **S2** | 2–6 Nov | Library, Player (phases, mixer), 30 s preview, Downloads manager | preview limits, offline matrix, download kill/resume |
+| **S3** | 9–20 Nov | Silence Room (+ quiet), Silence run, Lobby, Next sit, Daily message + transcript, Payoff | timer accuracy ±1 s, lobby start ±1 s, transcript seek |
+| **S4** | 23–27 Nov | World gauge, Privacy & data, Crisis directory, SoS, Paywall | region fallback, export/delete e2e |
+| **S5** | 30 Nov–4 Dec | Build your own, Together, Dedication composer | recipe length ±1 s, feed live update |
+| **S6** | 7–11 Dec | (CMS sprint) app regression + content refresh through the CMS | content change visible without an app update |
+| **S7** | 14–18 Dec | You, Challenge detail, Story share, Lock screen / Live Activity, reminders, analytics | streak rules in UI, share sizes, notification delivery |
 
 Device matrix each phase: iPhone SE (small), iPhone 15, iPad (compat), Pixel 7, low-end Android (3 GB RAM, Android 10).
 

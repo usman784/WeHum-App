@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#1a1c1d", "surface-container-lowest": "#0c0e0f", "surface-container-highest": "#333536", "tertiary": "#4de082", "surface-bright": "#38393a", "error": "#ffb4ab", "surface-variant": "#333536", "primary-fixed": "#ffdbcf", "on-surface-variant": "#dfc0b5", "on-error": "#690005", "on-primary-fixed": "#380d00", "on-tertiary": "#003919", "on-tertiary-fixed-variant": "#005227", "on-tertiary-container": "#00411d", "primary-fixed-dim": "#ffb59a", "on-secondary-fixed": "#00201f", "secondary-container": "#254d4b", "surface-dim": "#121415", "secondary": "#a5cecb", "tertiary-container": "#0ab960", "inverse-on-surface": "#2f3132", "on-secondary": "#0a3634", "error-container": "#93000a", "surface-container": "#1e2021", "on-secondary-fixed-variant": "#254d4b", "on-primary-fixed-variant": "#802900", "surface-container-high": "#282a2b", "on-error-container": "#ffdad6", "primary": "#ffb59a", "tertiary-fixed-dim": "#4de082", "inverse-surface": "#e2e2e3", "on-secondary-container": "#94bdba", "secondary-fixed-dim": "#a5cecb", "tertiary-fixed": "#6dfe9c", "surface": "#121415", "outline-variant": "#58423a", "on-primary": "#5b1b00", "on-surface": "#e2e2e3", "on-background": "#e2e2e3", "primary-container": "#ff7a45", "surface-tint": "#ffb59a", "secondary-fixed": "#c0ebe7", "inverse-primary": "#a73a05", "on-tertiary-fixed": "#00210c", "outline": "#a78b81", "background": "#121415", "on-primary-container": "#672000" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-md": "1rem", "margin": "1rem", "space-lg": "1.5rem", "space-sm": "0.5rem" }, fontFamily: { "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], "body-sm": ["Inter"], "display-hero-mobile": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "display-hero": ["Inter"], "headline-sm": ["Inter"], "label-numeric": ["Inter"], "label-caps": ["Inter"], "body-md": ["Inter"] }, fontSize: { "headline-lg-mobile": ["26px", { lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "600" }], "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.015em", fontWeight: "600" }], "body-sm": ["12px", { lineHeight: "18px", letterSpacing: "0.01em", fontWeight: "400" }], "display-hero-mobile": ["40px", { lineHeight: "44px", letterSpacing: "-0.025em", fontWeight: "700" }], "body-lg": ["16px", { lineHeight: "26px", letterSpacing: "0em", fontWeight: "400" }], "headline-lg": ["32px", { lineHeight: "38px", letterSpacing: "-0.02em", fontWeight: "600" }], "display-hero": ["56px", { lineHeight: "60px", letterSpacing: "-0.03em", fontWeight: "700" }], "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }], "label-numeric": ["14px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "700" }], "body-md": ["14px", { lineHeight: "22px", letterSpacing: "0em", fontWeight: "400" }] } } } }</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface-container-lowest font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+<!-- Fixed Top Navigation Header -->
+<header class="fixed top-0 inset-x-0 z-50 pt-safe bg-surface-container-lowest/90 backdrop-blur-xl border-b border-surface-container-high/60"><div class="h-14 px-margin flex items-center justify-between"><button class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" onclick="history.back()" title="Close session" type="button"><span class="material-symbols-outlined text-[22px]">close</span></button><div class="flex items-center gap-2"><div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high border border-surface-container-highest"><span class="w-2 h-2 rounded-full bg-tertiary"></span><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface font-semibold">Sit Complete</span></div></div><div class="flex items-center gap-2"><button class="h-8 px-2.5 bg-surface-container-high hover:bg-surface-bright rounded-full flex items-center gap-1.5 text-on-surface transition-colors" type="button"><span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span><span class="font-label-caps text-label-caps uppercase text-on-surface">SoS</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCORifNMBZ3S0M9vkmHeS6-9jbXRXn6MBpFqvNg_1V-eLZsm0axD5ggVka9R6BiLdGw8JcrSm-Jf-onh8S76JfyeC9msNpSE9Exfm_PATAAaztn6rHixU5a4LR40k1obnpa2kzfX64cYlhFWOo9UZi4T5hNmeyexcVo6VhZo3oGRiaD7F1M891xFDX1kkTxzveP9RJdr1rnmBm3jYkAR3_aeSyzTXBKL3hWHtOOSYjWd2An_QRG8Ikxcw"/></div></div></header>
+<!-- Main Scrollable Summary View -->
+<main class="flex-1 w-full bg-surface-container-lowest pt-14 pb-36"><div class="flex flex-col w-full px-margin space-y-4 pt-4">
+<!-- HERO: Presence Payoff Badge & Real-time Global Heatmap -->
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-surface-container via-surface-container to-surface-container-low border border-surface-container-high/80 p-5 shadow-lg">
+<!-- Glowing subtle backdrops -->
+<div class="pointer-events-none absolute -top-12 -right-12 w-48 h-48 bg-primary-container/15 rounded-full blur-3xl"></div>
+<div class="pointer-events-none absolute -bottom-10 -left-10 w-44 h-44 bg-tertiary/10 rounded-full blur-3xl"></div>
+<!-- Hero Content Headline -->
+<div class="relative z-10 flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest/80 border border-outline-variant/40 mb-3">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-80"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-label-caps text-label-caps uppercase text-tertiary font-bold tracking-widest">Presence Payoff</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold tracking-tight">
+      You sat with <span class="text-tertiary">412 people</span>
+</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+      across <span class="font-semibold text-on-surface">37 countries</span> in quiet resonance
+    </p>
+</div>
+<!-- Equirectangular Global Presence Heatmap -->
+<div class="relative mt-4 w-full h-44 rounded-xl bg-surface-container-lowest/80 border border-surface-container-highest/60 overflow-hidden flex flex-col justify-between p-3">
+<!-- Stylized Grid & Map Projection Lines -->
+<svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="20" id="worldGrid" patternunits="userSpaceOnUse" width="28">
+<path d="M 28 0 L 0 0 0 20" fill="none" stroke="#a78b81" stroke-width="0.5"></path>
+</pattern>
+</defs>
+<rect fill="url(#worldGrid)" height="100%" width="100%"></rect>
+<!-- World Landmass abstracted subtle outlines -->
+<path d="M40 35 Q65 30 85 45 T110 70 M160 30 Q190 25 210 40 T225 70 M250 45 Q280 40 310 55 T330 90 M230 95 Q250 110 270 120" fill="none" opacity="0.4" stroke="#dfc0b5" stroke-dasharray="2 3" stroke-width="1.2"></path>
+</svg>
+<!-- Cluster Pulse Nodes -->
+<!-- New York (YOU anchor) -->
+<div class="absolute left-[26%] top-[38%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-20">
+<div class="relative flex items-center justify-center">
+<span class="absolute w-8 h-8 rounded-full bg-primary-container/30 animate-ping"></span>
+<span class="w-3.5 h-3.5 rounded-full bg-primary-container ring-2 ring-surface-container-lowest shadow-[0_0_12px_#ff7a45]"></span>
+</div>
+<span class="mt-1 px-1.5 py-0.5 rounded bg-surface-container-high/90 border border-primary-container/40 text-[9px] font-label-caps font-bold text-primary-container tracking-wider uppercase">NYC • You</span>
+</div>
+<!-- London -->
+<div class="absolute left-[47%] top-[32%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+<div class="relative flex items-center justify-center">
+<span class="absolute w-6 h-6 rounded-full bg-tertiary/25 animate-pulse"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary ring-2 ring-surface-container-lowest shadow-[0_0_8px_#4de082]"></span>
+</div>
+<span class="mt-1 text-[9px] font-label-caps font-semibold text-on-surface-variant">LON · 84</span>
+</div>
+<!-- Berlin -->
+<div class="absolute left-[54%] top-[29%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+<div class="relative flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-tertiary ring-1 ring-surface-container-lowest shadow-[0_0_6px_#4de082]"></span>
+</div>
+<span class="mt-1 text-[9px] font-label-caps font-semibold text-on-surface-variant">BER · 63</span>
+</div>
+<!-- Tokyo -->
+<div class="absolute left-[83%] top-[42%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+<div class="relative flex items-center justify-center">
+<span class="absolute w-7 h-7 rounded-full bg-tertiary/30 animate-pulse"></span>
+<span class="w-3 h-3 rounded-full bg-tertiary ring-2 ring-surface-container-lowest shadow-[0_0_10px_#4de082]"></span>
+</div>
+<span class="mt-1 text-[9px] font-label-caps font-semibold text-on-surface-variant">TYO · 128</span>
+</div>
+<!-- Sydney -->
+<div class="absolute left-[88%] top-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+<div class="relative flex items-center justify-center">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary ring-2 ring-surface-container-lowest shadow-[0_0_6px_#4de082]"></span>
+</div>
+<span class="mt-1 text-[9px] font-label-caps font-semibold text-on-surface-variant">SYD · 41</span>
+</div>
+<!-- Subtle Connection Arc lines -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<path d="M 88 60 Q 120 30 160 50" fill="none" opacity="0.5" stroke="#ffb59a" stroke-dasharray="3 3" stroke-width="1"></path>
+<path d="M 160 50 Q 220 20 280 65" fill="none" opacity="0.4" stroke="#4de082" stroke-dasharray="3 3" stroke-width="1"></path>
+</svg>
+<!-- Top and Bottom Telemetry Overlays inside heatmap -->
+<div class="relative z-10 flex items-center justify-between w-full">
+<span class="font-label-caps text-[10px] uppercase text-outline tracking-wider font-semibold">Equirectangular Heatmap</span>
+<span class="font-label-numeric text-[11px] text-tertiary font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+        Synchronous Sit
+      </span>
+</div>
+<div class="relative z-10 flex items-center justify-between text-on-surface-variant pt-2 border-t border-surface-container-highest/40">
+<span class="font-body-sm text-[11px]">Cumulative stillness</span>
+<span class="font-label-numeric text-label-numeric text-on-surface font-bold">5,768 practitioner minutes</span>
+</div>
+</div>
+</section>
+<!-- Strava-Style Athletic Telemetry Summary Card -->
+<section class="bg-surface-container rounded-2xl p-4 border border-surface-container-high shadow-sm space-y-3">
+<div class="flex items-center justify-between border-b border-surface-container-high pb-2.5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<h3 class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface font-bold">Performance Telemetry</h3>
+</div>
+<span class="font-label-numeric text-[12px] text-on-surface-variant">Raphael • Steady Under Pressure</span>
+</div>
+<!-- Strava 4-metric Grid -->
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Metric 1: Duration -->
+<div class="bg-surface-container-low rounded-xl p-3 border border-surface-container-highest/50 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Duration</span>
+<span class="material-symbols-outlined text-[16px] text-outline">timer</span>
+</div>
+<div class="mt-2">
+<div class="font-headline-sm text-headline-sm font-bold text-on-surface tracking-tight">14<span class="text-body-md text-on-surface-variant font-normal ml-0.5">min</span> 00<span class="text-body-md text-on-surface-variant font-normal ml-0.5">s</span></div>
+<p class="font-body-sm text-[11px] text-tertiary font-medium mt-0.5">100% target cadence</p>
+</div>
+</div>
+<!-- Metric 2: Harmonic Cadence -->
+<div class="bg-surface-container-low rounded-xl p-3 border border-surface-container-highest/50 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Harmonic Cadence</span>
+<span class="material-symbols-outlined text-[16px] text-outline">air</span>
+</div>
+<div class="mt-2">
+<div class="font-headline-sm text-headline-sm font-bold text-on-surface tracking-tight">5.2<span class="text-body-md text-on-surface-variant font-normal ml-0.5">s</span></div>
+<p class="font-body-sm text-[11px] text-tertiary font-medium mt-0.5">Optimal resonance flow</p>
+</div>
+</div>
+<!-- Metric 3: Heart Rate Delta -->
+<div class="bg-surface-container-low rounded-xl p-3 border border-surface-container-highest/50 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Heart Rate Shift</span>
+<span class="material-symbols-outlined text-[16px] text-outline">favorite</span>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-tertiary tracking-tight">-14</span>
+<span class="text-body-md text-on-surface-variant font-medium">bpm</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5">Peak calm: 58 bpm avg</p>
+</div>
+</div>
+<!-- Metric 4: Streak Protected -->
+<div class="bg-surface-container-low rounded-xl p-3 border border-surface-container-highest/50 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Streak Protected</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container">local_fire_department</span>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-primary-container tracking-tight">Day 13</span>
+</div>
+<p class="font-body-sm text-[11px] text-primary-container font-medium mt-0.5">All-time record pace</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Fellow Finishers Cohort Cluster -->
+<section class="bg-surface-container rounded-2xl p-4 border border-surface-container-high shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-label-caps text-label-caps uppercase text-outline font-bold">Fellow Finishers</span>
+</div>
+<span class="font-label-numeric text-[13px] text-on-surface font-semibold">412 completed</span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<!-- Cohort Avatars -->
+<div class="flex items-center -space-x-2.5">
+<img alt="Practitioner 1" class="w-10 h-10 rounded-full object-cover ring-2 ring-surface-container shadow-md" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC650N79dpIWvHZYIOlUsd9ZKtwS7IUVSoFGWHutuBqMzo6j2iPHCq93sjD7lkPOKAshs1bjhTFO5bS0gl-Tnqh9aBzz3hs25P7p43M27hlZ1wd0lCerBPHhHh2pola5mHpITf6CQIhOFuzSUg78MJqRrx3y4QHwx7tOu2dlh4YhjNmbqZfql0UK7oRITiuH11hK88lg6I9AFlGsLndN2vPTvy85RA-bUbdb4CyZD-_ldZJk7aUx392EQ"/>
+<img alt="Practitioner 2" class="w-10 h-10 rounded-full object-cover ring-2 ring-surface-container shadow-md" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsQBF9wIOv1cSX3d3L1EUxBCAuqoDdzTrPmqnKBZfhPAeDIX_mrVwf57SzoyvJESunS2zyGERAAuIMZOy9D35p_YRmOP-7_V19ElPnQ4-YSL64TVPPk59PpcOsAu8rJWJbaziM7d-htoVOjN6Y9HSw8Bm6MfTvsG0OXHuWJ2h-1ExghAIdeAXpiUXm-6IUmtvLBKO4effJkY-OaDsuncKcUWm1VvfHpz1EO6zWCEL7P-7bjb4CO7WXIA"/>
+<img alt="Practitioner 3" class="w-10 h-10 rounded-full object-cover ring-2 ring-surface-container shadow-md" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDM_qiwKipgNXtFEHmtAreb1mYNJoFEtDfAtG7XRvdaUie5RDBhDTFOIVGWMdZjY_UXYk_3E2Hz7ZqoPy6AlqswuGlca8a3ePK9LI-jnuhsUJgRZtVO4b83Zn-oOa3f93x8T-M-lAtLwxgXrirRTf6G21ixg-FvyNlE685wFs1rmbhjpPP_Aj_-zMa9iSf6oID_IpSl8fiEQku3EQWrC_7g668JKV1Ktm9TpSu3s3X4LfmTCXwcvb3sw"/>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest ring-2 ring-surface-container flex items-center justify-center text-on-surface font-label-numeric text-[13px] font-bold shadow-md">
+        +409
+      </div>
+</div>
+<!-- Kudos to all action -->
+<button class="h-9 px-3.5 bg-surface-container-high hover:bg-surface-bright active:scale-95 rounded-full text-on-surface font-label-numeric text-[13px] font-semibold flex items-center gap-1.5 transition-all border border-surface-container-highest" id="kudosBtn" type="button">
+<span class="material-symbols-outlined text-primary-container text-[18px]" id="kudosIcon">handshake</span>
+<span id="kudosLabel">Send Kudos to All</span>
+</button>
+</div>
+</section>
+<!-- Practice Dedication Prompt Card -->
+<section class="bg-surface-container rounded-2xl p-4 border border-surface-container-high shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline font-bold">Practice Dedication</span>
+<p class="font-headline-sm text-[15px] text-on-surface font-semibold mt-0.5">Who or what do you dedicate your practice to today?</p>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary-container font-label-caps text-[10px] font-bold uppercase tracking-wider">Optional</span>
+</div>
+<!-- Dedicated quote sample bubble -->
+<div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-container-highest/40 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] shrink-0 mt-0.5">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface italic leading-snug" id="activeQuoteText">
+      "Dedicated to anyone navigating tough news today."
+    </p>
+</div>
+<!-- Tap-to-dedicate action -->
+<button class="w-full h-11 bg-surface-container-high hover:bg-surface-bright active:scale-[0.99] rounded-xl text-on-surface font-body-md text-[14px] flex items-center justify-between px-3.5 transition-all border border-surface-container-highest/60" id="dedicateBtn" type="button">
+<span class="flex items-center gap-2 text-on-surface-variant" id="dedicateBtnContainer">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span class="font-medium" id="dedicationLabel">Dedicate your practice...</span>
+</span>
+<span class="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
+</button>
+</section>
+<!-- Clean verification footnote -->
+<div class="px-2 pb-2">
+<p class="font-body-sm text-[11px] text-outline text-center leading-relaxed">
+    Telemetry verified by WeHum Engine. Pure stillness metrics for conscious minds—zero ego, zero posturing.
+  </p>
+</div>
+</div></main>
+<!-- Bottom Sticky Action Buttons -->
+<footer class="fixed bottom-0 inset-x-0 z-40 bg-surface-container-lowest/95 backdrop-blur-xl border-t border-surface-container-high/80 px-margin pt-3 pb-safe shadow-2xl">
+<div class="flex flex-col gap-2.5 max-w-md mx-auto mb-2">
+<!-- Primary Strava-style Story Export Trigger -->
+<button class="w-full h-13 py-3.5 bg-primary-container hover:bg-opacity-90 active:scale-[0.98] rounded-full text-on-primary-container font-headline-sm text-[16px] font-bold flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(255,122,69,0.3)] transition-all" id="shareBtn" type="button">
+<span class="material-symbols-outlined text-[20px]">ios_share</span>
+<span>Share Practice Card (9:16 Story)</span>
+</button>
+<!-- Secondary Done Button -->
+<button class="w-full h-11 bg-surface-container hover:bg-surface-container-high active:scale-[0.98] rounded-full text-on-surface font-body-md text-[15px] font-semibold flex items-center justify-center transition-all border border-surface-container-highest" onclick="history.back()" type="button">
+      Done • Return to Today
+    </button>
+</div>
+</footer>
+<!-- Toast Feedback Micro-interaction -->
+<div class="fixed top-18 left-1/2 -translate-x-1/2 bg-surface-container-highest/95 border border-surface-bright text-on-surface px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 transition-all duration-300 opacity-0 pointer-events-none z-50 -translate-y-2" id="shareToast">
+<span class="material-symbols-outlined text-tertiary text-[20px]" id="toastIcon">check_circle</span>
+<span class="font-label-numeric text-[13px] font-medium" id="toastMessage">Story card exported to camera roll</span>
+</div>
+<script>
+  // Toast helper
+  function triggerToast(message, icon = 'check_circle') {
+    const toast = document.getElementById('shareToast');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+    if (!toast) return;
+    toastMsg.textContent = message;
+    toastIcon.textContent = icon;
+    toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+    toast.classList.add('opacity-100', 'translate-y-0');
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+      toast.classList.remove('opacity-100', 'translate-y-0');
+    }, 2500);
+  }
+
+  // Kudos toggle
+  const kudosBtn = document.getElementById('kudosBtn');
+  const kudosLabel = document.getElementById('kudosLabel');
+  let kudosSent = false;
+  if (kudosBtn) {
+    kudosBtn.addEventListener('click', () => {
+      kudosSent = !kudosSent;
+      if (kudosSent) {
+        kudosLabel.textContent = 'Kudos Sent to 412!';
+        kudosBtn.classList.remove('bg-surface-container-high', 'text-on-surface');
+        kudosBtn.classList.add('bg-tertiary-container', 'text-on-tertiary-container');
+        triggerToast('Sent warm kudos to 412 finish cohort members', 'volunteer_activism');
+      } else {
+        kudosLabel.textContent = 'Send Kudos to All';
+        kudosBtn.classList.remove('bg-tertiary-container', 'text-on-tertiary-container');
+        kudosBtn.classList.add('bg-surface-container-high', 'text-on-surface');
+      }
+    });
+  }
+
+  // Interactive dedication toggle
+  const dedicateBtn = document.getElementById('dedicateBtn');
+  const dedicationLabel = document.getElementById('dedicationLabel');
+  const activeQuoteText = document.getElementById('activeQuoteText');
+  let dedicated = false;
+  if (dedicateBtn && dedicationLabel) {
+    dedicateBtn.addEventListener('click', () => {
+      dedicated = !dedicated;
+      if (dedicated) {
+        dedicationLabel.textContent = 'Dedicated to the morning push in Berlin & NYC';
+        dedicationLabel.classList.remove('text-on-surface-variant');
+        dedicationLabel.classList.add('text-primary-container', 'font-semibold');
+        if (activeQuoteText) {
+          activeQuoteText.textContent = '"Dedicated to the morning push in Berlin & NYC."';
+        }
+        triggerToast('Practice dedication recorded & sealed', 'bookmark_added');
+      } else {
+        dedicationLabel.textContent = 'Dedicate your practice...';
+        dedicationLabel.classList.add('text-on-surface-variant');
+        dedicationLabel.classList.remove('text-primary-container', 'font-semibold');
+        if (activeQuoteText) {
+          activeQuoteText.textContent = '"Dedicated to anyone navigating tough news today."';
+        }
+      }
+    });
+  }
+
+  // Share card trigger
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      triggerToast('Practice story card exported to camera roll!', 'ios_share');
+    });
+  }
+</script>
+</body></html>

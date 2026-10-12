@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121415;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-container": "#ff7a45", "error-container": "#93000a", "surface-tint": "#ffb59a", "on-background": "#e2e2e3", "secondary-fixed": "#c0ebe7", "surface": "#121415", "inverse-on-surface": "#2f3132", "inverse-surface": "#e2e2e3", "tertiary": "#4de082", "on-error-container": "#ffdad6", "on-primary-container": "#672000", "inverse-primary": "#a73a05", "on-secondary": "#0a3634", "on-primary": "#5b1b00", "surface-container-low": "#1a1c1d", "outline": "#a78b81", "on-secondary-fixed-variant": "#254d4b", "surface-container-lowest": "#0c0e0f", "primary-fixed": "#ffdbcf", "tertiary-container": "#0ab960", "secondary-fixed-dim": "#a5cecb", "surface-container-highest": "#333536", "primary-fixed-dim": "#ffb59a", "surface-dim": "#121415", "secondary-container": "#254d4b", "on-secondary-container": "#94bdba", "error": "#ffb4ab", "surface-bright": "#38393a", "on-tertiary-fixed-variant": "#005227", "on-surface-variant": "#dfc0b5", "surface-variant": "#333536", "on-primary-fixed": "#380d00", "primary": "#ffb59a", "surface-container": "#1e2021", "secondary": "#a5cecb", "on-tertiary-container": "#00411d", "on-tertiary-fixed": "#00210c", "on-surface": "#e2e2e3", "outline-variant": "#58423a", "on-tertiary": "#003919", "surface-container-high": "#282a2b", "tertiary-fixed-dim": "#4de082", "on-error": "#690005", "background": "#121415", "on-secondary-fixed": "#00201f", "on-primary-fixed-variant": "#802900", "tertiary-fixed": "#6dfe9c" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "1rem", "space-md": "1rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "gutter": "1rem" }, fontFamily: { "headline-sm": ["Inter"], "label-numeric": ["Inter"], "body-md": ["Inter"], "label-caps": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "display-hero-mobile": ["Inter"], "display-hero": ["Inter"], "headline-lg": ["Inter"], "headline-lg-mobile": ["Inter"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-numeric": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "400" }], "display-hero-mobile": ["40px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "display-hero": ["56px", { "lineHeight": "60px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }] } } } };</script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="Brand logo. - Primary color: #ff7a45
+- Font: inter
+- Mode: dark
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1VG7TnfztIHtYk9YlVx43V3MtlQIiklwJ3AElfJmCedoxipJoblTaNtZUsH7XVaKjKutHyXTC3-KoixD3SQ_Pq6Ab7KRE4DLEg3k9IcFKh-UrnbhaCgx4PzmlHS_JKZQhw_0ivCKvlrBnZoNDLheJjyTbz-N3lh1UnR1-NlwmDk0oVGSX1VSKoUTQdeKPwg0id7eoRX6glbjah7hwym2yDwnlMHAw4JXd7jixhDT7Kxu9C-VYlRd3gUaR7e"/><span class="font-headline-sm text-headline-sm text-on-surface truncate">Together</span></div><div class="flex items-center gap-space-sm flex-shrink-0"><a class="h-8 px-space-sm bg-surface-container-high rounded-full flex items-center gap-space-xs active:scale-95 transition-transform" data-path="sos" href="#"><span class="w-2 h-2 rounded-full bg-error animate-pulse"></span><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface">RESET</span></a><div class="w-8 h-8 rounded-full overflow-hidden"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XNUHfoMDG4y72fr_vryEBm0Hxh0qMM-25LSjjM0fiWzcGjPg9Y2_x7sXqACF_gQZ83KzgKNpz4xlrQwOtuD58joLPN65kuTJw3YMx811KXvppo-yeJjrldDS308EaR-VrCj-E5oxiqyJJzqXuK7P3eupydBmHKvOs4J0c8Nd1NJjmVbWMdWxrgOwwRip7dyViypuM7-Mpqmd-3WsrosxM3ShVrydkp7LIFVGIkptINHGiWzvvdUGGX4snT"/></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-20 bg-surface"><div class="flex flex-col w-full max-w-md mx-auto px-margin pb-space-xl space-y-space-lg">
+<!-- LIVE SYNC BANNER & HERO CARD -->
+<section class="flex flex-col w-full space-y-space-sm pt-space-xs">
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded-full shadow-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface">582 meditating together right now</span>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-secondary-fixed-dim tracking-wider">Synchronized</span>
+</div>
+<!-- MEDITATION OF THE DAY CARD -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-space-md shadow-xl flex flex-col justify-between min-h-[340px]">
+<!-- Background subtle atmospheric photo -->
+<div class="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity" data-alt="High contrast atmospheric minimalist dark photography of a solitary stone in stillness under soft ambient charcoal lighting with muted burnt ember glow highlights, tactile and meditative aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDNcmx9fD4DgdBtLE481r8Kn9as8hWT3pV5rjfZGU-VCcnfOTw7GZ_eM9HCwu_bgF5xC4W3wkAHB4Fz1-htbkhMB6Crv4exzI8xqJDXL23y0JaZZlVTF03xbJxKjGZIYoKktPhbIlpKD15R-yUNE4ouNGujVwApaY5tR_SX3oQdjYZPZfRA-4w0BGJQz7ldOVknIMNIVizx5Yp6EE8vExRHAcz3CGERyoyL97RXz3gl5as0memgNyMwwQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/80 to-transparent"></div>
+<!-- Top Row with Host Details -->
+<div class="relative z-10 flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-full object-cover shadow-md" data-alt="Close up athletic portrait of a calm mindfulness teacher with focused quiet posture in dim moody studio lighting, neutral expression, obsidian black background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgrx65xPEfEjtM3hbgTHC9l8Ot7EYDOifH6XimZGqpen7H0W9hV745ZjI_TnhMmFyNv2BSmmstQBLXrsCkj54oV6BqQ8iuMNev-kDKe3n53b5vTdfQSl0mRqVS4TRhRRDYhwhMRb5WfuX0F09pSrdQNIJIR0AvA3GW5WZbkMFHQHHjidNukXPkuSjPX-8d4Tqs88AVpGBfPhLh5oMnNkvoHh3SqhzhmnWPkv2iY91e2GLJ8-ctsAB0hg"/>
+<div class="flex flex-col">
+<span class="font-label-numeric text-label-numeric text-on-surface">Raphael</span>
+<span class="font-body-sm text-body-sm text-secondary-fixed-dim">Head of Practice</span>
+</div>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-high px-space-sm py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-primary-container">graphic_eq</span>
+<span class="font-label-caps text-label-caps uppercase text-primary-container tracking-wider">Live audio</span>
+</div>
+</div>
+<!-- Content Core -->
+<div class="relative z-10 flex flex-col space-y-space-xs mt-space-lg">
+<div class="inline-flex items-center gap-space-xs text-primary font-label-caps text-label-caps uppercase tracking-widest">
+<span>Daily Collective Sit</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-semibold tracking-tight">The Midday Coherence Sit</h2>
+<p class="font-body-md text-body-md text-secondary-fixed-dim line-clamp-2">Synchronized worldwide practice led by Raphael. Breath anchoring, peripheral awareness, and physical settling.</p>
+</div>
+<!-- Interactive Zone & CTAs -->
+<div class="relative z-10 flex flex-col space-y-space-sm pt-space-md">
+<button class="w-full h-12 bg-primary-container hover:bg-primary text-on-primary-container font-headline-sm text-headline-sm rounded-full flex items-center justify-center gap-space-xs shadow-md active:scale-98 transition-all" id="join-sit-cta">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Join the sit now (15m)</span>
+</button>
+<!-- Scheduled Next Cadence -->
+<div class="flex items-center justify-between bg-surface-container-high px-space-md py-space-sm rounded-lg shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-secondary-fixed-dim tracking-wider">Next Scheduled Sit</span>
+<span class="font-label-numeric text-label-numeric text-on-surface">13:00 <span class="text-secondary-fixed-dim font-normal">• Starts in 42m</span></span>
+</div>
+<button class="h-8 px-space-sm bg-surface-container-highest active:bg-secondary-container rounded-full flex items-center gap-space-xs text-on-surface transition-colors" id="notify-toggle">
+<span class="material-symbols-outlined text-[16px] text-primary">notifications_none</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider notify-text">Notify me</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- SILENCE ROOM SECTION -->
+<section class="flex flex-col w-full space-y-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary-fixed-dim">Self-Paced Sanctuary</span>
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps uppercase text-secondary tracking-wider">128 in silence</span>
+</div>
+</div>
+<div class="bg-surface-container p-space-md rounded-xl shadow-lg flex flex-col space-y-space-md">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Silence Room</h3>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim mt-0.5">Unguided, timer-only shared sit with ambient collective pulse.</p>
+</div>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">hourglass_empty</span>
+</div>
+</div>
+<!-- Presets Grid -->
+<div class="grid grid-cols-4 gap-space-xs">
+<button class="preset-btn py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center active:scale-95 transition-all">
+<span class="font-headline-sm text-headline-sm">5</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary-fixed-dim">MIN</span>
+</button>
+<button class="preset-btn py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center active:scale-95 transition-all">
+<span class="font-headline-sm text-headline-sm">15</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary-fixed-dim">MIN</span>
+</button>
+<button class="preset-btn py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center active:scale-95 transition-all">
+<span class="font-headline-sm text-headline-sm">30</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary-fixed-dim">MIN</span>
+</button>
+<button class="preset-btn py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary-fixed-dim">OPEN</span>
+</button>
+</div>
+<!-- Enter Link -->
+<a class="w-full flex items-center justify-between pt-space-xs text-primary hover:text-primary-fixed transition-colors" href="#">
+<span class="font-label-numeric text-label-numeric">Enter Silence Room</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- DEDICATION FEED SECTION -->
+<section class="flex flex-col w-full space-y-space-md pt-space-sm">
+<!-- Header Framing -->
+<div class="flex flex-col space-y-space-xs px-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary-fixed-dim">Shared Intent</span>
+<span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Recent Sits</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Who or what do you dedicate your practice to today?</h3>
+<div class="flex items-center gap-space-xs pt-1">
+<span class="bg-surface-container-high text-secondary-fixed-dim font-label-caps text-label-caps uppercase tracking-widest px-space-sm py-1 rounded-full">
+          Text-only • 1 dedication per completed sit • Real practitioners
+        </span>
+</div>
+</div>
+<!-- Dedication Cards Feed -->
+<div class="flex flex-col space-y-space-sm">
+<!-- Card 1: London Healthcare -->
+<article class="bg-surface-container p-space-md rounded-xl shadow-md flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span>
+<span class="font-body-sm text-body-sm text-secondary-fixed-dim">London, UK</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim">12m ago</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+          “For hospital night shift workers in London finding 10 minutes of quiet before dawn.”
+        </p>
+<div class="pt-space-xs flex items-center justify-between">
+<button class="support-btn flex items-center gap-space-xs bg-surface-container-high hover:bg-surface-container-highest px-space-md py-space-xs rounded-full transition-transform active:scale-95" data-count="48">
+<span class="material-symbols-outlined text-[16px] text-primary">front_hand</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider support-label">Holding this with you (48)</span>
+</button>
+<span class="material-symbols-outlined text-[18px] text-outline cursor-pointer hover:text-on-surface transition-colors">bookmark_border</span>
+</div>
+</article>
+<!-- Card 2: Brother in Chemo -->
+<article class="bg-surface-container p-space-md rounded-xl shadow-md flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-body-sm text-body-sm text-secondary-fixed-dim">Toronto, CA</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim">34m ago</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+          “Dedication to my brother navigating chemotherapy this week. Staying steady.”
+        </p>
+<div class="pt-space-xs flex items-center justify-between">
+<button class="support-btn flex items-center gap-space-xs bg-surface-container-high hover:bg-surface-container-highest px-space-md py-space-xs rounded-full transition-transform active:scale-95" data-count="112">
+<span class="material-symbols-outlined text-[16px] text-primary">front_hand</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider support-label">Holding this with you (112)</span>
+</button>
+<span class="material-symbols-outlined text-[18px] text-outline cursor-pointer hover:text-on-surface transition-colors">bookmark_border</span>
+</div>
+</article>
+<!-- Card 3: Teacher Seed Raphael -->
+<article class="bg-surface-container p-space-md rounded-xl shadow-md flex flex-col space-y-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-numeric text-label-numeric text-on-surface">Raphael</span>
+<span class="bg-primary/20 text-primary font-label-caps text-label-caps uppercase px-1.5 py-0.5 rounded">Teacher</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim">2h ago</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+          “Sitting for everyone feeling scattered by modern work urgency.”
+        </p>
+<div class="pt-space-xs flex items-center justify-between">
+<button class="support-btn flex items-center gap-space-xs bg-surface-container-high hover:bg-surface-container-highest px-space-md py-space-xs rounded-full transition-transform active:scale-95" data-count="230">
+<span class="material-symbols-outlined text-[16px] text-primary">front_hand</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider support-label">Holding this with you (230)</span>
+</button>
+<span class="material-symbols-outlined text-[18px] text-outline cursor-pointer hover:text-on-surface transition-colors">bookmark_border</span>
+</div>
+</article>
+</div>
+<!-- Quiet Footnote -->
+<div class="flex flex-col items-center justify-center py-space-md text-center">
+<div class="w-8 h-0.5 bg-surface-container-high rounded-full mb-space-sm"></div>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim max-w-xs">
+        Dedicate your sit during final reflections. Every thought remains quiet and preserved.
+      </p>
+</div>
+</section>
+</div>
+<script>
+  // Micro-interactions for Together experience
+  document.addEventListener('DOMContentLoaded', () => {
+    // Notify toggle logic
+    const notifyBtn = document.getElementById('notify-toggle');
+    if (notifyBtn) {
+      let notified = false;
+      notifyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        notified = !notified;
+        const icon = notifyBtn.querySelector('.material-symbols-outlined');
+        const text = notifyBtn.querySelector('.notify-text');
+        if (notified) {
+          icon.textContent = 'notifications_active';
+          icon.classList.remove('text-primary');
+          icon.classList.add('text-tertiary');
+          text.textContent = 'Alert Set';
+          notifyBtn.classList.add('bg-secondary-container');
+        } else {
+          icon.textContent = 'notifications_none';
+          icon.classList.add('text-primary');
+          icon.classList.remove('text-tertiary');
+          text.textContent = 'Notify me';
+          notifyBtn.classList.remove('bg-secondary-container');
+        }
+      });
+    }
+
+    // Reaction Pills "Holding this with you"
+    const supportBtns = document.querySelectorAll('.support-btn');
+    supportBtns.forEach(btn => {
+      let active = false;
+      let count = parseInt(btn.getAttribute('data-count'), 10);
+      btn.addEventListener('click', () => {
+        active = !active;
+        count = active ? count + 1 : count - 1;
+        const label = btn.querySelector('.support-label');
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (active) {
+          btn.classList.add('bg-primary-container', 'text-on-primary-container');
+          btn.classList.remove('bg-surface-container-high', 'text-on-surface');
+          icon.classList.remove('text-primary');
+          icon.classList.add('text-on-primary-container');
+          label.classList.remove('text-on-surface');
+          label.classList.add('text-on-primary-container');
+          label.textContent = `Holding this with you (${count})`;
+        } else {
+          btn.classList.remove('bg-primary-container', 'text-on-primary-container');
+          btn.classList.add('bg-surface-container-high', 'text-on-surface');
+          icon.classList.add('text-primary');
+          icon.classList.remove('text-on-primary-container');
+          label.classList.add('text-on-surface');
+          label.classList.remove('text-on-primary-container');
+          label.textContent = `Holding this with you (${count})`;
+        }
+      });
+    });
+
+    // Preset Buttons toggle state
+    const presets = document.querySelectorAll('.preset-btn');
+    presets.forEach(p => {
+      p.addEventListener('click', () => {
+        presets.forEach(item => item.classList.remove('bg-secondary-container', 'text-secondary-fixed'));
+        p.classList.add('bg-secondary-container', 'text-secondary-fixed');
+      });
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-low/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.4)]" data-active-classes="text-primary-container"><div class="flex justify-around items-center h-16 px-space-xs max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-12 text-outline transition-colors hover:text-on-surface active:scale-95" data-path="today" href="#"><span class="material-symbols-outlined text-[22px]">radio_button_checked</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Today</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-12 text-outline transition-colors hover:text-on-surface active:scale-95" data-path="library" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Library</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs w-16 h-12 transition-colors active:scale-95 text-primary-container" data-path="together" href="#"><span class="material-symbols-outlined text-[22px]">group</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Together</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-12 text-outline transition-colors hover:text-on-surface active:scale-95" data-path="you" href="#"><span class="material-symbols-outlined text-[22px]">bar_chart</span><span class="font-label-caps text-label-caps uppercase tracking-wider">You</span></a></div></nav></body></html>

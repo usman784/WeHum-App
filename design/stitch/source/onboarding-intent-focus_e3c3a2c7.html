@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary-fixed": "#6dfe9c", "surface-container-high": "#282a2b", "on-primary": "#5b1b00", "on-primary-fixed": "#380d00", "on-secondary-fixed-variant": "#254d4b", "primary-fixed": "#ffdbcf", "outline-variant": "#58423a", "primary-container": "#ff7a45", "tertiary": "#4de082", "inverse-surface": "#e2e2e3", "inverse-primary": "#a73a05", "secondary-fixed": "#c0ebe7", "on-tertiary": "#003919", "secondary-fixed-dim": "#a5cecb", "surface-dim": "#121415", "on-surface": "#e2e2e3", "on-secondary-container": "#94bdba", "on-surface-variant": "#dfc0b5", "surface-bright": "#38393a", "secondary-container": "#254d4b", "tertiary-container": "#0ab960", "primary-fixed-dim": "#ffb59a", "on-tertiary-fixed": "#00210c", "surface-container": "#1e2021", "on-secondary-fixed": "#00201f", "outline": "#a78b81", "surface-tint": "#ffb59a", "surface-container-highest": "#333536", "on-primary-container": "#672000", "inverse-on-surface": "#2f3132", "on-secondary": "#0a3634", "surface-variant": "#333536", "surface-container-lowest": "#0c0e0f", "error-container": "#93000a", "on-tertiary-fixed-variant": "#005227", "on-error-container": "#ffdad6", "tertiary-fixed-dim": "#4de082", "on-primary-fixed-variant": "#802900", "on-background": "#e2e2e3", "surface": "#121415", "surface-container-low": "#1a1c1d", "background": "#121415", "on-error": "#690005", "primary": "#ffb59a", "error": "#ffb4ab", "on-tertiary-container": "#00411d", "secondary": "#a5cecb" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "space-xs": "0.25rem", "margin": "1rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "space-md": "1rem" }, "fontFamily": { "headline-lg-mobile": ["Inter"], "headline-sm": ["Inter"], "body-md": ["Inter"], "label-numeric": ["Inter"], "display-hero": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "display-hero-mobile": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "label-caps": ["Inter"] }, "fontSize": { "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }], "label-numeric": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "display-hero": ["56px", { "lineHeight": "60px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "400" }], "display-hero-mobile": ["40px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen antialiased selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Go back" class="w-11 h-11 -ml-space-xs flex items-center justify-center text-on-surface hover:text-primary transition-colors active:scale-95" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[22px]">arrow_back_ios_new</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[170px]">Active Sit</h1></div><div class="flex items-center gap-space-sm"><a class="h-8 px-space-sm rounded-full bg-surface-container-high flex items-center gap-space-xs hover:bg-surface-container-highest transition-colors active:scale-95" data-path="sos-grounding" href="#"><span class="w-2 h-2 rounded-full bg-error"></span><span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider">SOS</span></a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full">
+<!-- Progress Header & Direct Actions -->
+<div class="px-gutter pt-space-sm pb-space-xs flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-primary">Step 1 of 3</span>
+<span class="w-1 h-1 rounded-full bg-surface-container-highest"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Intent &amp; Rhythm</span>
+</div>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors active:scale-95 py-1 px-space-xs flex items-center gap-1" data-path="sit-timer-direct" href="#">
+<span>Skip to Sit</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<!-- Triple Stage Progress Bar -->
+<div class="grid grid-cols-3 gap-2 w-full">
+<div class="h-1.5 rounded-full bg-primary-container shadow-[0_0_8px_rgba(255,122,69,0.35)]"></div>
+<div class="h-1.5 rounded-full bg-surface-container-highest"></div>
+<div class="h-1.5 rounded-full bg-surface-container-highest"></div>
+</div>
+</div>
+<!-- Primary Messaging Header -->
+<div class="px-gutter pt-space-md pb-space-sm flex flex-col gap-space-xs">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-container-high w-fit">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider">Collective Calibration</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+      What brings you to your seat today?
+    </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+      We tailor your initial collective rhythm and daily recommendations. You can shift this anytime.
+    </p>
+</div>
+<!-- Intent Options (Interactive Radio Matrix) -->
+<form class="px-gutter pt-space-xs pb-space-lg flex flex-col gap-space-md" id="onboarding-step1-form">
+<div aria-label="Primary meditation intent" class="flex flex-col gap-space-sm" role="radiogroup">
+<!-- Option 1: Stress & Nervous System -->
+<label class="intent-card relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.99] group">
+<input checked="" class="sr-only" name="intent" type="radio" value="stress"/>
+<div class="intent-indicator-icon shrink-0 w-11 h-11 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary-container transition-all">
+<span class="material-symbols-outlined text-[24px]">air</span>
+</div>
+<div class="flex-1 min-w-0 pr-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+              Decompress Stress &amp; Nervous System
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+            Vagal tone, physiological sighs, and acute physical decompression after cognitive load.
+          </p>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Down-Regulation</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Breath Pacing</span>
+</div>
+</div>
+<div class="selection-indicator absolute top-4 right-4 w-5 h-5 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+</label>
+<!-- Option 2: Sustained Focus -->
+<label class="intent-card relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.99] group">
+<input class="sr-only" name="intent" type="radio" value="focus"/>
+<div class="intent-indicator-icon shrink-0 w-11 h-11 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-all">
+<span class="material-symbols-outlined text-[24px]">center_focus_strong</span>
+</div>
+<div class="flex-1 min-w-0 pr-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+              Sharpen Sustained Focus
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+            Pre-work presence, mental clarity anchors, and stamina against attention fragmentation.
+          </p>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Alpha Baseline</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Active Gaze</span>
+</div>
+</div>
+<div class="selection-indicator absolute top-4 right-4 w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+</label>
+<!-- Option 3: Sleep & Rest -->
+<label class="intent-card relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.99] group">
+<input class="sr-only" name="intent" type="radio" value="sleep"/>
+<div class="intent-indicator-icon shrink-0 w-11 h-11 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-all">
+<span class="material-symbols-outlined text-[24px]">bedtime</span>
+</div>
+<div class="flex-1 min-w-0 pr-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+              Unwind into Rest &amp; Deep Sleep
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+            Down-regulating autonomic baseline, theta wave induction, and somatic heaviness releases.
+          </p>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Body Scans</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Ambient Drone</span>
+</div>
+</div>
+<div class="selection-indicator absolute top-4 right-4 w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+</label>
+<!-- Option 4: Going Deeper -->
+<label class="intent-card relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.99] group">
+<input class="sr-only" name="intent" type="radio" value="depth"/>
+<div class="intent-indicator-icon shrink-0 w-11 h-11 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-all">
+<span class="material-symbols-outlined text-[24px]">all_inclusive</span>
+</div>
+<div class="flex-1 min-w-0 pr-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+              Going Deeper into Stillness
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+            Extended unguided sits, spacious non-dual awareness, and precision breath telemetry.
+          </p>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Open Interval</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest font-label-caps text-label-caps text-on-surface-variant">Bells Only</span>
+</div>
+</div>
+<div class="selection-indicator absolute top-4 right-4 w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+</label>
+</div>
+<!-- Secondary Calibration: Experience Baseline -->
+<div class="pt-space-xs flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">
+          Practice Baseline
+        </label>
+<span class="font-body-sm text-body-sm text-primary" id="experience-hint">Guiding cues enabled</span>
+</div>
+<!-- Segmented Pill Control -->
+<div aria-label="Meditation experience level" class="grid grid-cols-3 gap-1 p-1 bg-surface-container-low rounded-xl" role="radiogroup">
+<label class="cursor-pointer text-center">
+<input checked="" class="sr-only" name="experience" type="radio" value="beginner"/>
+<div class="segmented-option py-2 px-1 rounded-lg bg-surface-container-highest text-on-surface font-label-numeric text-label-numeric transition-all text-center flex items-center justify-center">
+            Just Beginning
+          </div>
+</label>
+<label class="cursor-pointer text-center">
+<input class="sr-only" name="experience" type="radio" value="occasional"/>
+<div class="segmented-option py-2 px-1 rounded-lg text-on-surface-variant hover:text-on-surface font-label-numeric text-label-numeric transition-all text-center flex items-center justify-center">
+            Occasional
+          </div>
+</label>
+<label class="cursor-pointer text-center">
+<input class="sr-only" name="experience" type="radio" value="daily"/>
+<div class="segmented-option py-2 px-1 rounded-lg text-on-surface-variant hover:text-on-surface font-label-numeric text-label-numeric transition-all text-center flex items-center justify-center">
+            Daily Practice
+          </div>
+</label>
+</div>
+</div>
+<!-- Reassuring Philosophy Statement -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start gap-space-sm mt-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">verified_user</span>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-numeric text-label-numeric text-on-surface">No Quizzes, No Grading</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Zero quizzes, zero algorithms judging your mind. Just an honest starting anchor for your collective sit.
+        </p>
+</div>
+</div>
+<!-- Live Ambient Sync Preview -->
+<div class="flex items-center justify-between px-space-md py-3 rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-tertiary"></span>
+</span>
+<span class="font-label-caps text-label-caps text-on-surface tracking-wider uppercase">Active Cohort Sync</span>
+</div>
+<div class="font-label-numeric text-label-numeric text-secondary-fixed">
+        1,842 sitting now
+      </div>
+</div>
+</form>
+<!-- Sticky Bottom Interactive Tray -->
+<div class="sticky bottom-0 w-full p-gutter bg-surface/90 backdrop-blur-xl flex flex-col gap-space-xs shadow-xl z-20">
+<a class="w-full h-14 rounded-full bg-primary-container text-on-primary-container font-headline-sm text-headline-sm flex items-center justify-center gap-space-xs hover:brightness-105 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(255,122,69,0.25)]" data-path="onboarding-step-2" href="#" id="continue-button">
+<span>Continue to Daily Rhythm</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</a>
+<div class="flex items-center justify-center gap-2 pt-1">
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">timer</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-wider uppercase">
+        Onboarding completes in ~2 minutes
+      </span>
+</div>
+</div>
+<script>
+    (function initOnboardingInteractions() {
+      // Intent Radio Selection Stylings
+      const intentRadios = document.querySelectorAll('input[name="intent"]');
+      const intentCards = document.querySelectorAll('.intent-card');
+
+      function updateIntentStates() {
+        intentRadios.forEach((radio, index) => {
+          const card = intentCards[index];
+          const iconWrapper = card.querySelector('.intent-indicator-icon');
+          const indicator = card.querySelector('.selection-indicator');
+
+          if (radio.checked) {
+            card.classList.add('bg-surface-container-high', 'shadow-md');
+            card.classList.remove('bg-surface-container');
+            iconWrapper.classList.add('bg-primary-container', 'text-on-primary-container');
+            iconWrapper.classList.remove('bg-surface-container-highest', 'text-on-surface-variant');
+            indicator.classList.remove('bg-surface-container-highest', 'text-transparent');
+            indicator.classList.add('bg-primary-container', 'text-on-primary-container');
+          } else {
+            card.classList.remove('bg-surface-container-high', 'shadow-md');
+            card.classList.add('bg-surface-container');
+            iconWrapper.classList.remove('bg-primary-container', 'text-on-primary-container');
+            iconWrapper.classList.add('bg-surface-container-highest', 'text-on-surface-variant');
+            indicator.classList.add('bg-surface-container-highest', 'text-transparent');
+            indicator.classList.remove('bg-primary-container', 'text-on-primary-container');
+          }
+        });
+      }
+
+      intentRadios.forEach(radio => {
+        radio.addEventListener('change', updateIntentStates);
+      });
+
+      // Experience Level Segmented Controls
+      const expRadios = document.querySelectorAll('input[name="experience"]');
+      const expOptions = document.querySelectorAll('.segmented-option');
+      const hint = document.getElementById('experience-hint');
+
+      const hints = {
+        beginner: 'Guiding cues & cadence pacing',
+        occasional: 'Standard audio pacing & bells',
+        daily: 'Minimal cueing & open posture'
+      };
+
+      expRadios.forEach((radio, index) => {
+        radio.addEventListener('change', () => {
+          expOptions.forEach(opt => {
+            opt.classList.remove('bg-surface-container-highest', 'text-on-surface');
+            opt.classList.add('text-on-surface-variant');
+          });
+          if (radio.checked) {
+            expOptions[index].classList.add('bg-surface-container-highest', 'text-on-surface');
+            expOptions[index].classList.remove('text-on-surface-variant');
+            if (hint && hints[radio.value]) {
+              hint.textContent = hints[radio.value];
+            }
+          }
+        });
+      });
+
+      // Initialize initial visual state
+      updateIntentStates();
+    })();
+  </script>
+</div></main></body></html>
