@@ -35,6 +35,10 @@ class CompletePage extends StatelessWidget {
   const CompletePage({super.key});
   @override
   Widget build(BuildContext context) {
+    if (Get.arguments is! CompleteArgs) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.offAllNamed(AppRoutes.todayMember)); // opened without a finished sit: nothing to show
+      return const SizedBox.shrink();
+    }
     final args = Get.arguments as CompleteArgs;
     final ctrl = Get.put(CompleteController(args));
     final c = context.colors;

@@ -227,7 +227,7 @@ class DownloadsPage extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text('USED', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
                 const Spacer(),
-                Flexible(child: Text('${formatBytes(quota)} allocated limit', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))),
+                Flexible(child: Text('${formatBytes(quota)} limit', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))),
               ]),
               const SizedBox(height: 12),
               AppProgressBar(quota == 0 ? 0 : used / quota),

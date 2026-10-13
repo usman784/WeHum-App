@@ -443,7 +443,7 @@ class LobbyPage extends StatelessWidget {
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       PulseDot(color: c.success, size: 4),
                       const SizedBox(width: 6),
-                      Flexible(child: Text('${groupNumber(ctrl.waiting)} PRACTITIONERS IN LOBBY${ctrl.countries > 0 ? ' · ${ctrl.countries} COUNTRIES' : ''}', key: const Key('lobby-count'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5))),
+                      Flexible(child: Text('${groupNumber(ctrl.waiting)} ${ctrl.waiting == 1 ? 'PRACTITIONER' : 'PRACTITIONERS'} IN LOBBY${ctrl.countries > 0 ? ' · ${ctrl.countries} COUNTRIES' : ''}', key: const Key('lobby-count'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5))),
                     ]),
                   ),
                   if (ctrl.regions.isNotEmpty)

@@ -15,7 +15,7 @@ const routes = <String, String>{
   'today': AppRoutes.todayMember, 'library': AppRoutes.library, 'silence': AppRoutes.silenceRoomSetup, 'lobby': AppRoutes.groupMeditationLobby, 'next': AppRoutes.nextSit,
   'you': AppRoutes.you, 'together': AppRoutes.together, 'sos': AppRoutes.sosHowCanIHelp, 'directory': AppRoutes.crisisDirectory, 'world': AppRoutes.worldMapWorldVibration,
   'downloads': AppRoutes.downloads, 'privacy': AppRoutes.privacyData, 'byo': AppRoutes.buildYourOwn, 'membership': AppRoutes.membershipPaywall, 'account': AppRoutes.saveYourProgressOptional,
-  'time': AppRoutes.setup2MeditationReminder, 'progress': AppRoutes.yourProgress, 'editprofile': AppRoutes.editProfile, 'signup': AppRoutes.signUpWithEmail, 'compose': AppRoutes.dedicate,
+  'time': AppRoutes.setup2MeditationReminder, 'progress': AppRoutes.yourProgress, 'editprofile': AppRoutes.editProfile, 'signup': AppRoutes.signUpWithEmail,
   'preview': '/preview/s-sleep', 'challenge': '/challenge/c7',
 };
 

@@ -1040,3 +1040,13 @@ Decisions / deviations:
 - Library no longer has the four tiles: Silence Room and Build your own live on Today, challenges in the cohort cards.
 
 Status: ✅ done
+
+### Phase S3 — Player, notifications (Oct 13)
+- **Player** (Stitch "Active practice"): header, theme + title + "Raphael · Day N", the session ring (thin track, ember progress arc, breathing halo, one dot per person, region hubs from the live belts), the clock with phase ("Inhale · Anchor") and `6.0 BPM` (60 s / (4 s in + 6 s out), the real cadence), "412 synchronized worldwide", phase row with Part n/N and scrubber, ±15 and play, **Acoustic balance** (guide volume, interval chime every 5 min, haptic pacing, "Downloaded" when played from the phone), "Streak guarded at completion", "End practice early".
+- **Lock screen / notification while a session plays**: title, "Raphael • Guided Synchronous Sit", "412 co-sitters active" (live), the current phase, artwork, play/pause and ±15. iOS Live Activity (Dynamic Island) is not built: it needs a native widget extension.
+- **Notifications page**: swipe a row to reveal Delete, tap it, confirm in the sheet; the row goes at once and returns if the server refuses.
+- **No double reminders**: when this phone has a push token the server sends the daily reminder and the group warning, so the local copies are no longer scheduled (and the old ones are cancelled when the token registers).
+- Robustness: Share and Payoff opened without a finished sit go to Today instead of an error page.
+
+Tests: `flutter test` 257 passed; simulator tour of 67 routes and the notifications/profile/player flow against the local backend.
+Status: ✅ done

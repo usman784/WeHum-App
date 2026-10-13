@@ -40,7 +40,7 @@ void main() {
     // onboarding in order
     final onboarding = ['/intro/1', '/intro/2', '/intro/3', '/intro/4', '/setup/name', '/setup/time', '/setup/permission', '/start', '/welcome', '/account/save', '/membership', '/account/save-free', '/account/email', '/login', '/login/forgot', '/login/check'];
     final member = <String>[
-      '/today', '/motd', '/today-free', '/world', '/message/archive', '/notifications', '/sos', '/sos/directory', '/library', '/theme/$tid', '/search', '/programs', '/program/$pid', '/teacher/$teid',
+      '/today', '/motd', '/today-free', '/world', '/message/archive', '/message/2026-10-13', '/message/2026-10-12', '/notifications', '/sos', '/sos/directory', '/library', '/theme/$tid', '/search', '/programs', '/program/$pid', '/teacher/$teid',
       '/recipes', '/byo', '/byo/advanced', '/session/$sid', '/session/$fid', '/preview/$sid', '/player', '/player/free', '/complete', '/share', '/dedications/$sid', '/dedications/compose',
       '/silence', '/silence/run', '/together', '/lobby', '/sit/next', '/you', '/progress', '/profile/edit', '/reminders', '/downloads', '/privacy', '/help', '/membership/manage',
       '/membership/trial-ending', '/membership/billing', '/membership/ended', '/offline', '/update', '/soon/challenges', '/challenge/$cid', '/soon/gratitude', '/soon/breathwork', '/soon/breath-pattern',

@@ -67,7 +67,6 @@ abstract final class AppRoutes {
   static const worldGauge = '/world'; // Stitch world gauge (same screen as 25)
   static const crisisDirectory = '/sos/directory'; // Stitch crisis directory
   static const nextSit = '/sit/next'; // Stitch next synchronised sit countdown
-  static const dedicate = '/dedications/compose'; // Stitch dedication composer
   static const gratitude = '/soon/gratitude'; // 70
   static const breathwork = '/soon/breathwork'; // 71
   static const breathPattern = '/soon/breath-pattern'; // 72

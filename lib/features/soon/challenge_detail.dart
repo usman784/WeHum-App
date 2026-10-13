@@ -126,7 +126,7 @@ class ChallengeDetailPage extends StatelessWidget {
                     Row(children: [
                       Icon(Icons.verified_user_outlined, size: 18, color: c.tealText),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(d.graceLeft > 0 ? '${d.graceLeft} grace day${d.graceLeft == 1 ? '' : 's'} protected. Miss a day without losing your pace.' : 'Grace used. Keep your pace from here.', style: AppText.caption.copyWith(color: c.textSecondary))),
+                      Expanded(child: Text(!d.joined ? '${d.graceDays} grace day${d.graceDays == 1 ? '' : 's'} included. Miss a day without losing your pace.' : (d.graceLeft > 0 ? '${d.graceLeft} grace day${d.graceLeft == 1 ? '' : 's'} protected. Miss a day without losing your pace.' : 'Grace used. Keep your pace from here.'), style: AppText.caption.copyWith(color: c.textSecondary))),
                     ]),
                   ]),
                 ),
@@ -188,7 +188,7 @@ class _DayRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Day ${day.day} · ${day.title}', maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: day.state == 'locked' ? c.textSecondary : c.textPrimary, fontSize: 15)),
+            Text(day.title.trim().isEmpty || day.title == 'Day ${day.day}' ? 'Day ${day.day}' : 'Day ${day.day} · ${day.title}', maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: day.state == 'locked' ? c.textSecondary : c.textPrimary, fontSize: 15)),
             Text(sub, style: AppText.caption.copyWith(color: c.textSecondary)),
           ])),
           if (day.minutes != null && !done) Text('${day.minutes} min', style: AppText.caption.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),

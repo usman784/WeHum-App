@@ -26,7 +26,18 @@ import '../../features/together/views/together_pages.dart';
 import '../../features/onboarding/views/setup_pages.dart';
 import '../../features/onboarding/views/splash_page.dart';
 import '../../features/onboarding/views/start_page.dart';
+import '../../features/complete/complete_controller.dart' show CompleteController;
 import 'app_routes.dart';
+
+/// Opened without what the screen needs (a deep link, a stale route): go home instead of showing an error.
+class _BackToToday extends StatelessWidget {
+  const _BackToToday();
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => Get.offAllNamed(AppRoutes.todayMember));
+    return const SizedBox.shrink();
+  }
+}
 
 /// Every route has a page from P0; each phase swaps its placeholders for the real screen (spec §14).
 abstract final class AppPages {
@@ -72,7 +83,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.videoPlayer, page: () => const VideoPlayerPage()),
     GetPage(name: AppRoutes.freePlayer, page: () => const FreePlayerPage()),
     GetPage(name: AppRoutes.meditationCompletePayoff, page: () => const CompletePage()),
-    GetPage(name: AppRoutes.shareYourMeditation, page: () => const SharePage()),
+    GetPage(name: AppRoutes.shareYourMeditation, page: () => Get.arguments is CompleteController ? const SharePage() : const _BackToToday()), // nothing to share without a finished sit
     GetPage(name: AppRoutes.sessionDedications, page: () => const DedicationsPage()),
     GetPage(name: AppRoutes.silenceRoomSetup, page: () => const MembersOnly(title: 'Silence Room', child: SilenceSetupPage())),
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const MembersOnly(title: 'Silence Room', child: SilenceRunPage())),
