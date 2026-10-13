@@ -22,6 +22,25 @@ import '../../today/views/today_widgets.dart';
 import '../controllers/messages_controllers.dart';
 
 /// 26 Daily message with the interactive transcript (Stitch).
+class _ModePill extends StatelessWidget {
+  const _ModePill({super.key, required this.icon, required this.label, required this.on, required this.onTap});
+  final IconData icon;
+  final String label;
+  final bool on;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9), decoration: BoxDecoration(color: on ? c.ember : c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: on ? c.onEmber : c.textSecondary), const SizedBox(width: 6), Text(label.toUpperCase(), style: AppText.overline.copyWith(color: on ? c.onEmber : c.textSecondary, fontSize: 10))]),
+      ),
+    );
+  }
+}
+
 class DailyMessagePage extends StatelessWidget {
   const DailyMessagePage({super.key});
   @override
@@ -32,7 +51,7 @@ class DailyMessagePage extends StatelessWidget {
     final c = context.colors;
     String mmss(Duration d) => '${d.inMinutes.toString().padLeft(2, '0')}:${d.inSeconds.remainder(60).toString().padLeft(2, '0')}';
     return AppScaffold(
-      title: 'Daily message',
+      title: 'Daily message', stitch: true,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             empty: const EmptyState(title: 'No message yet', body: 'Raphael’s next message will appear here.', icon: Icons.mail_outline_rounded),
@@ -44,10 +63,15 @@ class DailyMessagePage extends StatelessWidget {
               final cur = ctrl.currentLine;
               final total = ctrl.duration.value.inSeconds > 0 ? ctrl.duration.value : Duration(seconds: m.durationSec ?? 0);
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
-                if (ctrl.hasVideoMode && ctrl.hasAudioMode)
+                if (ctrl.hasVideoMode || ctrl.hasAudioMode)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: SegmentedControl<bool>(options: const [false, true], value: ctrl.videoMode.value, onChanged: (v) => ctrl.videoMode.value = v, labelOf: (v) => v ? 'Video' : 'Audio'),
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Row(children: [
+                      if (ctrl.hasAudioMode) _ModePill(key: const Key('mode-audio'), icon: Icons.graphic_eq_rounded, label: 'Audio mode', on: !ctrl.videoMode.value, onTap: () => ctrl.videoMode.value = false),
+                      if (ctrl.hasVideoMode) ...[const SizedBox(width: 8), _ModePill(key: const Key('mode-video'), icon: Icons.videocam_outlined, label: 'Video mode', on: ctrl.videoMode.value, onTap: () => ctrl.videoMode.value = true)],
+                      const SizedBox(width: 8),
+                      Flexible(child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(m.isFree ? Icons.lock_open_rounded : Icons.workspace_premium_outlined, size: 14, color: c.emberText), const SizedBox(width: 5), Flexible(child: Text(m.isFree ? 'FREE' : 'PREMIUM', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))]))),
+                    ]),
                   ),
                 Row(children: [
                   Expanded(child: Text(ctrl.dateLine, key: const Key('dm-date'), style: AppText.bodySmall.copyWith(color: c.textSecondary))),
@@ -79,7 +103,7 @@ class DailyMessagePage extends StatelessWidget {
                       ]),
                       if (total > Duration.zero) ...[
                         const SizedBox(height: 12),
-                        AppProgressBar(ctrl.position.value.inMilliseconds / total.inMilliseconds),
+                        WaveProgress(progress: ctrl.position.value.inMilliseconds / total.inMilliseconds, seed: m.date, playedColor: c.ember, restColor: c.track, onSeek: (f) => ctrl.seekTo((total.inSeconds * f).round())),
                         const SizedBox(height: 6),
                         Row(children: [
                           Text(mmss(ctrl.position.value), key: const Key('dm-pos'), style: AppText.micro.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
@@ -90,7 +114,7 @@ class DailyMessagePage extends StatelessWidget {
                       if (ctrl.audioError.value) Padding(padding: const EdgeInsets.only(top: 8), child: Text('This message couldn’t load. Check your connection and try again.', style: AppText.caption.copyWith(color: c.dangerText))),
                     ]),
                   ),
-                  if (m.listenersToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupNumber(m.listenersToday)} listened today', key: const Key('dm-listeners'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
+                  if (m.listenersToday > 0) Padding(padding: const EdgeInsets.only(top: 12), child: AppCard(padding: const EdgeInsets.all(14), child: Row(children: [PulseDot(color: c.success, size: 4), const SizedBox(width: 8), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('${groupNumber(m.listenersToday)} listened today', key: const Key('dm-listeners'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15, fontFeatures: AppText.tabular)), Text('practitioners completed today’s message', style: AppText.caption.copyWith(color: c.textSecondary))]))]))),
                 ],
                 if (m.text != null && m.text!.isNotEmpty) ...[const SizedBox(height: 16), Text(m.text!, style: AppText.bodyLarge.copyWith(color: c.textBody, height: 1.6))],
                 if (m.transcript.isNotEmpty) ...[
@@ -124,10 +148,12 @@ class DailyMessagePage extends StatelessWidget {
                     ),
                 ],
                 const SizedBox(height: 16),
+                PrimaryButton('Sit with today’s insight', key: const Key('dm-sit'), icon: Icons.self_improvement_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
+                const SizedBox(height: 10),
                 Row(children: [
-                  Expanded(child: OutlineButton(m.saved ? 'Saved to notes' : 'Save to notes', key: const Key('dm-save'), icon: m.saved ? Icons.bookmark_rounded : Icons.bookmark_add_outlined, onPressed: ctrl.toggleSave)),
+                  Expanded(child: SecondaryButton(m.saved ? 'Saved to notes' : 'Save to notes', key: const Key('dm-save'), icon: m.saved ? Icons.bookmark_rounded : Icons.bookmark_add_outlined, onPressed: ctrl.toggleSave)),
                   const SizedBox(width: 10),
-                  Expanded(child: OutlineButton('Share', key: const Key('dm-share'), icon: Icons.ios_share_rounded, onPressed: ctrl.share)),
+                  Expanded(child: SecondaryButton('Share', key: const Key('dm-share'), icon: Icons.ios_share_rounded, onPressed: ctrl.share)),
                 ]),
                 if (m.week.isNotEmpty) ...[
                   const SizedBox(height: 22),

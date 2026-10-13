@@ -131,3 +131,51 @@ class _PulseDotState extends State<PulseDot> with SingleTickerProviderStateMixin
     );
   }
 }
+
+/// A waveform-style progress bar: bars drawn from a seed (decoration), the played part in ember. Tap or drag to seek.
+class WaveProgress extends StatelessWidget {
+  const WaveProgress({super.key, required this.progress, required this.seed, this.onSeek, this.height = 56, required this.playedColor, required this.restColor});
+  final double progress;
+  final String seed;
+  final ValueChanged<double>? onSeek;
+  final double height;
+  final Color playedColor, restColor;
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (_, k) {
+      void seek(double dx) => onSeek?.call((dx / k.maxWidth).clamp(0.0, 1.0));
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (d) => seek(d.localPosition.dx),
+        onHorizontalDragUpdate: (d) => seek(d.localPosition.dx),
+        child: SizedBox(width: double.infinity, height: height, child: CustomPaint(painter: _WavePainter(progress.clamp(0.0, 1.0), seed.hashCode, playedColor, restColor))),
+      );
+    });
+  }
+}
+
+class _WavePainter extends CustomPainter {
+  _WavePainter(this.p, this.seed, this.played, this.rest);
+  final double p;
+  final int seed;
+  final Color played, rest;
+  @override
+  void paint(Canvas canvas, Size s) {
+    const gap = 3.0, w = 3.0;
+    final n = (s.width / (w + gap)).floor();
+    var r = seed.abs() % 9973 + 17;
+    double next() {
+      r = (r * 48271) % 2147483647;
+      return r / 2147483647;
+    }
+    for (var i = 0; i < n; i++) {
+      final env = .35 + .65 * (0.5 + 0.5 * (i % 11 < 5 ? (i % 11) / 5 : (10 - i % 11) / 5));
+      final h = (s.height * (.18 + .8 * next() * env)).clamp(4.0, s.height);
+      final x = i * (w + gap) + w / 2;
+      canvas.drawLine(Offset(x, (s.height - h) / 2), Offset(x, (s.height + h) / 2), Paint()..strokeWidth = w..strokeCap = StrokeCap.round..color = (i / n) <= p ? played : rest);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_WavePainter o) => o.p != p || o.seed != seed || o.played != played;
+}
