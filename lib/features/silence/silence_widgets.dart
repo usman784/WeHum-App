@@ -62,7 +62,7 @@ class BeltsCard extends StatelessWidget {
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               PulseDot(color: c.success, size: 3),
               const SizedBox(width: 4),
-              Text('$zones ${zones == 1 ? 'TIMEZONE' : 'TIMEZONES'} SYNCED', style: AppText.overline.copyWith(color: c.success, fontSize: 10)),
+              Text('$zones ${zones == 1 ? 'REGION' : 'REGIONS'} LIVE', style: AppText.overline.copyWith(color: c.success, fontSize: 10)),
             ]),
           ),
         ]),

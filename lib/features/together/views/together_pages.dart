@@ -339,7 +339,7 @@ class TogetherPage extends StatelessWidget {
                     ]),
                     const SizedBox(height: 14),
                     Row(children: [
-                      for (final (i, m) in const [5, 15, 30, 0].indexed) ...[
+                      for (final (i, m) in (ctrl.silenceDurations.isEmpty ? const [5, 15, 30, 0] : (ctrl.silenceDurations.where((d) => d > 0).take(3).toList()..add(0))).indexed) ...[
                         if (i > 0) const SizedBox(width: 8),
                         Expanded(child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 8), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)),

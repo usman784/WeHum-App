@@ -299,6 +299,8 @@ class TogetherController extends GetxController {
   /// "Shared intent": the newest dedications across meditations.
   final feed = <FeedItem>[].obs;
   final silenceNow = 0.obs;
+  /// Durations offered in the Silence Room (from the CMS); the first four are shown on Together.
+  final silenceDurations = <int>[].obs;
   final reminder = false.obs;
 
   @override
@@ -356,7 +358,9 @@ class TogetherController extends GetxController {
         feed.assignAll((await Get.find<CommunityRepository>().feed()).items);
       } catch (_) {/* the feed fills in when the connection is back */}
       try {
-        silenceNow.value = (await _repo.silence()).sittingNow;
+        final si = await _repo.silence();
+        silenceNow.value = si.sittingNow;
+        silenceDurations.assignAll(si.durations);
       } catch (_) {}
       final sid = group.value?.sessionId;
       if (sid != null) {

@@ -13,7 +13,7 @@ class BrandMark extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!Get.isRegistered<ConfigService>()) return BrandLogo(size: size);
     return Obx(() {
-      final url = Get.find<ConfigService>().current.value?.branding.logoUrl;
+      final url = Get.find<ConfigService>().current.value?.branding.logoUrl ?? (Get.isRegistered<OnboardingStore>() ? Get.find<OnboardingStore>().brandLogo : null);
       if (url == null || url.isEmpty) return BrandLogo(size: size);
       return ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.22),

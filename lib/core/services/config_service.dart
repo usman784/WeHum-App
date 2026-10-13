@@ -17,7 +17,10 @@ class ConfigService extends GetxService {
   Future<Bootstrap> refresh() async {
     final b = await _repo.bootstrap();
     current.value = b;
-    if (Get.isRegistered<OnboardingStore>()) Get.find<OnboardingStore>().brandName = b.branding.appName;
+    if (Get.isRegistered<OnboardingStore>()) {
+      Get.find<OnboardingStore>().brandName = b.branding.appName;
+      Get.find<OnboardingStore>().brandLogo = b.branding.logoUrl;
+    }
     _time.sync(b.serverTime);
     return b;
   }

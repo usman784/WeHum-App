@@ -43,6 +43,10 @@ class OnboardingStore extends GetxService {
   String get brandName => _box.read<String>('brand_name') ?? 'WeHum';
   set brandName(String v) => _box.write('brand_name', v);
 
+  /// The logo URL last set in the CMS, so the splash can show it before the first bootstrap answers.
+  String? get brandLogo => _box.read<String>('brand_logo');
+  set brandLogo(String? v) => _box.write('brand_logo', v);
+
   bool get done => _box.read<bool>('onboarding_done') ?? false;
   set done(bool v) => _box.write('onboarding_done', v);
 

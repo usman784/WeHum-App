@@ -95,7 +95,7 @@ class SosPage extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text('4 s in · 6 s out · 4 min, no audio needed', style: AppText.caption.copyWith(color: c.textSecondary)),
                     ])),
-                    Text('Inhale (4s)', style: AppText.navTitle.copyWith(color: c.emberText, fontSize: 14)),
+                    const _InhaleCue(),
                   ]),
                 ),
                 const SizedBox(height: 14),
@@ -155,5 +155,28 @@ class SosPage extends StatelessWidget {
             }),
           )),
     );
+  }
+}
+
+
+/// "Inhale (4s)" / "Exhale (6s)" in step with the breath (4 s in, 6 s out), like the card says.
+class _InhaleCue extends StatefulWidget {
+  const _InhaleCue();
+  @override
+  State<_InhaleCue> createState() => _InhaleCueState();
+}
+
+class _InhaleCueState extends State<_InhaleCue> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AnimatedBuilder(animation: _c, builder: (_, __) => Text(_c.value < .4 ? 'Inhale (4s)' : 'Exhale (6s)', style: AppText.navTitle.copyWith(color: c.emberText, fontSize: 14)));
   }
 }

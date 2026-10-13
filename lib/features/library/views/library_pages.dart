@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
+import '../../../core/realtime/live_service.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/services/access_service.dart';
@@ -79,11 +80,11 @@ class LibraryPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(4)), child: Text('$total SITS', key: const Key('library-counts'), style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
                   const SizedBox(width: 8),
-                  if (sm != null && sm.sittingNow > 0)
+                  if ((Get.find<LiveService>().agg.value?.total ?? sm?.sittingNow ?? 0) > 0)
                     Expanded(child: Align(alignment: Alignment.centerRight, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [
                       PulseDot(color: c.success, size: 3.5),
                       const SizedBox(width: 4),
-                      Flexible(child: Text('${groupedInt(sm.sittingNow)} SITTING LIVE', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
+                      Flexible(child: Text('${groupedInt(Get.find<LiveService>().agg.value?.total ?? sm?.sittingNow ?? 0)} SITTING LIVE', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
                     ])))),
                 ]),
                 const SizedBox(height: 6),

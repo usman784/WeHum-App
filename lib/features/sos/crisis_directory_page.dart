@@ -109,7 +109,7 @@ class CrisisDirectoryPage extends StatelessWidget {
                         Row(children: [
                           Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
                           const SizedBox(width: 6),
-                          Expanded(child: Text('AVAILABLE 24/7 · FREE · CONFIDENTIAL', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.success, fontSize: 10))),
+                          Expanded(child: Text(d.availability.isEmpty ? '' : d.availability.toUpperCase().replaceAll(' · ', ' · '), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.success, fontSize: 10))),
                           if (l.kind.isNotEmpty) Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Text(l.kind.toUpperCase(), style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5))),
                         ]),
                         const SizedBox(height: 8),

@@ -88,9 +88,6 @@ class SilenceSetupPage extends StatelessWidget {
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Expanded(child: Text('ACOUSTIC INTERVALS & SIGNALS', style: AppText.overline.copyWith(color: c.textSecondary))),
-              Icon(Icons.volume_up_rounded, size: 13, color: c.success),
-              const SizedBox(width: 4),
-              Text('432HZ CLEAN', style: AppText.overline.copyWith(color: c.success, fontSize: 10.5)),
             ]),
             const SizedBox(height: 10),
             AcousticRow(
