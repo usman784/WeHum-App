@@ -95,7 +95,7 @@ class ChallengeDetailPage extends StatelessWidget {
             content: () => Obx(() {
               final d = ctrl.data.value!;
               final today = d.today;
-              return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
+              return Column(children: [Expanded(child: ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
                 const Overline('Cohort sprint'),
                 const SizedBox(height: 6),
                 Text(d.name, key: const Key('challenge-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
@@ -145,19 +145,64 @@ class ChallengeDetailPage extends StatelessWidget {
                     ]),
                   ),
                 ],
+                const SizedBox(height: 22),
+                const SectionLabel('Cohort mechanics'),
+                const SizedBox(height: 8),
+                _Mechanic(icon: Icons.schedule_rounded, title: 'Daily ${d.unlockTime} sit window', body: 'Each day opens at ${d.unlockTime} your time, so the whole cohort sits together.'),
+                _Mechanic(icon: Icons.verified_user_outlined, title: '${d.graceDays} grace day${d.graceDays == 1 ? '' : 's'}', body: 'Miss a day without losing your pace.'),
+                const _Mechanic(icon: Icons.download_for_offline_outlined, title: 'Offline-ready tracks', body: 'Download a day’s sit and practise without a connection.'),
                 if (d.leadName != null) ...[
-                  const SizedBox(height: 14),
-                  Text('Led by ${d.leadName}${d.leadRole == null ? '' : ' · ${d.leadRole}'}', style: AppText.caption.copyWith(color: c.textSecondary)),
+                  const SizedBox(height: 22),
+                  const SectionLabel('Lead facilitator'),
+                  const SizedBox(height: 8),
+                  AppCard(key: const Key('lead-card'), child: Row(children: [
+                    Container(width: 44, height: 44, alignment: Alignment.center, decoration: BoxDecoration(shape: BoxShape.circle, color: c.teal), child: Text(d.leadName!.trim().isEmpty ? '' : d.leadName!.trim()[0].toUpperCase(), style: AppText.navTitle.copyWith(color: c.tealText))),
+                    const SizedBox(width: 12),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(d.leadName!, style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      if ((d.leadRole ?? '').isNotEmpty) Text(d.leadRole!, style: AppText.caption.copyWith(color: c.textSecondary)),
+                    ])),
+                  ])),
                 ],
-                if (ctrl.message.value != null) ...[const SizedBox(height: 10), Text(ctrl.message.value!, style: AppText.bodySmall.copyWith(color: c.dangerText))],
-                const SizedBox(height: 18),
-                if (!d.joined)
-                  PrimaryButton('Join the cohort', key: const Key('join-challenge'), loading: ctrl.busy.value, onPressed: ctrl.join)
-                else if (today != null)
-                  PrimaryButton('Begin day ${today.day}${today.minutes == null ? '' : ' (${today.minutes} min)'}', key: const Key('begin-day'), onPressed: () => ctrl.begin(today)),
-              ]));
+              ]))),
+              Container(
+                padding: const EdgeInsets.fromLTRB(Gap.gutter, 12, Gap.gutter, 12), decoration: BoxDecoration(color: c.bg, border: Border(top: BorderSide(color: c.border))),
+                child: SafeArea(top: false, child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  if (ctrl.message.value != null) Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(ctrl.message.value!, style: AppText.bodySmall.copyWith(color: c.dangerText))),
+                  if (!d.joined)
+                    PrimaryButton('Join the cohort', key: const Key('join-challenge'), loading: ctrl.busy.value, onPressed: ctrl.join)
+                  else if (today != null) ...[
+                    Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.only(bottom: 8), child: Text('CURRENT PROTOCOL  ·  DAY ${today.day} OF ${d.days}', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))),
+                    PrimaryButton('Begin day ${today.day}${today.minutes == null ? '' : ' (${today.minutes} min)'}', key: const Key('begin-day'), onPressed: () => ctrl.begin(today)),
+                  ] else
+                    Text('All days complete', style: AppText.navTitle.copyWith(color: c.textSecondary)),
+                ])),
+              ),
+              ]);
             }),
           )),
+    );
+  }
+}
+
+class _Mechanic extends StatelessWidget {
+  const _Mechanic({required this.icon, required this.title, required this.body});
+  final IconData icon;
+  final String title, body;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AppCard(child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, size: 22, color: c.emberText),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15)),
+          const SizedBox(height: 2),
+          Text(body, style: AppText.caption.copyWith(color: c.textSecondary)),
+        ])),
+      ])),
     );
   }
 }

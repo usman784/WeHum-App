@@ -162,14 +162,27 @@ class SilenceRunPage extends StatelessWidget {
                     Align(alignment: Alignment.centerRight, child: TextLink('End sit', key: const Key('silence-end'), onPressed: () => ctrl.finish(completed: false), color: c.textSecondary)),
                     const Spacer(),
                     Text('SILENCE ROOM · ${ctrl.openEnded ? 'OPEN' : '${ctrl.minutes.value} MIN'}', style: AppText.overline.copyWith(color: c.textTertiary)),
-                    const SizedBox(height: 18),
-                    const BreathCue(),
-                    const SizedBox(height: 18),
-                    Text(formatCountdown(shown), key: const Key('silence-time'), style: AppText.display.copyWith(color: Colors.white, fontSize: 76, fontFeatures: AppText.tabular)),
-                    const SizedBox(height: 8),
-                    Text(
-                      paused ? 'Paused' : (ctrl.live.paused ? 'Live counts paused' : (people != null && people > 1 ? '${groupedInt(people)} sitting with you right now' : 'You’re sitting in silence')),
-                      key: const Key('silence-with'), style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+                    const SizedBox(height: 14),
+                    SessionRing(
+                      size: 290,
+                      progress: ctrl.openEnded || ctrl.planned.inSeconds == 0 ? 0 : (ctrl.elapsed.value.inSeconds / ctrl.planned.inSeconds).clamp(0.0, 1.0),
+                      people: (people ?? 0).clamp(0, 40),
+                      center: Column(mainAxisSize: MainAxisSize.min, children: [
+                        const BreathCue(),
+                        const SizedBox(height: 6),
+                        Text(formatCountdown(shown), key: const Key('silence-time'), style: AppText.display.copyWith(color: Colors.white, fontSize: 52, fontFeatures: AppText.tabular)),
+                      ]),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        if (!paused && !ctrl.live.paused && people != null && people > 1) ...[PulseDot(color: c.success, size: 4), const SizedBox(width: 8)],
+                        Flexible(child: Text(
+                          paused ? 'Paused' : (ctrl.live.paused ? 'Live counts paused' : (people != null && people > 1 ? '${groupedInt(people)} sitting with you right now' : 'You’re sitting in silence')),
+                          key: const Key('silence-with'), style: AppText.bodySmall.copyWith(color: c.textPrimary))),
+                      ]),
+                    ),
                     if (next != null && !paused) ...[
                       const SizedBox(height: 6),
                       Text('Next chime at ${DateFormat('HH:mm').format(next.toLocal())}', key: const Key('next-chime'), style: AppText.caption.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
@@ -178,7 +191,7 @@ class SilenceRunPage extends StatelessWidget {
                     Row(children: [
                       if (!ctrl.openEnded) Expanded(child: OutlineButton('+${ctrl.extendMin} min', key: const Key('silence-extend'), onPressed: ctrl.extend)),
                       if (!ctrl.openEnded) const SizedBox(width: 10),
-                      Expanded(child: OutlineButton(paused ? 'Resume' : 'Pause', key: const Key('silence-pause'), onPressed: paused ? ctrl.resume : ctrl.pause)),
+                      Expanded(child: PrimaryButton(paused ? 'Resume' : 'Pause', key: const Key('silence-pause'), onPressed: paused ? ctrl.resume : ctrl.pause)),
                       const SizedBox(width: 10),
                       Expanded(child: OutlineButton(ctrl.chimeOn.value ? 'Chime on' : 'Chime off', key: const Key('silence-chime'), onPressed: () => ctrl.chimeOn.value = !ctrl.chimeOn.value)),
                     ]),

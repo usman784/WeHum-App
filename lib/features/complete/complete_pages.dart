@@ -357,6 +357,22 @@ Future<void> showReportSheet(BuildContext context, DedicationsController ctrl, D
 }
 
 /// 46 Share your meditation: 9:16 story or 1:1 post, optional dedication, rendered to a PNG at 3× for the share sheet or Photos.
+class _ShareStat extends StatelessWidget {
+  const _ShareStat(this.label, this.value, {super.key, this.accent = false});
+  final String label, value;
+  final bool accent;
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: .06), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withValues(alpha: .08))),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label, style: AppText.overline.copyWith(color: Colors.white54, fontSize: 9)),
+          const SizedBox(height: 4),
+          Text(value, style: AppText.navTitle.copyWith(color: accent ? const Color(0xFFFF9B70) : Colors.white, fontFeatures: AppText.tabular)),
+        ]),
+      );
+}
+
 class SharePage extends StatefulWidget {
   const SharePage({super.key});
   @override
@@ -430,17 +446,31 @@ class _SharePageState extends State<SharePage> {
               width: 360, height: story ? 640 : 360, padding: const EdgeInsets.all(28),
               decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF123C3A), Color(0xFF0B0D0E)])),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('WEHUM', style: AppText.overline.copyWith(color: const Color(0xFFFF9B70), fontSize: 13)),
+                Row(children: [
+                  Text('WEHUM', style: AppText.overline.copyWith(color: const Color(0xFFFF9B70), fontSize: 13)),
+                  const Spacer(),
+                  const PulseDot(color: Color(0xFF4ADE80), size: 4),
+                  const SizedBox(width: 6),
+                  Text('SAT TODAY', style: AppText.overline.copyWith(color: Colors.white70, fontSize: 10)),
+                ]),
                 const Spacer(),
                 Text('I sat ${complete.minutes} ${complete.minutes == 1 ? 'minute' : 'minutes'} today.', key: const Key('share-minutes'), style: AppText.heroTitle.copyWith(color: Colors.white, fontSize: story ? 30 : 26)),
                 const SizedBox(height: 10),
                 if (complete.togetherLine != null) Text(complete.togetherLine!.replaceFirst('You sat', 'I sat'), style: AppText.bodyLarge.copyWith(color: Colors.white70)),
-                const SizedBox(height: 12),
-                Wrap(spacing: 16, runSpacing: 6, children: [
-                  Text('${complete.daysThisWeek} ${complete.daysThisWeek == 1 ? 'day' : 'days'} this week', style: AppText.navTitle.copyWith(color: Colors.white)),
-                  if (complete.streak != null && complete.streak!.current > 1) Text('${complete.streak!.current}-day streak', key: const Key('share-streak'), style: AppText.navTitle.copyWith(color: const Color(0xFFFF9B70))),
-                  if (includeHr && complete.hrDelta != null) Text('${complete.hrDelta! > 0 ? '+' : ''}${complete.hrDelta} bpm', key: const Key('share-hr'), style: AppText.navTitle.copyWith(color: Colors.white)),
+                const SizedBox(height: 16),
+                Row(children: [
+                  Expanded(child: _ShareStat('DURATION', '${complete.minutes} min')),
+                  const SizedBox(width: 10),
+                  Expanded(child: _ShareStat('THIS WEEK', '${complete.daysThisWeek} ${complete.daysThisWeek == 1 ? 'day' : 'days'}')),
                 ]),
+                if ((complete.streak != null && complete.streak!.current > 1) || (includeHr && complete.hrDelta != null)) ...[
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    if (complete.streak != null && complete.streak!.current > 1) Expanded(child: _ShareStat('MOMENTUM', 'Day ${complete.streak!.current}', key: const Key('share-streak'), accent: true)),
+                    if (complete.streak != null && complete.streak!.current > 1 && includeHr && complete.hrDelta != null) const SizedBox(width: 10),
+                    if (includeHr && complete.hrDelta != null) Expanded(child: _ShareStat('CALM SHIFT', '${complete.hrDelta! > 0 ? '+' : ''}${complete.hrDelta} bpm', key: const Key('share-hr'))),
+                  ]),
+                ],
                 const SizedBox(height: 12),
                 Text(complete.player.title, style: AppText.title.copyWith(color: Colors.white)),
                 if (showDedication && complete.lastDedication != null) ...[

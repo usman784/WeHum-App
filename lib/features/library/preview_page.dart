@@ -13,6 +13,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/buttons.dart';
+import '../../core/widgets/motion.dart';
 import '../../core/widgets/states.dart';
 import '../../core/widgets/stitch.dart';
 import '../../core/widgets/surfaces.dart';
@@ -165,7 +166,7 @@ class PreviewPage extends StatelessWidget {
                         Text('${ctrl.cutoffSec - pos} s left', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
                       ]),
                       const SizedBox(height: 14),
-                      AppProgressBar(pos / ctrl.cutoffSec),
+                      WaveProgress(progress: pos / ctrl.cutoffSec, seed: ctrl.sessionId, height: 48, playedColor: c.ember, restColor: c.track),
                       const SizedBox(height: 6),
                       Row(children: [
                         Text('0:00', style: AppText.micro.copyWith(color: c.textTertiary)),
