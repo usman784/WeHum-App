@@ -1052,7 +1052,7 @@ Tests: `flutter test` 257 passed; simulator tour of 67 routes and the notificati
 Status: ✅ done
 
 ### Oct 13 — Client tickets
-- Onboarding: back button on every slide; the first slide shows Raphael (the CMS teacher photo, otherwise the bundled one); slides move on by themselves after 6 s until the person touches the screen; Help → "Watch the intro again" is only the four slides and ends in Help.
+- Onboarding: back button on every slide; the first slide shows Raphael (the CMS teacher photo, otherwise the bundled one); the four slides are one swipeable carousel (swipe left or right, Next, Back) that moves on by itself after 6 s until the person touches the screen; Help → "Watch the intro again" is only the four slides and ends in Help.
 - Players: back arrow on the free and the premium player (leaves without the "finished" step; time already sat is still saved); no SoS pill on the sit screens; the free player uses YouTube's own controls (a play only counts as a view, and ads only run, when it starts from YouTube's own play button) and shows "Video description" collapsed with tappable links in an in-app browser; "Free for you" appears once.
 - Library: Free chip on the theme page, a Teachers heading with the teachers; Together: Love Projection (coming soon) next to the Gratitude feed.
 - Notifications: reminder opens the Meditation of the Day, unknown links open Today; the inbox reloads on start and resume and is cleared on sign-out; the bell dot follows unread.

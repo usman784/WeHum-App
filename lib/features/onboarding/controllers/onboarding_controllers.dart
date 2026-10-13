@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart' show Curves, PageController;
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../app/app_controller.dart';
@@ -55,34 +56,65 @@ class SplashController extends GetxController {
   }
 }
 
-/// 02–05: the four intro slides. Screen 03 shows the live pill from socket `live:agg` (hidden when offline).
+/// 02–05 Intro: one swipeable carousel of four slides. Left and right swipes, Next and Back move between them; after a few
+/// seconds a slide moves on by itself until the person touches the screen (the last slide waits, it asks for a choice).
 class IntroController extends GetxController {
-  IntroController(this.step);
-  final int step; // 1..4
-
+  IntroController(this.firstStep) : index = (firstStep - 1).obs;
+  /// The slide the carousel opens on (1..4; the routes `/intro/1..4` all open this one carousel).
+  final int firstStep;
   static const lastStep = 4;
+  late final pages = PageController(initialPage: firstStep - 1);
+  final RxInt index;
   late final LiveService live = Get.find<LiveService>();
-
-  @override
-  void onReady() {
-    super.onReady();
-    Get.find<AnalyticsService>().track('onboarding_step_view', {'step': 'intro$step'});
-    if (step == 2) live.acquireToday();
-    if (step == 3) _loadMotd();
-    // like a normal intro carousel: after a few seconds the next slide comes by itself (the last slide waits, it asks for a choice)
-    if (step < lastStep) {
-      _auto = Timer(autoAdvance, () {
-        if (Get.currentRoute == '/intro/$step') next();
-      });
-    }
-  }
 
   /// How long a slide stays before the next one follows.
   static const autoAdvance = Duration(seconds: 6);
   Timer? _auto;
+  bool _touched = false;
 
-  /// The person touched the screen (read, scrolled, tapped): from then on they move on themselves.
+  /// Opened from Help → "Watch the intro again": only the four slides, then back to Help (no name, time or reminder steps again).
+  final bool replay = (Get.arguments is Map && (Get.arguments as Map)['replay'] == true);
+
+  @override
+  void onReady() {
+    super.onReady();
+    _enter(index.value);
+  }
+
+  void _enter(int i) {
+    Get.find<AnalyticsService>().track('onboarding_step_view', {'step': 'intro${i + 1}'});
+    if (i == 1) live.acquireToday();
+    if (i == 2) _loadMotd();
+    _arm(i);
+  }
+
+  void _leave(int i) {
+    if (i == 1) live.releaseToday();
+  }
+
+  void _arm(int i) {
+    _auto?.cancel();
+    _auto = null;
+    if (_touched || i >= lastStep - 1) return;
+    _auto = Timer(autoAdvance, () {
+      if (!_touched && index.value == i && pages.hasClients) go(i + 1);
+    });
+  }
+
+  void go(int i) => pages.animateToPage(i, duration: const Duration(milliseconds: 380), curve: Curves.easeOutCubic);
+
+  /// The PageView settled on another slide (a swipe, Next, Back or the timer).
+  void onPage(int i) {
+    final before = index.value;
+    if (i == before) return;
+    _leave(before);
+    index.value = i;
+    _enter(i);
+  }
+
+  /// The person touched the screen (read, swiped, tapped): from then on they move on themselves.
   void stopAuto() {
+    _touched = true;
     _auto?.cancel();
     _auto = null;
   }
@@ -98,7 +130,8 @@ class IntroController extends GetxController {
   @override
   void onClose() {
     _auto?.cancel();
-    if (step == 2) live.releaseToday();
+    _leave(index.value);
+    pages.dispose();
     super.onClose();
   }
 
@@ -110,13 +143,21 @@ class IntroController extends GetxController {
     return a.quiet ? '${_n(a.meditatedToday)} meditated today' : '${_n(a.total)} meditating now';
   }
 
-  /// Opened from Help → "Watch the intro again": only the four slides, then back to Help (no name, time or reminder steps again).
-  final bool replay = (Get.arguments is Map && (Get.arguments as Map)['replay'] == true);
   void _backToHelp() => Get.until((r) => r.settings.name == AppRoutes.helpAbout);
+
   void next() {
-    if (replay) return step >= lastStep ? _backToHelp() : Get.toNamed('/intro/${step + 1}', arguments: {'replay': true});
-    Get.toNamed(step >= lastStep ? AppRoutes.setup1YourName : '/intro/${step + 1}');
+    stopAuto();
+    if (index.value < lastStep - 1) return go(index.value + 1);
+    replay ? _backToHelp() : Get.toNamed(AppRoutes.setup1YourName);
   }
+
+  /// Back: the previous slide; on the first slide only a replay has somewhere to go (Help).
+  void back() {
+    stopAuto();
+    if (index.value > 0) return go(index.value - 1);
+    Get.back<void>();
+  }
+
   void skip() => replay ? _backToHelp() : Get.toNamed(AppRoutes.howDoYouWantToStart);
 }
 

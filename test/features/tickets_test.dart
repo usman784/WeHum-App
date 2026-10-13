@@ -30,11 +30,22 @@ Future<TestEnv> open(WidgetTester t, String route, {bool member = true, bool onb
 
 void main() {
   group('onboarding: back', () {
-    testWidgets('intro slides 2 to 4 have a back button that returns to the previous slide', (t) async {
-      final e = await open(t, AppRoutes.intro2NeverAlone, onboardingDone: false);
+    testWidgets('the intro is a carousel: swipe left and right, Back and Next all move between the slides', (t) async {
+      final e = await open(t, AppRoutes.intro1Welcome, onboardingDone: false);
+      expect(find.bySemanticsLabel('Back'), findsNothing); // the first slide has nowhere to go back to
+      await t.drag(find.byKey(const Key('intro-pages')), const Offset(-400, 0)); // swipe left: next slide
+      await settle(t);
+      expect(find.text('You’re never meditating alone.'), findsOneWidget);
       expect(find.bySemanticsLabel('Back'), findsOneWidget);
+      await t.drag(find.byKey(const Key('intro-pages')), const Offset(400, 0)); // swipe right: previous slide
+      await settle(t);
+      expect(find.text('WeHum by Raphael Reiter'), findsOneWidget);
+      await t.tap(find.text('Next'));
+      await settle(t);
       await t.tap(find.bySemanticsLabel('Back'));
       await settle(t);
+      expect(find.text('WeHum by Raphael Reiter'), findsOneWidget);
+      expect(Get.currentRoute, AppRoutes.intro1Welcome); // still the one carousel
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });
@@ -76,19 +87,25 @@ void main() {
       final e = await open(t, AppRoutes.intro1Welcome, onboardingDone: false);
       await t.pump(const Duration(seconds: 7));
       await settle(t);
-      expect(Get.currentRoute, '/intro/2');
+      expect(find.text('You’re never meditating alone.'), findsOneWidget);
       await t.tapAt(const Offset(200, 300)); // a touch: this slide stays
-      await t.pump(const Duration(seconds: 9));
+      await t.pump(const Duration(seconds: 12));
       await settle(t);
-      expect(Get.currentRoute, '/intro/2');
+      expect(find.text('You’re never meditating alone.'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });
 
-    testWidgets('the last slide never advances on its own', (t) async {
-      final e = await open(t, AppRoutes.intro4TrainingNotTherapy, onboardingDone: false);
+    testWidgets('left alone it goes through all four slides and stops on the last one', (t) async {
+      final e = await open(t, AppRoutes.intro1Welcome, onboardingDone: false);
+      for (var i = 0; i < 3; i++) {
+        await t.pump(const Duration(seconds: 7));
+        await settle(t);
+      }
+      expect(find.text('Training, not therapy.'), findsOneWidget);
       await t.pump(const Duration(seconds: 20));
-      expect(Get.currentRoute, AppRoutes.intro4TrainingNotTherapy);
+      expect(find.text('Training, not therapy.'), findsOneWidget);
+      expect(Get.currentRoute, AppRoutes.intro1Welcome);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });

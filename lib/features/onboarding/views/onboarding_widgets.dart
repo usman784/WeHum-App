@@ -27,9 +27,9 @@ class StepDots extends StatelessWidget {
 
 /// Common frame for the onboarding slides: top row (back / skip), content, dots, primary button.
 class OnboardingFrame extends StatelessWidget {
-  const OnboardingFrame({super.key, required this.child, this.onSkip, this.skipLabel = 'Skip', this.showBack = false, this.dots, this.cta, this.onCta, this.ctaEnabled = true, this.ctaLoading = false, this.footer, this.topRight, this.step});
+  const OnboardingFrame({super.key, required this.child, this.onSkip, this.skipLabel = 'Skip', this.showBack = false, this.onBack, this.dots, this.cta, this.onCta, this.ctaEnabled = true, this.ctaLoading = false, this.footer, this.topRight, this.step});
   final Widget child;
-  final VoidCallback? onSkip, onCta;
+  final VoidCallback? onSkip, onCta, onBack;
   final String skipLabel;
   final bool showBack, ctaEnabled, ctaLoading;
   final int? dots;
@@ -53,7 +53,7 @@ class OnboardingFrame extends StatelessWidget {
                   Semantics(
                     button: true, label: 'Back',
                     child: GestureDetector(
-                      onTap: () => Get.back<void>(),
+                      onTap: onBack ?? () => Get.back<void>(),
                       child: Container(width: 44, height: 44, decoration: BoxDecoration(color: c.surface, shape: BoxShape.circle, border: Border.all(color: c.border)), child: Icon(Icons.chevron_left_rounded, color: c.textPrimary)),
                     ),
                   ),

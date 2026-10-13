@@ -10,30 +10,42 @@ import '../../../core/widgets/surfaces.dart';
 import '../controllers/onboarding_controllers.dart';
 import 'onboarding_widgets.dart';
 
-/// Intro slides 02–05 (`/intro/1..4`). Copy is the final design copy; only live numbers come from the socket.
+/// Intro slides 02–05: one carousel (`/intro/1..4` all open it, on that slide). Swipe left or right, or use Next and Back.
+/// Copy is the final design copy; only live numbers come from the socket.
 class IntroPage extends StatelessWidget {
   const IntroPage(this.step, {super.key});
   final int step;
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(IntroController(step), tag: 'intro$step');
+    final ctrl = Get.put(IntroController(step), tag: 'intro');
     final c = context.colors;
-    return OnboardingFrame(
-      showBack: step > 1 || ctrl.replay, onSkip: ctrl.skip, skipLabel: ctrl.replay ? 'Close' : 'Skip', dots: step - 1, cta: ctrl.replay && step >= 4 ? 'Done' : 'Next', onCta: ctrl.next,
-      child: Listener(
-        onPointerDown: (_) => ctrl.stopAuto(),
-        child: SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _hero(context, ctrl),
-          const SizedBox(height: 28),
-          ..._text(c),
-        ]),
-      )),
-    );
+    return Obx(() {
+      final i = ctrl.index.value;
+      return OnboardingFrame(
+        showBack: i > 0 || ctrl.replay, onBack: ctrl.back, onSkip: ctrl.skip, skipLabel: ctrl.replay ? 'Close' : 'Skip', dots: i,
+        cta: ctrl.replay && i == IntroController.lastStep - 1 ? 'Done' : 'Next', onCta: ctrl.next,
+        child: Listener(
+          onPointerDown: (_) => ctrl.stopAuto(),
+          child: PageView(
+            key: const Key('intro-pages'), controller: ctrl.pages, onPageChanged: ctrl.onPage,
+            children: [
+              for (var s = 1; s <= IntroController.lastStep; s++)
+                SingleChildScrollView(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    _hero(context, ctrl, s),
+                    const SizedBox(height: 28),
+                    ..._text(c, s),
+                  ]),
+                ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
-  Widget _hero(BuildContext context, IntroController ctrl) {
+  Widget _hero(BuildContext context, IntroController ctrl, int step) {
     final c = context.colors;
     switch (step) {
       case 1:
@@ -77,7 +89,7 @@ class IntroPage extends StatelessWidget {
     }
   }
 
-  List<Widget> _text(AppColors c) {
+  List<Widget> _text(AppColors c, int step) {
     final (title, body, small) = switch (step) {
       1 => ('${brandName()} by Raphael Reiter', 'Natural, secular spirituality. Meditation is spiritual, and it’s also a skill that makes us better at being human.', 'Learn to manage your emotions and meet life with courage, temperance and understanding.'),
       2 => ('You’re never meditating alone.', 'Transcendence is the deep understanding, and the feeling, that we are part of one interconnected system of nature.', 'Every meditation is shared with real people around the world, in real time.'),
