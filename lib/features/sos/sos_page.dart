@@ -65,7 +65,7 @@ class SosPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(SosController());
     return AppScaffold(
-      title: 'SoS', stitch: true,
+      title: 'SoS', stitch: true, sos: false,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {

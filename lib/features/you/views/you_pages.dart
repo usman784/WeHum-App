@@ -118,7 +118,7 @@ class YouPage extends StatelessWidget {
             Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
           ]),
           Row(children: [
-            Expanded(child: _Metric('TOGETHER', '${l?.together ?? life?.together ?? 0}', l == null ? 'Shared group sits' : 'Shared group sits (${l.togetherPct}%)', Icons.groups_2_outlined)),
+            Expanded(child: _Metric('GROUP SITS', '${l?.together ?? life?.together ?? 0}', l == null ? 'Sat live with others' : 'Sat live with others (${l.togetherPct}%)', Icons.groups_2_outlined)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per sit', Icons.donut_large_rounded)),
           ]),
@@ -147,7 +147,7 @@ class YouPage extends StatelessWidget {
                 ('r-recipes', 'My meditations', 'Your saved blends', AppRoutes.myMeditations, null),
                 ('r-notifications', 'Notifications', 'Messages from Raphael and group sits', AppRoutes.notifications, null),
                 ('r-challenges', 'Challenges', 'Cohort sprints with a grace day', AppRoutes.challenges, !ctrl.challengesOn),
-                ('r-milestones', 'Milestones', 'Awards for your practice', AppRoutes.milestones, true),
+                ('r-milestones', 'Milestones', 'Badges for first sit, streaks, minutes and group sits', AppRoutes.milestones, true),
                 ('r-breath', 'Breathwork', 'Guided breathing lessons', AppRoutes.breathwork, true),
                 ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
                 ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),
@@ -297,12 +297,13 @@ class _WeekBars extends StatelessWidget {
 }
 
 class _Tile extends StatelessWidget {
-  const _Tile(this.value, this.label);
+  const _Tile(this.value, this.label, [this.hint]);
   final String value, label;
+  final String? hint;
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [Text(value, style: AppText.title.copyWith(color: c.emberText)), Text(label, style: AppText.caption.copyWith(color: c.textSecondary))]));
+    return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [Text(value, style: AppText.title.copyWith(color: c.emberText)), Text(label, style: AppText.caption.copyWith(color: c.textSecondary)), if (hint != null) Text(hint!, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textTertiary, fontSize: 10))]));
   }
 }
 
@@ -338,8 +339,8 @@ class ProgressPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 SegmentedControl<Period>(options: Period.values, value: ctrl.period.value, onChanged: ctrl.select, labelOf: (p) => switch (p) { Period.week => 'Week', Period.month => 'Month', Period.year => 'Year', Period.all => 'Lifetime' }),
                 const SizedBox(height: 16),
-                AdaptiveGrid(baseExtent: 92, children: [
-                  _Tile('${d.minutes}', 'MINUTES'), _Tile('${d.meditations}', 'MEDITATIONS'), _Tile('${d.together}', 'TOGETHER'), _Tile('${d.average}', 'AVERAGE'),
+                AdaptiveGrid(baseExtent: 112, children: [
+                  _Tile('${d.minutes}', 'MINUTES', 'Time you sat'), _Tile('${d.meditations}', 'MEDITATIONS', 'Sits you finished'), _Tile('${d.together}', 'GROUP SITS', 'Sat live with others'), _Tile('${d.average}', 'AVG. MINUTES', 'Per meditation'),
                 ]),
                 const SizedBox(height: 16),
                 Text(ctrl.chartTitle, style: AppText.navTitle.copyWith(color: c.textPrimary)),
@@ -401,6 +402,15 @@ class EditProfilePage extends StatelessWidget {
               ctrl.last.value = v;
               ctrl.saved.value = false;
             }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'Last name (optional)', error: ctrl.lastError)),
+            const SizedBox(height: 14),
+            TextFormField(
+              key: const Key('profile-bio'), controller: ctrl.bioField, maxLength: 200, maxLines: 4, minLines: 2, textCapitalization: TextCapitalization.sentences,
+              onChanged: (v) {
+                ctrl.bio.value = v;
+                ctrl.saved.value = false;
+              },
+              style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'Short bio (optional)'),
+            ),
             const SizedBox(height: 14),
             UsernameField(
               fieldKey: const Key('profile-username'), autoFill: false, initial: ctrl.savedUsername.value, seed: ctrl.first.value, enabled: !ctrl.usernameLocked,
@@ -660,14 +670,14 @@ class HelpPage extends StatelessWidget {
     return AppScaffold(
       title: 'Help & about',
       body: ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
-        ListRow(title: 'Watch the intro again', onTap: () => Get.toNamed(AppRoutes.intro1Welcome)),
+        ListRow(title: 'Watch the intro again', onTap: () => Get.toNamed(AppRoutes.intro1Welcome, arguments: {'replay': true})),
         ListRow(title: 'Restore purchase', onTap: () => Get.toNamed(AppRoutes.restorePurchase)),
         ListRow(title: 'Questions & answers', onTap: () => open(AppLinks.faq)),
         ListRow(title: 'Contact support', onTap: () => open(AppLinks.support)),
         ListRow(title: 'Terms of use', onTap: () => open(AppLinks.terms)),
         ListRow(title: 'Privacy policy', onTap: () => open(AppLinks.privacy)),
         const SizedBox(height: 24),
-        Center(child: Column(children: [Text('${brandName()} by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () async { if (await ctrl.versionTapped() && context.mounted) AppSnack.success(context, 'Test event sent'); }, child: Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary)))), const SizedBox(height: 4), Text('Meditation training, not therapy.', style: AppText.caption.copyWith(color: c.textTertiary))])),
+        Center(child: Column(children: [Text('${brandName()} by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () async { if (await ctrl.versionTapped() && context.mounted) AppSnack.success(context, 'Test event sent'); }, child: Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary)))), const SizedBox(height: 4), Text('Transcendence & Connection', style: AppText.caption.copyWith(color: c.textTertiary))])),
       ]),
     );
   }

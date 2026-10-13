@@ -97,6 +97,12 @@ class VideoEngine implements AudioEngine {
 }
 
 /// Free YouTube items (spec #44): played in the embedded iframe player; the app never mentions YouTube in its copy.
+///
+/// Monetisation rules this class follows (YouTube embedded-player policy): the player is YouTube's own, with its own
+/// controls; a play only counts as a view, and ads only run as on youtube.com, when it starts from YouTube's play button,
+/// so the free player has no play button of its own. It keeps the package's privacy-enhanced host (`youtube-nocookie.com`):
+/// on a real phone neither that host nor `youtube.com` with an own origin or a browser user agent made YouTube serve an ad
+/// in the embedded player (the YouTube app on the same phone did), so the safer host is the right default.
 class YoutubeEngine implements AudioEngine {
   yt.YoutubePlayerController? controller;
   final _pos = StreamController<Duration>.broadcast();
@@ -135,7 +141,7 @@ class YoutubeEngine implements AudioEngine {
   @override
   Future<Duration?> open(EngineSource src, {Duration start = Duration.zero}) async {
     final id = (src as YoutubeSource).videoId;
-    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: false, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true)); // the package sets the embed's base URL itself; an extra `origin` makes YouTube answer invalidParam
+    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: true, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true));
     _s1 = controller!.videoStateStream.listen((s) {
       _p = s.position;
       _pos.add(s.position);

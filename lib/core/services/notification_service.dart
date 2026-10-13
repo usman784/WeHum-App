@@ -27,6 +27,8 @@ class NotificationService extends GetxService {
   /// Called with a push `deepLink` (or null) when the user taps a notification.
   final void Function(String? link, {String? notificationId}) onOpenLink;
   final void Function()? onInbox;
+  /// Sign-out / account switch: other services that hold per-person data (the inbox list) clear themselves here.
+  void Function()? onSignedOutHook;
 
   final permission = PushPermission.unknown.obs;
   final _local = FlutterLocalNotificationsPlugin();
@@ -140,6 +142,7 @@ class NotificationService extends GetxService {
     _token = null;
     deviceId = null;
     await cancelAllLocal();
+    onSignedOutHook?.call();
   }
 
   /// True when this phone has a push token on the server: the server then sends the daily reminder and the group warning,
@@ -162,7 +165,7 @@ class NotificationService extends GetxService {
     await _local.zonedSchedule(
       id: _reminderId, scheduledDate: _nextAt(int.parse(parts[0]), int.parse(parts[1])), notificationDetails: _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, matchDateTimeComponents: DateTimeComponents.time,
-      title: name == null || name.isEmpty ? 'Time to meditate' : 'Time to meditate, $name.', body: "Today's meditation with Raphael is ready.", payload: 'wehum://today');
+      title: name == null || name.isEmpty ? 'Time to meditate' : 'Time to meditate, $name.', body: "Today's meditation with Raphael is ready.", payload: 'wehum://motd');
   }
 
   Future<void> cancelDailyReminder() => _local.cancel(id: _reminderId);

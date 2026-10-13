@@ -240,8 +240,15 @@ class LibraryPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   AppCard(key: const Key('downloads-row'), onTap: () => Get.toNamed(AppRoutes.downloads), child: ListRow(title: 'Downloads', trailing: Obx(() => Text('${ctrl.downloadedIds.length}', style: AppText.navTitle.copyWith(color: c.textSecondary))))),
                   const SizedBox(height: 16),
-                  if (cat.teachers.isNotEmpty)
-                    AppCard(key: const Key('teacher-card'), onTap: () => Get.toNamed('/teacher/${cat.teachers.first.id}', arguments: {'id': cat.teachers.first.id}), child: Row(children: [ThumbImage(cat.teachers.first.photoUrl, width: 52, height: 52, radius: 26), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(cat.teachers.first.name, style: AppText.navTitle.copyWith(color: c.textPrimary)), Text('About your teacher', style: AppText.bodySmall.copyWith(color: c.textSecondary))])), Icon(Icons.chevron_right_rounded, color: c.textSecondary)])),
+                  if (cat.teachers.isNotEmpty) ...[
+                    Text('TEACHERS', key: const Key('teachers-heading'), style: AppText.overline.copyWith(color: c.textTertiary)),
+                    const SizedBox(height: 8),
+                    for (final (i, t) in cat.teachers.indexed)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: AppCard(key: i == 0 ? const Key('teacher-card') : Key('teacher-card-${t.id}'), onTap: () => Get.toNamed('/teacher/${t.id}', arguments: {'id': t.id}), child: Row(children: [ThumbImage(t.photoUrl, width: 52, height: 52, radius: 26), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t.name, style: AppText.navTitle.copyWith(color: c.textPrimary)), Text(cat.teachers.length == 1 ? 'About your teacher' : 'About ${t.name.split(' ').first}', style: AppText.bodySmall.copyWith(color: c.textSecondary))])), Icon(Icons.chevron_right_rounded, color: c.textSecondary)])),
+                      ),
+                  ],
                 ],
               ]));
             }),
@@ -341,7 +348,7 @@ class ThemePage extends StatelessWidget {
       body: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
             Row(children: [IconTile(themeIcon(ctrl.theme?.iconKey), size: 52), const SizedBox(width: 12), Expanded(child: Text(ctrl.subtitle, key: const Key('theme-sub'), style: AppText.bodyLarge.copyWith(color: c.textSecondary)))]),
             const SizedBox(height: 14),
-            SingleChildScrollView(scrollDirection: Axis.horizontal, child: PillGroup<String>(options: const ['all', 'premium', 'online', 'video'], selected: {ctrl.tab.value}, onToggle: (v) => ctrl.tab.value = v, labelOf: (v) => switch (v) { 'all' => 'All', 'premium' => 'Premium', 'online' => 'Online library', _ => 'Video' })),
+            SingleChildScrollView(scrollDirection: Axis.horizontal, child: PillGroup<String>(options: const ['all', 'free', 'premium', 'online', 'video'], selected: {ctrl.tab.value}, onToggle: (v) => ctrl.tab.value = v, labelOf: (v) => switch (v) { 'all' => 'All', 'free' => 'Free', 'premium' => 'Premium', 'online' => 'Online library', _ => 'Video' })),
             const SizedBox(height: 8),
             for (final s in ctrl.items) SessionRow(s: s, onTap: () => openSessionDetail(s), showFree: !member),
             if (ctrl.items.isEmpty) const EmptyState(title: 'Nothing here yet', body: 'New meditations are added regularly.', icon: Icons.spa_outlined),

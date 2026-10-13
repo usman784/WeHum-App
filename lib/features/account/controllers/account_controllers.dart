@@ -13,6 +13,7 @@ String? passwordError(String v) => v.length < 8 ? 'At least 8 characters' : (v.l
 /// Friendly text for a failed account call. Never reveals whether an email exists (except on sign-up, where it must).
 String accountErrorText(AccountFailed f) => switch (f.error.code) {
       ErrorCode.invalidCredentials => 'Email or password is wrong',
+      ErrorCode.emailRegistered => f.error.message ?? 'This email is already registered with another sign-in method.',
       ErrorCode.rateLimited => 'Too many attempts. Try again in a few minutes.',
       ErrorCode.network || ErrorCode.timeout => "You're offline. Check your connection and try again.",
       ErrorCode.validationFailed => f.error.message ?? 'Please check what you entered',

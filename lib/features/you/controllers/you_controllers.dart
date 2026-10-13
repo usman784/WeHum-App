@@ -130,7 +130,7 @@ class ProgressController extends GetxController {
 /// 56 Edit profile: photo, first and last name, username (once every 7 days). The e-mail is shown, never edited.
 class EditProfileController extends GetxController {
   late final MeRepository _me = Get.find();
-  final first = ''.obs, last = ''.obs, username = ''.obs;
+  final first = ''.obs, last = ''.obs, username = ''.obs, bio = ''.obs;
   final usernameOk = true.obs;
   final email = RxnString();
   final provider = RxnString();
@@ -146,7 +146,7 @@ class EditProfileController extends GetxController {
 
   /// The fields' text. Filled from the phone at once and from the server when it answers (an `initialValue` would
   /// be read before the profile arrives and leave the field empty).
-  final firstField = TextEditingController(), lastField = TextEditingController();
+  final firstField = TextEditingController(), lastField = TextEditingController(), bioField = TextEditingController();
 
   bool get usernameLocked => nextUsernameChange.value?.isAfter(DateTime.now()) ?? false;
 
@@ -166,6 +166,7 @@ class EditProfileController extends GetxController {
   void onClose() {
     firstField.dispose();
     lastField.dispose();
+    bioField.dispose();
     super.onClose();
   }
 
@@ -173,6 +174,8 @@ class EditProfileController extends GetxController {
     if ((p.firstName ?? '').isNotEmpty) _setFirst(p.firstName!);
     last.value = p.lastName ?? '';
     if (lastField.text != last.value) lastField.text = last.value;
+    bio.value = p.bio ?? '';
+    if (bioField.text != bio.value) bioField.text = bio.value;
     username.value = p.username ?? '';
     savedUsername.value = p.username ?? '';
     nextUsernameChange.value = p.usernameNextChangeAt;
@@ -238,8 +241,8 @@ class EditProfileController extends GetxController {
   }
 
   Future<bool> save() async {
-    if (firstError != null || lastError != null) {
-      error.value = firstError ?? lastError;
+    if (firstError != null || lastError != null || bio.value.trim().length > 200) {
+      error.value = firstError ?? lastError ?? 'The bio can be 200 characters at most';
       return false;
     }
     final changingUsername = !usernameLocked && username.value.isNotEmpty && username.value != savedUsername.value;
@@ -250,7 +253,7 @@ class EditProfileController extends GetxController {
     busy.value = true;
     error.value = null;
     try {
-      final p = await _me.patch({'firstName': first.value.trim(), 'lastName': last.value.trim().isEmpty ? null : last.value.trim(), if (changingUsername) 'username': username.value});
+      final p = await _me.patch({'firstName': first.value.trim(), 'lastName': last.value.trim().isEmpty ? null : last.value.trim(), 'bio': bio.value.trim().isEmpty ? null : bio.value.trim(), if (changingUsername) 'username': username.value});
       Get.find<OnboardingStore>().name = first.value.trim();
       _apply(p);
       await Get.find<ConfigService>().refresh();

@@ -13,7 +13,7 @@ class LinkTarget {
   String toString() => 'LinkTarget($route, $args)';
 }
 
-/// `wehum://today|group|membership|session/{id}|program/{id}`, `https://wehum.app/r/{slug}` (recipe) and
+/// `wehum://today|motd|group|membership|session/{id}|program/{id}`, `https://wehum.app/r/{slug}` (recipe) and
 /// push `deepLink` values (spec §6.1, §12). Unknown links go to the "not found" screen, never crash.
 abstract final class DeepLinks {
   static LinkTarget parse(String? link) {
@@ -30,6 +30,8 @@ abstract final class DeepLinks {
     switch (segs.first) {
       case 'today':
         return const LinkTarget(AppRoutes.todayMember);
+      case 'motd':
+        return const LinkTarget(AppRoutes.motdRoom);
       case 'group':
         return const LinkTarget(AppRoutes.groupMeditationLobby);
       case 'membership':

@@ -143,7 +143,7 @@ class LibraryController extends GetxController {
   void goSilence() => access.isMember ? Get.toNamed(AppRoutes.silenceRoomSetup) : Get.toNamed(AppRoutes.membershipPaywall, arguments: {'source': 'lock'});
 }
 
-/// 32 Theme page: All / Premium / Online library / Video.
+/// 32 Theme page: All / Free / Premium / Online library / Video.
 class ThemeScreenController extends GetxController {
   ThemeScreenController(this.themeId);
   final String themeId;
@@ -155,7 +155,8 @@ class ThemeScreenController extends GetxController {
     final all = catalog.catalog.value?.inTheme(themeId) ?? const <SessionSummary>[];
     return switch (tab.value) {
       'premium' => all.where((s) => s.isPremium).toList(),
-      'online' => all.where((s) => !s.isPremium).toList(),
+      'free' => all.where((s) => !s.isPremium).toList(),
+      'online' => all.where((s) => s.isYoutube).toList(),
       'video' => all.where((s) => s.isVideo).toList(),
       _ => all,
     };

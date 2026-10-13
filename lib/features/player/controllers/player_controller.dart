@@ -388,6 +388,19 @@ class PlayerController extends GetxController {
     }
   }
 
+  /// Back arrow: stop and return to where the person came from, no payoff screen and no "finished" step.
+  /// Time already sat (≥ 3 min) is still saved quietly.
+  Future<void> leave() async {
+    if (_finished) return;
+    _finished = true;
+    final counts = recorder.counts;
+    final rec = counts ? recorder.build(completed: false) : null;
+    _analytics.track('meditation_abandon', {'kind': args.kind, 'pct': recorder.pct, 'via': 'back'});
+    await _teardown();
+    if (rec != null && args.record) unawaited(_sync.record(rec, waitForServer: false));
+    _nav.back();
+  }
+
   /// Completed (or ended after ≥ 3 min): record to the outbox, then show the payoff.
   Future<void> finish({required bool completed}) async {
     if (_finished) return;

@@ -114,7 +114,7 @@ void main() {
     await e.dispose();
   });
 
-  testWidgets('32 theme page: tabs All / Premium / Online library / Video', (t) async {
+  testWidgets('32 theme page: tabs All / Free / Premium / Online library / Video', (t) async {
     final e = await open(t, AppRoutes.library);
     Get.toNamed('/theme/t-anx', arguments: {'id': 't-anx'});
     await settle(t);
@@ -123,10 +123,15 @@ void main() {
     await t.tap(find.text('Premium'));
     await t.pump();
     expect(find.text('Breathing Reset'), findsNothing);
-    await t.tap(find.text('Online library'));
+    await t.tap(find.text('Free'));
     await t.pump();
     expect(find.text('Steady Under Pressure'), findsNothing);
     expect(find.text('Breathing Reset'), findsOneWidget);
+    await t.ensureVisible(find.text('Online library'));
+    await t.tap(find.text('Online library')); // only the YouTube items
+    await t.pump();
+    expect(find.text('Steady Under Pressure'), findsNothing);
+    await t.ensureVisible(find.text('Video'));
     await t.tap(find.text('Video'));
     await t.pump();
     expect(find.text('Nothing here yet'), findsOneWidget);

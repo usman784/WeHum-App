@@ -78,6 +78,14 @@ class InboxService extends GetxService {
     }
   }
 
+  /// Sign-out or account switch: nothing of the previous person's list may stay on this phone (or on the bell).
+  Future<void> reset() async {
+    items.clear();
+    _cursor = null;
+    unread.value = 0;
+    await _db.putCache('inbox', '[]');
+  }
+
   Future<void> markRead(InboxItem i) async {
     if (i.read) return;
     final idx = items.indexWhere((x) => x.id == i.id);

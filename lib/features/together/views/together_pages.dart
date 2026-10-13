@@ -56,7 +56,7 @@ class MotdRoomPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(MotdRoomController());
     return Obx(() => AppScaffold(
-          title: 'Meditation of the Day', action: const Padding(padding: EdgeInsets.only(right: 4), child: SosPill()),
+          title: 'Meditation of the Day',
           body: StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
@@ -372,6 +372,8 @@ class TogetherPage extends StatelessWidget {
                 Text('Dedicate your sit during the final reflection. It is shown here, with your first name.', style: AppText.caption.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 12),
                 AppCard(outlined: true, child: Row(children: [Text('Gratitude feed', style: AppText.navTitle.copyWith(color: c.textPrimary)), const Spacer(), const AppBadge(BadgeKind.comingSoon)])),
+                const SizedBox(height: 8),
+                AppCard(key: const Key('love-projection-feed'), outlined: true, child: Row(children: [Text('Love Projection', style: AppText.navTitle.copyWith(color: c.textPrimary)), const Spacer(), const AppBadge(BadgeKind.comingSoon)])),
               ]);
             }),
           )),
@@ -425,7 +427,7 @@ class LobbyPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(LobbyController());
     return AppScaffold(
-      title: 'Scheduled sit', stitch: true,
+      title: 'Scheduled sit', stitch: true, sos: false,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
@@ -562,7 +564,7 @@ class NextSitPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(NextSitController());
     return AppScaffold(
-      title: 'Upcoming sit', stitch: true,
+      title: 'Upcoming sit', stitch: true, sos: false,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {

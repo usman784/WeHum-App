@@ -20,6 +20,7 @@ import '../../../core/services/sync_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/video_description.dart';
 import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/painters.dart';
 import '../../../core/widgets/sheets.dart';
@@ -182,11 +183,11 @@ class PlayerPage extends StatelessWidget {
             final left = ctrl.duration.value - ctrl.position.value;
             const bpm = 60 / 10; // 4 s in + 6 s out
             return Column(children: [
-              _PlayerHeader(ctrl.endEarly),
+              _PlayerHeader(ctrl.leave),
               Expanded(
                 child: ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
                   Row(children: [
-                    _SquareBtn(key: const Key('minimize'), icon: Icons.keyboard_arrow_down_rounded, label: 'Minimise', onTap: ctrl.endEarly),
+                    _SquareBtn(key: const Key('minimize'), icon: Icons.keyboard_arrow_down_rounded, label: 'Minimise', onTap: ctrl.leave),
                     Expanded(child: Column(children: [
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Flexible(child: Text(_eyebrow(args).toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.tealText, fontSize: 10)))]),
                       Text(args.title, key: const Key('player-title'), maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 18)),
@@ -464,10 +465,12 @@ class FreePlayerPage extends StatelessWidget {
     final ctrl = _make(args, engine);
     final access = Get.find<AccessService>();
     final c = context.colors;
+    final sid = args.sessionId;
+    final about = (sid == null || !Get.isRegistered<CatalogService>() ? null : Get.find<CatalogService>().catalog.value?.session(sid)?.description)?.trim() ?? '';
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) ctrl.endEarly();
+        if (!didPop) ctrl.leave();
       },
       child: Scaffold(
         body: SafeArea(
@@ -475,17 +478,21 @@ class FreePlayerPage extends StatelessWidget {
             if (ctrl.phase.value == PlayerPhase.unavailable || ctrl.phase.value == PlayerPhase.error) return PlayerFailure(ctrl: ctrl);
             final ytc = engine is YoutubeEngine ? engine.controller : null;
             final member = access.isMember;
-            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 16), children: [
+            return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 16), children: [
+              Align(alignment: Alignment.centerLeft, child: IconButton(key: const Key('free-back'), tooltip: 'Back', onPressed: ctrl.leave, icon: Icon(Icons.arrow_back_rounded, color: c.textPrimary))),
               AspectRatio(aspectRatio: 16 / 9, child: ClipRRect(borderRadius: BorderRadius.circular(Radii.tile), child: ytc != null ? yt.YoutubePlayer(controller: ytc) : ColoredBox(color: c.surface))),
               const SizedBox(height: 12),
-              if (!member) const Align(alignment: Alignment.centerLeft, child: AppBadge(BadgeKind.freeForYou)),
-              const SizedBox(height: 8),
-              Text(member ? 'Raphael’s online library' : 'Free for you', key: const Key('free-label'), style: AppText.overline.copyWith(color: c.tealText)),
+              // free listeners get the "Free for you" badge, members the plain library label: never both, never the same words twice
+              if (!member) const Align(alignment: Alignment.centerLeft, child: AppBadge(BadgeKind.freeForYou, key: Key('free-label')))
+              else Text('Raphael’s online library', key: const Key('free-label'), style: AppText.overline.copyWith(color: c.tealText)),
+              const SizedBox(height: 4),
               Text(args.title, key: const Key('player-title'), style: AppText.title.copyWith(color: c.textPrimary)),
               Text(args.subtitle ?? 'Raphael', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
               const SizedBox(height: 12),
               StalledBanner(ctrl: ctrl),
-              TransportControls(ctrl: ctrl),
+              // no play button of our own: the video starts from the player's own button, so its ads and its view count work as on YouTube
+              Text('Press play on the video to begin.', key: const Key('free-hint'), style: AppText.bodySmall.copyWith(color: c.textTertiary)),
+              if (about.isNotEmpty) ...[const SizedBox(height: 16), VideoDescription(about)],
               const SizedBox(height: 16),
               if (!member)
                 AppCard(

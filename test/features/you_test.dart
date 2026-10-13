@@ -82,10 +82,12 @@ void main() {
   testWidgets('56 edit profile: validation, save to the server, theme applied at once', (t) async {
     final e = await open(t, AppRoutes.editProfile);
     await t.enterText(find.byKey(const Key('profile-first')), '  ');
+    await t.ensureVisible(find.byKey(const Key('profile-save')));
     await t.tap(find.byKey(const Key('profile-save')));
     await t.pump();
     expect(find.text('Please enter your first name'), findsOneWidget);
     await t.enterText(find.byKey(const Key('profile-first')), 'Anne-Marie');
+    await t.ensureVisible(find.byKey(const Key('profile-save')));
     await t.tap(find.byKey(const Key('profile-save')));
     await settle(t);
     expect(e.me.profile.firstName, 'Anne-Marie');
@@ -104,6 +106,7 @@ void main() {
     expect(find.textContaining('You can change your username again on'), findsOneWidget);
     expect((t.widget(find.byKey(const Key('profile-username'))) as TextFormField).enabled, isFalse);
     await t.enterText(find.byKey(const Key('profile-last')), 'Aurelius');
+    await t.ensureVisible(find.byKey(const Key('profile-save')));
     await t.tap(find.byKey(const Key('profile-save')));
     await settle(t);
     expect(e.me.profile.lastName, 'Aurelius');
@@ -123,12 +126,14 @@ void main() {
     await t.pump(const Duration(milliseconds: 600));
     await t.pump();
     expect(find.text('That username is taken'), findsOneWidget);
+    await t.ensureVisible(find.byKey(const Key('profile-save')));
     await t.tap(find.byKey(const Key('profile-save')));
     await settle(t);
     expect(e.me.profile.username, 'marcus.sits');
     await t.enterText(f, 'marcus_calm');
     await t.pump(const Duration(milliseconds: 600));
     await t.pump();
+    await t.ensureVisible(find.byKey(const Key('profile-save')));
     await t.tap(find.byKey(const Key('profile-save')));
     await settle(t);
     expect(e.me.profile.username, 'marcus_calm');
@@ -211,7 +216,7 @@ void main() {
     for (final s in ['Watch the intro again', 'Restore purchase', 'Questions & answers', 'Contact support', 'Terms of use', 'Privacy policy']) {
       expect(find.text(s), findsOneWidget);
     }
-    expect(find.text('Meditation training, not therapy.'), findsOneWidget);
+    expect(find.text('Transcendence & Connection'), findsOneWidget);
     await e.dispose();
   });
 }

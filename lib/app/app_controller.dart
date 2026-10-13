@@ -144,6 +144,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
 
   Future<void> _onResume() async {
     await socket.onForeground();
+    if (Get.isRegistered<InboxService>()) unawaited(Get.find<InboxService>().load()); // the bell dot follows the server, not what the list showed last time
     unawaited(sync.flush());
     // time zone / DST change while away: tell the server so reminders and pushes are scheduled in the right zone (spec §10)
     try {
@@ -176,7 +177,8 @@ class AppController extends GetxService with WidgetsBindingObserver {
       Get.find<AnalyticsService>().track('push_open', {'notification_id': notificationId});
       if (Get.isRegistered<InboxService>()) Get.find<InboxService>().markReadId(notificationId);
     }
-    final t = DeepLinks.parse(link);
+    var t = DeepLinks.parse(link);
+    if (t.route == AppRoutes.notFound) t = const LinkTarget(AppRoutes.todayMember); // a push whose target we do not know opens Today, never an error page
     Get.toNamed(t.route, arguments: t.args);
   }
 
@@ -195,6 +197,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
   /// Called once the first real screen is up: opens the link that was waiting, if any.
   void markRouted() {
     routed = true;
+    if (Get.isRegistered<InboxService>()) unawaited(Get.find<InboxService>().load());
     final p = _pendingLink;
     _pendingLink = null;
     if (p != null) Future.delayed(const Duration(milliseconds: 400), () => openLink(p.link, notificationId: p.id));

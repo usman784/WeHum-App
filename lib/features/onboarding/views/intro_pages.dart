@@ -1,6 +1,7 @@
 import '../../../core/widgets/brand_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/catalog_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -19,14 +20,16 @@ class IntroPage extends StatelessWidget {
     final ctrl = Get.put(IntroController(step), tag: 'intro$step');
     final c = context.colors;
     return OnboardingFrame(
-      onSkip: ctrl.skip, dots: step - 1, cta: 'Next', onCta: ctrl.next,
-      child: SingleChildScrollView(
+      showBack: step > 1 || ctrl.replay, onSkip: ctrl.skip, skipLabel: ctrl.replay ? 'Close' : 'Skip', dots: step - 1, cta: ctrl.replay && step >= 4 ? 'Done' : 'Next', onCta: ctrl.next,
+      child: Listener(
+        onPointerDown: (_) => ctrl.stopAuto(),
+        child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _hero(context, ctrl),
           const SizedBox(height: 28),
           ..._text(c),
         ]),
-      ),
+      )),
     );
   }
 
@@ -34,7 +37,12 @@ class IntroPage extends StatelessWidget {
     final c = context.colors;
     switch (step) {
       case 1:
-        return const HeroImageCard(image: 'assets/images/seated.jpg', height: 330, radius: 28, child: SizedBox());
+        // Raphael: the photo set in the CMS (Teachers) once the catalog is here, otherwise the one that ships with the app
+        return Obx(() {
+          final cat = Get.isRegistered<CatalogService>() ? Get.find<CatalogService>().catalog.value : null;
+          final photo = cat == null || cat.teachers.isEmpty ? null : cat.teachers.first.photoUrl;
+          return HeroImageCard(key: const Key('intro-raphael'), image: (photo ?? '').isNotEmpty ? photo : 'assets/brand/raphael.png', height: 330, radius: 28, child: const SizedBox());
+        });
       case 2:
         return Obx(() {
           final pill = ctrl.livePill;

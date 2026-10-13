@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/config/env.dart';
@@ -140,7 +141,10 @@ class InitialBinding extends Bindings {
     Get.lazyPut<InboxService>(() => InboxService(Get.find(), Get.find<AppDatabase>()), fenix: true);
     Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>(), Get.find<CommunityRepository>()), fenix: true);
     Get.lazyPut<NotificationService>(
-      () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId)),
+      () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId))
+        ..onSignedOutHook = () {
+          if (Get.isRegistered<InboxService>()) unawaited(Get.find<InboxService>().reset());
+        },
       fenix: true,
     );
     Get.put<SocialAuth>(FirebaseSocialAuth(), permanent: true);

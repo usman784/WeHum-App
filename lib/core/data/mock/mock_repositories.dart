@@ -207,7 +207,7 @@ class MockMeRepository implements MeRepository {
   Future<MeProfile> me() async => profile;
   @override
   Future<MeProfile> patch(Json changes) async => profile = MeProfile(
-      id: profile.id, firstName: (changes['firstName'] as String?) ?? profile.firstName, lastName: changes.containsKey('lastName') ? changes['lastName'] as String? : profile.lastName,
+      id: profile.id, firstName: (changes['firstName'] as String?) ?? profile.firstName, lastName: changes.containsKey('lastName') ? changes['lastName'] as String? : profile.lastName, bio: changes.containsKey('bio') ? changes['bio'] as String? : profile.bio,
       username: (changes['username'] as String?) ?? profile.username, avatarUrl: profile.avatarUrl, usernameNextChangeAt: changes['username'] != null && changes['username'] != profile.username ? DateTime.now().add(const Duration(days: 7)) : profile.usernameNextChangeAt, email: profile.email, isGuest: profile.isGuest,
       theme: (changes['theme'] as String?) ?? profile.theme, reminderEnabled: (changes['reminderEnabled'] as bool?) ?? profile.reminderEnabled,
       reminderTime: (changes['reminderTime'] as String?) ?? profile.reminderTime, groupWarning: (changes['groupWarning'] as bool?) ?? profile.groupWarning,
@@ -227,9 +227,9 @@ class MockMeRepository implements MeRepository {
   }
 
   @override
-  Future<MeProfile> setAvatar(List<int> bytes, String contentType) async => profile = MeProfile(id: profile.id, firstName: profile.firstName, lastName: profile.lastName, username: profile.username, avatarUrl: 'https://example.com/avatar.jpg', email: profile.email, isGuest: profile.isGuest, theme: profile.theme, entitlement: profile.entitlement);
+  Future<MeProfile> setAvatar(List<int> bytes, String contentType) async => profile = MeProfile(id: profile.id, firstName: profile.firstName, lastName: profile.lastName, bio: profile.bio, username: profile.username, avatarUrl: 'https://example.com/avatar.jpg', email: profile.email, isGuest: profile.isGuest, theme: profile.theme, entitlement: profile.entitlement);
   @override
-  Future<MeProfile> removeAvatar() async => profile = MeProfile(id: profile.id, firstName: profile.firstName, lastName: profile.lastName, username: profile.username, email: profile.email, isGuest: profile.isGuest, theme: profile.theme, entitlement: profile.entitlement);
+  Future<MeProfile> removeAvatar() async => profile = MeProfile(id: profile.id, firstName: profile.firstName, lastName: profile.lastName, bio: profile.bio, username: profile.username, email: profile.email, isGuest: profile.isGuest, theme: profile.theme, entitlement: profile.entitlement);
   final devices = <DeviceRegistration>[];
   @override
   Future<String> registerDevice(DeviceRegistration d) async {

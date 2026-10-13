@@ -69,6 +69,22 @@ class IntroController extends GetxController {
     Get.find<AnalyticsService>().track('onboarding_step_view', {'step': 'intro$step'});
     if (step == 2) live.acquireToday();
     if (step == 3) _loadMotd();
+    // like a normal intro carousel: after a few seconds the next slide comes by itself (the last slide waits, it asks for a choice)
+    if (step < lastStep) {
+      _auto = Timer(autoAdvance, () {
+        if (Get.currentRoute == '/intro/$step') next();
+      });
+    }
+  }
+
+  /// How long a slide stays before the next one follows.
+  static const autoAdvance = Duration(seconds: 6);
+  Timer? _auto;
+
+  /// The person touched the screen (read, scrolled, tapped): from then on they move on themselves.
+  void stopAuto() {
+    _auto?.cancel();
+    _auto = null;
   }
 
   /// Slide 3 shows today's real Meditation of the Day (never a sample title); until it arrives the card has no title.
@@ -81,6 +97,7 @@ class IntroController extends GetxController {
 
   @override
   void onClose() {
+    _auto?.cancel();
     if (step == 2) live.releaseToday();
     super.onClose();
   }
@@ -93,8 +110,14 @@ class IntroController extends GetxController {
     return a.quiet ? '${_n(a.meditatedToday)} meditated today' : '${_n(a.total)} meditating now';
   }
 
-  void next() => Get.toNamed(step >= lastStep ? AppRoutes.setup1YourName : '/intro/${step + 1}');
-  void skip() => Get.toNamed(AppRoutes.howDoYouWantToStart);
+  /// Opened from Help → "Watch the intro again": only the four slides, then back to Help (no name, time or reminder steps again).
+  final bool replay = (Get.arguments is Map && (Get.arguments as Map)['replay'] == true);
+  void _backToHelp() => Get.until((r) => r.settings.name == AppRoutes.helpAbout);
+  void next() {
+    if (replay) return step >= lastStep ? _backToHelp() : Get.toNamed('/intro/${step + 1}', arguments: {'replay': true});
+    Get.toNamed(step >= lastStep ? AppRoutes.setup1YourName : '/intro/${step + 1}');
+  }
+  void skip() => replay ? _backToHelp() : Get.toNamed(AppRoutes.howDoYouWantToStart);
 }
 
 String _n(int v) => v.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},');

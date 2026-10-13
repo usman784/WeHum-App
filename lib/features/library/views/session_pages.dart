@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/video_description.dart';
 import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
@@ -158,7 +159,8 @@ class SessionDetailPage extends StatelessWidget {
                 Text(s.title, key: const Key('session-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 Text('${d?.teacher?.name ?? 'Raphael'}${d?.theme == null ? '' : ' · ${d!.theme!.name}'} · ${ctrl.motd.value != null ? ctrl.motd.value!.lengths.map((l) => '$l').join(', ') : '${s.minutes}'} min', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
                 if (ctrl.motd.value != null && member) Padding(padding: const EdgeInsets.only(top: 12), child: SegmentedControl<int>(options: ctrl.motd.value!.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min')),
-                if (s.description != null) Padding(padding: const EdgeInsets.only(top: 14), child: Text(s.description!, style: AppText.bodyLarge.copyWith(color: c.textBody))),
+                if ((s.description ?? '').trim().isNotEmpty)
+                  Padding(padding: const EdgeInsets.only(top: 14), child: s.isYoutube ? VideoDescription(s.description!) : Text(s.description!, style: AppText.bodyLarge.copyWith(color: c.textBody))),
                 const SizedBox(height: 16),
                 PrimaryButton(s.isPremium && !member ? 'Try 7 days free' : 'Play', key: const Key('session-play'), icon: Icons.play_arrow_rounded, onPressed: ctrl.play),
                 if (ctrl.canDownload) ...[

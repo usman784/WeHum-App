@@ -84,8 +84,9 @@ String _initialOf() {
 
 /// Header of the Stitch sub screens: back arrow, centered title, the SoS pill and the profile photo (64 px high).
 class StitchHeader extends StatelessWidget {
-  const StitchHeader({super.key, required this.title, this.onBack});
+  const StitchHeader({super.key, required this.title, this.onBack, this.sos = true});
   final String title;
+  final bool sos;
   final VoidCallback? onBack;
   @override
   Widget build(BuildContext context) {
@@ -100,7 +101,7 @@ class StitchHeader extends StatelessWidget {
             IconButton(tooltip: 'Back', onPressed: onBack ?? () => Get.back<void>(), icon: Icon(Icons.arrow_back_rounded, size: 22, color: c.textPrimary)),
             const BrandMark(size: 26),
             Expanded(child: Text(title, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary))),
-            const SosPill(),
+            if (sos) const SosPill(),
             const SizedBox(width: 8),
             GestureDetector(
               behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.you),
@@ -144,7 +145,7 @@ class SubHeader extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class AppScaffold extends StatelessWidget {
-  const AppScaffold({super.key, required this.body, this.title, this.action, this.header, this.bottom, this.banner, this.resize = true, this.stitch = false});
+  const AppScaffold({super.key, required this.body, this.title, this.action, this.header, this.bottom, this.banner, this.resize = true, this.stitch = false, this.sos = true});
   final Widget body;
   final String? title;
   final Widget? action;
@@ -155,6 +156,8 @@ class AppScaffold extends StatelessWidget {
   final bool resize;
   /// Header with the logo, the SoS pill and the profile photo (Stitch sub screens).
   final bool stitch;
+  /// The SoS pill in the Stitch header (off on the sit screens, where it only distracts).
+  final bool sos;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -163,7 +166,7 @@ class AppScaffold extends StatelessWidget {
         body: SafeArea(
           bottom: bottom == null,
           child: Column(children: [
-            if (header != null) header! else if (title != null) (stitch ? StitchHeader(title: title!) : SubHeader(title: title!, action: action)),
+            if (header != null) header! else if (title != null) (stitch ? StitchHeader(title: title!, sos: sos) : SubHeader(title: title!, action: action)),
             if (banner != null) banner!,
             Expanded(child: body),
           ]),

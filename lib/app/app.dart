@@ -18,7 +18,15 @@ class WeHumApp extends StatelessWidget {
         darkTheme: buildTheme(Brightness.dark),
         themeMode: Get.isRegistered<ThemeController>() ? Get.find<ThemeController>().mode.value : ThemeMode.dark,
         initialBinding: InitialBinding(),
+        // A tap outside a text field closes the keyboard, and so does every change of screen: the keyboard never stays
+        // up on a page that has no field.
+        builder: (context, child) => GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: child,
+        ),
         routingCallback: (r) {
+          FocusManager.instance.primaryFocus?.unfocus();
           final name = r?.current;
           if (name != null && Get.isRegistered<CrashService>()) {
             Get.find<CrashService>()
