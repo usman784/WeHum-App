@@ -99,8 +99,8 @@ class Benefit extends StatelessWidget {
   }
 }
 
-/// Labelled field with an inline error.
-class AppField extends StatelessWidget {
+/// Labelled field with an inline error. A password field (`obscure`) has an eye button to show or hide what is typed.
+class AppField extends StatefulWidget {
   const AppField({super.key, required this.label, required this.onChanged, this.error, this.obscure = false, this.keyboard, this.fieldKey, this.initial, this.action, this.onSubmit, this.autofill, this.caps = TextCapitalization.none});
   final String label;
   final ValueChanged<String> onChanged;
@@ -113,15 +113,28 @@ class AppField extends StatelessWidget {
   final Iterable<String>? autofill;
   final TextCapitalization caps;
   @override
+  State<AppField> createState() => _AppFieldState();
+}
+
+class _AppFieldState extends State<AppField> {
+  late bool _hidden = widget.obscure;
+
+  @override
   Widget build(BuildContext context) {
     final c = context.colors;
     return TextFormField(
-      key: fieldKey, initialValue: initial, obscureText: obscure, keyboardType: keyboard, onChanged: onChanged, textInputAction: action, autofillHints: autofill, textCapitalization: caps,
-      onFieldSubmitted: (_) => onSubmit?.call(), style: AppText.bodyLarge.copyWith(color: c.textPrimary),
+      key: widget.fieldKey, initialValue: widget.initial, obscureText: _hidden, keyboardType: widget.keyboard, onChanged: widget.onChanged, textInputAction: widget.action, autofillHints: widget.autofill, textCapitalization: widget.caps,
+      onFieldSubmitted: (_) => widget.onSubmit?.call(), style: AppText.bodyLarge.copyWith(color: c.textPrimary),
       decoration: InputDecoration(
-        labelText: label, errorText: error, filled: true, fillColor: c.surfaceInput,
+        labelText: widget.label, errorText: widget.error, filled: true, fillColor: c.surfaceInput,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.input), borderSide: BorderSide(color: c.border)),
+        suffixIcon: widget.obscure
+            ? IconButton(
+                key: const Key('toggle-password'), tooltip: _hidden ? 'Show password' : 'Hide password', onPressed: () => setState(() => _hidden = !_hidden),
+                icon: Icon(_hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: c.textSecondary),
+              )
+            : null,
       ),
     );
   }

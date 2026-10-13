@@ -197,6 +197,27 @@ void main() {
     });
   });
 
+  group('password field', () {
+    testWidgets('the eye button shows and hides the password on sign-up, log-in and reset', (t) async {
+      for (final route in [AppRoutes.signUpWithEmail, AppRoutes.logIn]) {
+        final e = await open(t, route);
+        final eye = find.byKey(const Key('toggle-password'));
+        final field = find.descendant(of: find.byKey(Key(route == AppRoutes.logIn ? 'li-password' : 'su-password')), matching: find.byType(EditableText));
+        expect(t.widget<EditableText>(field).obscureText, isTrue, reason: route);
+        await t.ensureVisible(eye);
+        await t.tap(eye);
+        await t.pump();
+        expect(t.widget<EditableText>(field).obscureText, isFalse, reason: route);
+        expect(find.byTooltip('Hide password'), findsOneWidget);
+        await t.tap(eye);
+        await t.pump();
+        expect(t.widget<EditableText>(field).obscureText, isTrue, reason: route);
+        await t.pumpWidget(const SizedBox());
+        await e.dispose();
+      }
+    });
+  });
+
   group('sign-in conflicts', () {
     test('an e-mail that belongs to another sign-in method shows the server\'s sentence', () {
       final f = AccountFailed(ApiException(ErrorCode.emailRegistered, status: 409, message: 'This email is already registered with Google. Log in with Google.'));
