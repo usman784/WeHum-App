@@ -12,6 +12,9 @@ class MediaCallbacks {
 abstract class MediaSessionPort {
   Future<void> start({required String id, required String title, String? subtitle, String? artUri, Duration? duration, bool canSeek = true, required MediaCallbacks callbacks});
   void update({required bool playing, required bool buffering, required Duration position});
+
+  /// Lock screen / notification second lines that change while the sit runs ("412 co-sitters active", the phase).
+  void updateInfo({String? album, String? phase});
   Future<void> stop();
 }
 
@@ -21,6 +24,8 @@ class NoMediaSession implements MediaSessionPort {
   Future<void> start({required String id, required String title, String? subtitle, String? artUri, Duration? duration, bool canSeek = true, required MediaCallbacks callbacks}) async {}
   @override
   void update({required bool playing, required bool buffering, required Duration position}) {}
+  @override
+  void updateInfo({String? album, String? phase}) {}
   @override
   Future<void> stop() async {}
 }
@@ -43,6 +48,12 @@ class WehumAudioHandler extends BaseAudioHandler with SeekHandler {
         if (_canSeek) MediaControl.fastForward,
         MediaControl.stop,
       ];
+
+  void info({String? album, String? phase}) {
+    final m = mediaItem.value;
+    if (m == null) return;
+    mediaItem.add(m.copyWith(album: album ?? m.album, displaySubtitle: phase ?? m.displaySubtitle));
+  }
 
   void push({required bool playing, required bool buffering, required Duration position}) {
     playbackState.add(playbackState.value.copyWith(
@@ -95,6 +106,9 @@ class AudioServiceMediaSession implements MediaSessionPort {
 
   @override
   void update({required bool playing, required bool buffering, required Duration position}) => _handler.push(playing: playing, buffering: buffering, position: position);
+
+  @override
+  void updateInfo({String? album, String? phase}) => _handler.info(album: album, phase: phase);
 
   @override
   Future<void> stop() async {

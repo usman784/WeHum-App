@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/sheets.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -246,7 +248,25 @@ class NotificationsPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), itemCount: inbox.items.length, separatorBuilder: (_, __) => Divider(color: c.border, height: 1),
                 itemBuilder: (_, i) {
                   final n = inbox.items[i];
-                  return InkWell(
+                  return Slidable(
+                    key: ValueKey('slide-${n.id}'),
+                    endActionPane: ActionPane(motion: const BehindMotion(), extentRatio: .24, children: [
+                      CustomSlidableAction(
+                        key: Key('delete-${n.id}'), backgroundColor: c.dangerTint, foregroundColor: c.dangerText,
+                        onPressed: (ctx) async {
+                          final ok = await showAppSheet<bool>(ctx, title: 'Delete this notification?', builder: (sheet) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                            Text(n.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.body.copyWith(color: sheet.colors.textSecondary)),
+                            const SizedBox(height: 16),
+                            DangerButton('Delete', key: const Key('confirm-delete-notification'), onPressed: () => Navigator.of(sheet).pop(true)),
+                            const SizedBox(height: 8),
+                            TextLink('Cancel', onPressed: () => Navigator.of(sheet).pop(false)),
+                          ]));
+                          if (ok == true) await inbox.remove(n);
+                        },
+                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.delete_outline_rounded, color: c.dangerText), const SizedBox(height: 4), Text('Delete', style: AppText.caption.copyWith(color: c.dangerText, fontWeight: FontWeight.w700))]),
+                      ),
+                    ]),
+                    child: InkWell(
                     key: Key('inbox-${n.id}'), onTap: () => ctrl.open(n),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -260,7 +280,7 @@ class NotificationsPage extends StatelessWidget {
                         Text(_when(n.createdAt), style: AppText.caption.copyWith(color: c.textTertiary)),
                       ]),
                     ),
-                  );
+                  ));
                 },
               )),
         );

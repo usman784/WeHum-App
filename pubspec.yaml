@@ -57,6 +57,7 @@ dependencies:
   add_2_calendar: ^3.0.1
   intl: any
   image_picker: ^1.2.4
+  flutter_slidable: ^4.0.3
 
 dev_dependencies:
   flutter_test: { sdk: flutter }

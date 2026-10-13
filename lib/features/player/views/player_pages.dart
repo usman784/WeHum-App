@@ -1,4 +1,3 @@
-import '../../../core/widgets/flex_scroll.dart';
 import '../../../core/services/pip.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,7 +10,6 @@ import '../../../core/audio/engines.dart';
 import '../../../core/audio/local_media.dart';
 import '../../../core/audio/media_session.dart';
 import '../../../core/data/contracts/repositories.dart';
-import '../../../core/data/models/stitch.dart';
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/presence_service.dart';
 import '../../../core/services/access_service.dart';
@@ -26,8 +24,8 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/painters.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/controls.dart';
-import '../../../core/widgets/stitch.dart';
-import '../../../core/widgets/app_scaffold.dart' show SosPill;
+import '../../../core/widgets/app_scaffold.dart' show StitchHeader;
+import '../../../core/widgets/motion.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../today/controllers/today_controller.dart';
 import '../../today/views/today_widgets.dart';
@@ -148,9 +146,19 @@ class PlayerFailure extends StatelessWidget {
   }
 }
 
-/// 42 Audio player · presence ring.
+/// 42 Audio player (Stitch "Active practice"): header, the presence ring with the telemetry in its core, the live signal,
+/// phase and scrubber, controls, the acoustic balance desk and the end-early safeguard.
 class PlayerPage extends StatelessWidget {
   const PlayerPage({super.key});
+
+  String _eyebrow(PlayerArgs a) {
+    final cat = Get.isRegistered<CatalogService>() ? Get.find<CatalogService>().catalog.value : null;
+    final s = a.sessionId == null ? null : cat?.session(a.sessionId!);
+    final theme = s?.themeId == null ? null : cat?.theme(s!.themeId!)?.name;
+    if (theme != null) return theme;
+    return switch (a.kind) { 'motd' => 'Meditation of the Day', 'group' => 'Group sit', 'sos' => 'SoS', 'custom' => 'Build your own', 'program' => 'Program', _ => 'Active practice' };
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = _args();
@@ -169,60 +177,159 @@ class PlayerPage extends StatelessWidget {
             final t = ctrl.togetherRx.value;
             final quiet = live.agg.value?.quiet ?? false;
             final people = t?.people ?? 0;
-            return FlexScroll( // the spacers shrink first; a small phone or a big text size scrolls instead of overflowing
-              padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 16),
-              child: Column(children: [
-                const Align(alignment: Alignment.centerRight, child: SosPill()),
-                const Spacer(),
-                // one dot per person the server reports, never a made-up crowd; the session's own art sits in the core
-                PresenceRing(
-                  people: people, size: 290,
-                  center: Container(
-                    width: 150, height: 150,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Color(0x80000000), blurRadius: 30, offset: Offset(0, 12))]),
-                    child: ClipOval(child: ThumbImage(args.coverUrl, key: const Key('player-art'), seed: args.sessionId ?? args.title, width: 150, height: 150)),
+            final belts = live.agg.value?.belts ?? const <String, int>{};
+            final playing = ctrl.phase.value == PlayerPhase.playing || ctrl.phase.value == PlayerPhase.buffering;
+            final left = ctrl.duration.value - ctrl.position.value;
+            const bpm = 60 / 10; // 4 s in + 6 s out
+            return Column(children: [
+              _PlayerHeader(ctrl.endEarly),
+              Expanded(
+                child: ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
+                  Row(children: [
+                    _SquareBtn(key: const Key('minimize'), icon: Icons.keyboard_arrow_down_rounded, label: 'Minimise', onTap: ctrl.endEarly),
+                    Expanded(child: Column(children: [
+                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Flexible(child: Text(_eyebrow(args).toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.tealText, fontSize: 10)))]),
+                      Text(args.title, key: const Key('player-title'), maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 18)),
+                      Text(args.programDay != null ? 'Raphael · Day ${args.programDay}' : (args.subtitle ?? 'Raphael'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)),
+                    ])),
+                    const SizedBox(width: 40),
+                  ]),
+                  SizedBox(
+                    height: 330,
+                    child: Stack(alignment: Alignment.center, children: [
+                      SessionRing(
+                        progress: ctrl.progress, people: people, size: 310,
+                        center: Stack(alignment: Alignment.center, children: [
+                          Opacity(opacity: .10, child: ClipOval(child: ThumbImage(args.coverUrl, key: const Key('player-art'), seed: args.sessionId ?? args.title, width: 170, height: 170))),
+                          Column(mainAxisSize: MainAxisSize.min, children: [
+                            _PhaseLabel(),
+                            const SizedBox(height: 2),
+                            Text(mmss(ctrl.position.value), key: const Key('pos-big'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 44, fontFeatures: AppText.tabular)),
+                            const SizedBox(height: 2),
+                            Row(mainAxisSize: MainAxisSize.min, children: [
+                              Text('-${mmss(left.isNegative ? Duration.zero : left)}', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                              Text('  •  ', style: AppText.caption.copyWith(color: c.textTertiary)),
+                              Text('${bpm.toStringAsFixed(1)} BPM', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
+                            ]),
+                          ]),
+                        ]),
+                      ),
+                      if (!live.paused && !quiet) ..._hubs(c, belts),
+                    ]),
                   ),
-                ),
-                const SizedBox(height: 10),
-                const BreathCue(),
-                const Spacer(),
-                const Overline('Active practice'),
-                const SizedBox(height: 8),
-                Text(args.title, key: const Key('player-title'), textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-                if (args.subtitle != null) Text(args.subtitle!, style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
-                if (ctrl.chapter != null) ...[
-                  const SizedBox(height: 10),
-                  InfoChip(key: const Key('phase-chip'), text: 'Phase ${ctrl.chapter!.n} · ${ctrl.chapter!.title} · ${ctrl.chapter!.n}/${ctrl.chapter!.of}', icon: Icons.radio_button_checked_rounded),
-                ],
-                const SizedBox(height: 10),
-                _TogetherLine(people: people, countries: t?.countries ?? 0, quiet: quiet, meditatedToday: live.agg.value?.meditatedToday ?? 0, paused: live.paused),
-                if (!live.paused && !quiet && (live.agg.value?.belts.values.fold<int>(0, (a, b) => a + b) ?? 0) > 0) ...[
-                  const SizedBox(height: 10),
-                  BeltCounts(key: const Key('player-belts'), belts: Belts(americas: live.agg.value!.belts['americas'] ?? 0, emea: live.agg.value!.belts['emea'] ?? 0, apac: live.agg.value!.belts['apac'] ?? 0)),
-                ],
-                const SizedBox(height: 20),
-                StalledBanner(ctrl: ctrl),
-                if (ctrl.phase.value == PlayerPhase.loading) const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: CircularProgressIndicator()) else TransportControls(ctrl: ctrl, live: args.live || args.recipe != null),
-                const SizedBox(height: 16),
-                Row(children: [
-                  Expanded(child: OutlineButton('Mix & pacing', key: const Key('mix-open'), onPressed: () => showMixSheet(context, ctrl))),
-                  const SizedBox(width: 12),
-                  Expanded(child: OutlineButton('End early', key: const Key('end'), onPressed: ctrl.endEarly)),
-                ]),
-                const SizedBox(height: 10),
-                Text('Each dot is someone sitting with you. Dedications open when your sit ends.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
-              ]),
-            );
+                  _TogetherPill(people: people, countries: t?.countries ?? 0, quiet: quiet, meditatedToday: live.agg.value?.meditatedToday ?? 0, paused: live.paused),
+                  Column(children: [
+                    Row(children: [
+                      Icon(Icons.radio_button_checked_rounded, size: 18, color: c.emberText),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(ctrl.chapter == null ? 'Guided practice' : 'Phase ${ctrl.chapter!.n}: ${ctrl.chapter!.title}', key: const Key('phase-chip'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17))),
+                      if (ctrl.chapter != null) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Text('PART ${ctrl.chapter!.n}/${ctrl.chapter!.of}', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))),
+                    ]),
+                    const SizedBox(height: 10),
+                    Semantics(label: 'Progress ${mmss(ctrl.position.value)} of ${mmss(ctrl.duration.value)}', child: AppProgressBar(ctrl.progress)),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      Text(mmss(ctrl.position.value), key: const Key('pos'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                      const Spacer(),
+                      Text(mmss(ctrl.duration.value), key: const Key('dur'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                    ]),
+                  ]),
+                  StalledBanner(ctrl: ctrl),
+                  if (ctrl.phase.value == PlayerPhase.loading)
+                    const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Center(child: CircularProgressIndicator()))
+                  else
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      if (!(args.live || args.recipe != null)) _RoundBtn(key: const Key('back15'), icon: Icons.replay_10_rounded, label: 'Back 15 seconds', text: '−15', onTap: ctrl.back15),
+                      const SizedBox(width: 28),
+                      Semantics(
+                        button: true, label: playing ? 'Pause' : 'Play',
+                        child: GestureDetector(
+                          key: const Key('play-pause'), onTap: ctrl.togglePlay,
+                          child: Pressable(scale: .94, child: Container(width: 80, height: 80, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle, boxShadow: [BoxShadow(color: c.ember.withValues(alpha: .35), blurRadius: 24, offset: const Offset(0, 8))]), child: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 42, color: c.onEmber))),
+                        ),
+                      ),
+                      const SizedBox(width: 28),
+                      if (!(args.live || args.recipe != null)) _RoundBtn(key: const Key('fwd15'), icon: Icons.forward_10_rounded, label: 'Forward 15 seconds', text: '+15', onTap: ctrl.forward15),
+                    ]),
+                  _MixDesk(ctrl: ctrl, args: args),
+                  Row(children: [
+                    Icon(Icons.bolt_rounded, size: 16, color: c.success),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text('Streak guarded at completion', style: AppText.caption.copyWith(color: c.textSecondary))),
+                    TextButton(key: const Key('end'), onPressed: ctrl.endEarly, child: Text('End practice early', style: AppText.caption.copyWith(color: c.textSecondary))),
+                  ]),
+                ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList())),
+              ),
+            ]);
           }),
         ),
       ),
     );
   }
+
+  /// Region hubs around the ring (Stitch "NYC • 84"): real counts by belt from the live aggregate.
+  List<Widget> _hubs(AppColors c, Map<String, int> belts) {
+    Widget hub(String label, int n, Alignment a, Color dot) => n <= 0
+        ? const SizedBox.shrink()
+        : Align(alignment: a, child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(width: 6, height: 6, decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+            const SizedBox(height: 3),
+            Text('$label • $n', style: AppText.overline.copyWith(color: c.textTertiary, fontSize: 8.5)),
+          ]));
+    return [
+      hub('AMERICAS', belts['americas'] ?? 0, const Alignment(-.82, -.42), c.ember),
+      hub('EMEA', belts['emea'] ?? 0, const Alignment(.02, -.86), c.success),
+      hub('APAC', belts['apac'] ?? 0, const Alignment(.82, -.38), c.tealText),
+    ];
+  }
 }
 
-/// "Meditating with 412 people · 37 countries" — quiet rule: never a small number as if it were a crowd; paused: no numbers.
-class _TogetherLine extends StatelessWidget {
-  const _TogetherLine({required this.people, required this.countries, required this.quiet, required this.meditatedToday, required this.paused});
+/// "Inhale · Anchor" / "Exhale · Release" in step with the ring (4 s in, 6 s out).
+class _PhaseLabel extends StatefulWidget {
+  @override
+  State<_PhaseLabel> createState() => _PhaseLabelState();
+}
+
+class _PhaseLabelState extends State<_PhaseLabel> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: Motion.breatheIn + Motion.breatheOut)..repeat();
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) => Text(_c.value < .4 ? 'INHALE · ANCHOR' : 'EXHALE · RELEASE', key: const Key('breath-cue'), style: AppText.overline.copyWith(color: c.tealText, fontSize: 10, letterSpacing: 1.4)),
+    );
+  }
+}
+
+class _PlayerHeader extends StatelessWidget {
+  const _PlayerHeader(this.onBack);
+  final VoidCallback onBack;
+  @override
+  Widget build(BuildContext context) => StitchHeader(title: 'Active practice', onBack: onBack);
+}
+
+class _SquareBtn extends StatelessWidget {
+  const _SquareBtn({super.key, required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Semantics(button: true, label: label, child: GestureDetector(onTap: onTap, child: Container(width: 40, height: 40, decoration: BoxDecoration(color: c.surface, shape: BoxShape.circle), child: Icon(icon, size: 22, color: c.textPrimary))));
+  }
+}
+
+/// "412 synchronized worldwide · Global field active" — quiet rule: never a small number as if it were a crowd; paused: no numbers.
+class _TogetherPill extends StatelessWidget {
+  const _TogetherPill({required this.people, required this.countries, required this.quiet, required this.meditatedToday, required this.paused});
   final int people, countries, meditatedToday;
   final bool quiet, paused;
   @override
@@ -230,9 +337,74 @@ class _TogetherLine extends StatelessWidget {
     final c = context.colors;
     final text = paused
         ? 'Live counts paused'
-        : (people <= 0 ? '' : (quiet ? (meditatedToday > 0 ? 'You’re meditating · ${groupNumber(meditatedToday)} meditated today' : 'You’re meditating') : 'Meditating with ${groupNumber(people)} people · $countries countries'));
-    if (text.isEmpty) return const SizedBox(height: 20);
-    return Text(text, key: const Key('together-line'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: paused || quiet ? c.textTertiary : c.success, fontWeight: FontWeight.w600));
+        : (people <= 0 ? '' : (quiet ? (meditatedToday > 0 ? 'You’re meditating · ${groupNumber(meditatedToday)} meditated today' : 'You’re meditating') : '${groupNumber(people)} synchronized worldwide'));
+    if (text.isEmpty) return const SizedBox(height: 4);
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(99)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          paused || quiet ? Container(width: 8, height: 8, decoration: BoxDecoration(color: c.textTertiary, shape: BoxShape.circle)) : PulseDot(color: c.success, size: 4),
+          const SizedBox(width: 6),
+          Flexible(child: Text(text, key: const Key('together-line'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 13, fontFeatures: AppText.tabular))),
+          if (!paused && !quiet && countries > 0) ...[const SizedBox(width: 8), Icon(Icons.public_rounded, size: 14, color: c.success), const SizedBox(width: 4), Text('$countries countries', style: AppText.caption.copyWith(color: c.success))],
+        ]),
+      ),
+    );
+  }
+}
+
+/// "Acoustic balance": the guide's volume (and the undercurrent's for a built meditation), the interval chime and haptic pacing.
+class _MixDesk extends StatelessWidget {
+  const _MixDesk({required this.ctrl, required this.args});
+  final PlayerController ctrl;
+  final PlayerArgs args;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    Widget bar(Key key, String left, String right, IconData icon, double value, ValueChanged<double> onChanged) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [Expanded(child: Text(left, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textPrimary))), Text('${(value * 100).round()}%', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700, fontFeatures: AppText.tabular))]),
+          const SizedBox(height: 4),
+          LayoutBuilder(builder: (_, k) => GestureDetector(
+            key: key, behavior: HitTestBehavior.opaque,
+            onHorizontalDragUpdate: (d) => onChanged(((d.localPosition.dx) / k.maxWidth).clamp(0.0, 1.0)),
+            onTapDown: (d) => onChanged(((d.localPosition.dx) / k.maxWidth).clamp(0.0, 1.0)),
+            child: Container(
+              height: 34, decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(10)),
+              child: Stack(children: [
+                AnimatedContainer(duration: const Duration(milliseconds: 90), width: k.maxWidth * value, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10))),
+                Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Row(children: [Icon(icon, size: 15, color: c.textSecondary), const SizedBox(width: 6), Expanded(child: Text(right, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))])),
+              ]),
+            ),
+          )),
+        ]);
+    Widget toggle(Key key, IconData icon, String label, bool on, VoidCallback onTap) => Expanded(
+          child: GestureDetector(
+            key: key, behavior: HitTestBehavior.opaque, onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 17, color: on ? c.emberText : c.textSecondary), const SizedBox(width: 6), Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textPrimary))), Text(on ? ' ON' : ' OFF', style: AppText.caption.copyWith(color: on ? c.success : c.textTertiary, fontWeight: FontWeight.w800))]),
+            ),
+          ),
+        );
+    return AppCard(
+      key: const Key('mix-desk'), padding: const EdgeInsets.all(14),
+      child: Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Icon(Icons.equalizer_rounded, size: 20, color: c.tealText),
+              const SizedBox(width: 8),
+              Expanded(child: Text('Acoustic balance', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16))),
+              if (ctrl.offlinePlayback.value) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.offline_pin_outlined, size: 13, color: c.success), const SizedBox(width: 4), Text('DOWNLOADED', style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 9.5))])),
+            ]),
+            const SizedBox(height: 12),
+            bar(const Key('volume-slider'), 'Guide • ${args.subtitle?.replaceFirst('with ', '') ?? 'Raphael'}', 'Direct voice', Icons.record_voice_over_outlined, ctrl.volume.value, ctrl.setVolume),
+            const SizedBox(height: 12),
+            Row(children: [
+              toggle(const Key('chime-switch'), Icons.notifications_active_outlined, 'Chime every 5m:', ctrl.chimeEveryMin.value == 5, () => ctrl.setChime(ctrl.chimeEveryMin.value == 5 ? 0 : 5)),
+              const SizedBox(width: 10),
+              toggle(const Key('haptics-switch'), Icons.vibration_rounded, 'Haptics pacing', ctrl.haptics.value, () => ctrl.setHaptics(!ctrl.haptics.value)),
+            ]),
+          ])),
+    );
   }
 }
 

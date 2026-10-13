@@ -157,6 +157,12 @@ class PlayerController extends GetxController {
     _load();
   }
 
+  /// The second line on the lock screen and in the notification (Stitch "Raphael • Guided Synchronous Sit").
+  String get _lockSubtitle {
+    final who = (args.subtitle ?? 'Raphael').replaceFirst(RegExp(r'^with ', caseSensitive: false), '');
+    return args.kind == 'sos' ? '$who • SoS' : '$who • Guided ${args.kind == 'motd' || args.kind == 'group' ? 'Synchronous ' : ''}Sit';
+  }
+
   Future<void> _load() async {
     Perf.start('player_ready'); // tap → audio playing, target < 1 s on 4G
     phase.value = PlayerPhase.loading;
@@ -168,8 +174,9 @@ class PlayerController extends GetxController {
       position.value = args.startAt;
       _listen();
       await _session.start(
-        id: recorder.id, title: args.title, subtitle: args.subtitle, artUri: args.coverUrl, duration: duration.value, canSeek: !(args.live || args.recipe != null),
+        id: recorder.id, title: args.title, subtitle: _lockSubtitle, artUri: args.coverUrl, duration: duration.value, canSeek: !(args.live || args.recipe != null),
         callbacks: MediaCallbacks(play: play, pause: pause, seekBy: skip, stop: endEarly));
+      _subs.add(togetherRx.listen((t) => _session.updateInfo(album: t != null && t.people > 1 ? '${t.people} co-sitters active' : null)));
       phase.value = PlayerPhase.ready;
       unawaited(play()); // never wait for playback itself: a real engine's play() can last as long as the track
       // presence: you are counted live; the ack carries the "together" numbers (not for non-catalog free items)
@@ -219,10 +226,17 @@ class PlayerController extends GetxController {
     return RecipeSource(plan, {for (final (i, id) in ids.indexed) if (urls[i] != null) id: urls[i]!}, bellUrl: bundledBell);
   }
 
+  int _lastChapter = 0;
+
   void _listen() {
     _subs.add(_engine.position.listen((p) {
       position.value = p;
       _session.update(playing: isPlaying, buffering: phase.value == PlayerPhase.buffering, position: p);
+      final ch = chapter;
+      if (ch != null && ch.n != _lastChapter) {
+        _lastChapter = ch.n;
+        _session.updateInfo(phase: 'Phase ${ch.n}: ${ch.title}');
+      }
       final m = chimeEveryMin.value;
       if (m > 0 && isPlaying) {
         final mark = p.inSeconds ~/ (m * 60);

@@ -249,6 +249,9 @@ class MockMeRepository implements MeRepository {
       ], null);
   @override
   Future<void> markRead({List<String>? ids, bool all = false}) async => read.addAll(all ? ['i1', 'i2'] : ids ?? const []);
+  final deletedInbox = <String>[];
+  @override
+  Future<void> deleteInbox(String id) async => deletedInbox.add(id);
   @override
   Future<void> syncEntitlement() async {}
   @override

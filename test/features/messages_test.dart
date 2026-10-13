@@ -43,6 +43,34 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('28 swipe a notification: the delete icon shows, a tap asks, Delete removes it (and Cancel keeps it)', (t) async {
+    phone(t);
+    final e = await TestEnv.create(member: true, onboardingDone: true);
+    await t.pumpWidget(e.app(initial: AppRoutes.notifications));
+    await settle(t);
+    await t.drag(find.byKey(const Key('inbox-i1')), const Offset(-300, 0));
+    await settle(t);
+    expect(find.byKey(const Key('delete-i1')), findsOneWidget);
+    await t.tap(find.byKey(const Key('delete-i1')));
+    await settle(t);
+    expect(find.text('Delete this notification?'), findsOneWidget);
+    await t.tap(find.text('Cancel'));
+    await settle(t);
+    expect(find.text('Group meditation starts in 10 minutes'), findsOneWidget);
+    expect(e.me.deletedInbox, isEmpty);
+    await t.drag(find.byKey(const Key('inbox-i1')), const Offset(-300, 0));
+    await settle(t);
+    await t.tap(find.byKey(const Key('delete-i1')));
+    await settle(t);
+    await t.tap(find.byKey(const Key('confirm-delete-notification')));
+    await settle(t);
+    expect(find.text('Group meditation starts in 10 minutes'), findsNothing);
+    expect(e.me.deletedInbox, ['i1']);
+    expect(Get.find<InboxService>().items.any((i) => i.id == 'i1'), false);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('28 empty inbox says you are all caught up', (t) async {
     phone(t);
     final e = await TestEnv.create(member: true, onboardingDone: true);

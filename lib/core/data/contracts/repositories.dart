@@ -88,6 +88,9 @@ abstract class MeRepository {
   Future<ProgressData> progress(Period p);
   Future<Page<InboxItem>> inbox({String? cursor});
   Future<void> markRead({List<String>? ids, bool all = false});
+
+  /// Swipe-to-delete: removes one notification of this person.
+  Future<void> deleteInbox(String id);
   Future<void> syncEntitlement();
   Future<String> startExport();
   Future<({String status, String? jsonUrl, String? csvUrl, String? zipUrl})> exportStatus(String jobId);

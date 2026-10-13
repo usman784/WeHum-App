@@ -62,6 +62,22 @@ class InboxService extends GetxService {
     } catch (_) {}
   }
 
+  /// Delete one notification: gone from the list at once, back if the server refuses.
+  Future<bool> remove(InboxItem i) async {
+    final idx = items.indexWhere((x) => x.id == i.id);
+    if (idx < 0) return true;
+    items.removeAt(idx);
+    _recount();
+    try {
+      await _repo.deleteInbox(i.id);
+      return true;
+    } catch (_) {
+      items.insert(idx.clamp(0, items.length), i);
+      _recount();
+      return false;
+    }
+  }
+
   Future<void> markRead(InboxItem i) async {
     if (i.read) return;
     final idx = items.indexWhere((x) => x.id == i.id);

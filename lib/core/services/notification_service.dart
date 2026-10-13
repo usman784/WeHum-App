@@ -122,6 +122,10 @@ class NotificationService extends GetxService {
       final model = Platform.isIOS ? (await dev.iosInfo).utsname.machine : (await dev.androidInfo).model;
       deviceId = await _me.registerDevice(DeviceRegistration(
         installId: await _session.installId(), platform: Platform.isIOS ? 'ios' : 'android', appVersion: info.version, pushToken: _token, osVersion: os, model: model));
+      if (serverSendsReminders) {
+        await _local.cancel(id: _reminderId); // clear what was scheduled before the token existed: no double reminder
+        await _local.cancel(id: _groupId);
+      }
     } catch (e) {
       logd('push', 'registerDevice failed: $e'); // retried on next launch / token refresh
     }
@@ -138,6 +142,10 @@ class NotificationService extends GetxService {
     await cancelAllLocal();
   }
 
+  /// True when this phone has a push token on the server: the server then sends the daily reminder and the group warning,
+  /// so the local copies are NOT scheduled (otherwise the person gets the same notification twice at the same time).
+  bool get serverSendsReminders => permission.value == PushPermission.granted && deviceId != null && _token != null;
+
   // ───────────── local notifications (fallback when push is off or offline)
   tz.TZDateTime _nextAt(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
@@ -150,6 +158,7 @@ class NotificationService extends GetxService {
   Future<void> scheduleDailyReminder(String hhmm, {String? name}) async {
     final parts = hhmm.split(':');
     await _local.cancel(id: _reminderId);
+    if (serverSendsReminders) return; // the server push is the reminder
     await _local.zonedSchedule(
       id: _reminderId, scheduledDate: _nextAt(int.parse(parts[0]), int.parse(parts[1])), notificationDetails: _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, matchDateTimeComponents: DateTimeComponents.time,
@@ -160,6 +169,7 @@ class NotificationService extends GetxService {
 
   /// 10 minutes before the group starts (local fallback for the server push).
   Future<void> scheduleGroupReminder(DateTime startsAtUtc, {int minutesBefore = 10}) async {
+    if (serverSendsReminders) return; // the server sends the warning
     final at = tz.TZDateTime.from(startsAtUtc.subtract(Duration(minutes: minutesBefore)), tz.local);
     if (!at.isAfter(tz.TZDateTime.now(tz.local))) return;
     await _local.zonedSchedule(

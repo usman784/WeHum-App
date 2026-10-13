@@ -372,3 +372,94 @@ class _BrandLogoPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+/// The player's ring (Stitch "Active practice"): a thin track, the session's progress as an ember arc, a breathing halo,
+/// and one dot per person the server reports. The telemetry sits in the middle.
+class SessionRing extends StatefulWidget {
+  const SessionRing({super.key, required this.progress, this.people = 0, this.size = 300, this.center});
+  final double progress;
+  final int people;
+  final double size;
+  final Widget? center;
+  @override
+  State<SessionRing> createState() => _SessionRingState();
+}
+
+class _SessionRingState extends State<SessionRing> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: Motion.breatheIn + Motion.breatheOut);
+  bool? _reduce;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final r = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (r != _reduce) {
+      _reduce = r;
+      r ? _c.stop() : _c.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: widget.size, height: widget.size,
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (_, child) {
+            final t = _c.value;
+            final k = (_reduce ?? false) ? .5 : (t < .4 ? Curves.easeInOut.transform(t / .4) : 1 - Curves.easeInOut.transform((t - .4) / .6));
+            return CustomPaint(painter: _SessionRingPainter(c.ember, c.success, c.border, widget.progress.clamp(0.0, 1.0), k, (_reduce ?? false) ? 0 : t, widget.people), child: child);
+          },
+          child: Center(child: widget.center),
+        ),
+      ),
+    );
+  }
+}
+
+class _SessionRingPainter extends CustomPainter {
+  _SessionRingPainter(this.ember, this.green, this.line, this.progress, this.k, this.t, this.people);
+  final Color ember, green, line;
+  final double progress, k, t;
+  final int people;
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final ctr = s.center(Offset.zero), r = s.width / 2;
+    final ringR = r * (.62 + .018 * k);
+    final halo = Rect.fromCircle(center: ctr, radius: r * (.95 + .03 * k));
+    canvas.drawCircle(ctr, halo.width / 2, Paint()..shader = RadialGradient(colors: [green.withValues(alpha: .05 + .04 * k), ember.withValues(alpha: .06 + .04 * k), Colors.transparent], stops: const [.45, .72, 1]).createShader(halo));
+    // faint outer rings
+    canvas.drawCircle(ctr, r * .95, Paint()..style = PaintingStyle.stroke..strokeWidth = .8..color = line.withValues(alpha: .5));
+    canvas.drawCircle(ctr, r * .8, Paint()..style = PaintingStyle.stroke..strokeWidth = .8..color = line.withValues(alpha: .35));
+    // the track and the progress arc
+    final rect = Rect.fromCircle(center: ctr, radius: ringR);
+    canvas.drawCircle(ctr, ringR, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = green.withValues(alpha: .38));
+    if (progress > 0) {
+      canvas.drawArc(rect, -math.pi / 2, math.pi * 2 * progress, false, Paint()..style = PaintingStyle.stroke..strokeWidth = 4.2..strokeCap = StrokeCap.round..color = ember);
+      final head = ctr + Offset(math.cos(-math.pi / 2 + math.pi * 2 * progress), math.sin(-math.pi / 2 + math.pi * 2 * progress)) * ringR;
+      canvas.drawCircle(head, 7, Paint()..color = ember.withValues(alpha: .25)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
+      canvas.drawCircle(head, 3.4, Paint()..color = const Color(0xFFFFB59A));
+    }
+    // one dot per person, drifting with the breath
+    final rnd = math.Random(11);
+    for (var i = 0; i < people.clamp(0, 40); i++) {
+      final a = rnd.nextDouble() * math.pi * 2 + t * .3, rr = r * (.74 + rnd.nextDouble() * .22);
+      final at = ctr + Offset(math.cos(a), math.sin(a)) * rr;
+      final alpha = .45 + .45 * rnd.nextDouble();
+      canvas.drawCircle(at, 4.5, Paint()..color = green.withValues(alpha: alpha * .2)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
+      canvas.drawCircle(at, 2.4, Paint()..color = green.withValues(alpha: alpha));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SessionRingPainter o) => o.progress != progress || o.k != k || o.t != t || o.people != people;
+}

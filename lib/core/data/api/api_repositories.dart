@@ -159,6 +159,11 @@ class MeApi extends ApiBase implements MeRepository {
   }
 
   @override
+  Future<void> deleteInbox(String id) async {
+    await call('DELETE', '/v1/me/inbox/$id');
+  }
+
+  @override
   Future<void> markRead({List<String>? ids, bool all = false}) async {
     await call('POST', '/v1/me/inbox/read', body: all ? {'all': true} : {'ids': ids});
   }

@@ -29,6 +29,7 @@ PlayerArgs motd({String kind = 'motd', String mode = 'solo', Duration startAt = 
 
 Future<TestEnv> openPlayer(WidgetTester t, PlayerArgs args, {bool member = true}) async {
   phone(t);
+  t.view.physicalSize = const Size(1170, 4200); // the whole player is built
   final e = await TestEnv.create(member: member, onboardingDone: true);
   await e.socket.connect();
   e.socketServer.serverConnects();
@@ -46,12 +47,12 @@ void main() {
     final e = await openPlayer(t, motd());
     expect(find.text('Steady Under Pressure'), findsOneWidget);
     expect(find.text('with Raphael'), findsOneWidget);
-    expect(find.text('Meditating with 412 people · 37 countries'), findsOneWidget);
+    expect(find.text('412 synchronized worldwide'), findsOneWidget);
     expect(e.socketServer.sentData('presence:start').single, containsPair('mode', 'solo'));
     expect(e.engine.isPlaying, true);
     e.engine.tick(const Duration(minutes: 4, seconds: 12));
     await afterPush(t);
-    expect(find.text('04:12'), findsOneWidget);
+    expect(find.text('04:12'), findsWidgets); // the big clock and the scrubber
     expect(find.text('10:00'), findsOneWidget);
     await t.tap(find.byKey(const Key('play-pause')));
     await afterPush(t);
@@ -62,7 +63,7 @@ void main() {
     // session:live updates the ring line over the session room
     e.socketServer.serverPushes('session:live', {'sessionId': sid, 'people': 500, 'countries': 40});
     await afterPush(t);
-    expect(find.text('Meditating with 500 people · 40 countries'), findsOneWidget);
+    expect(find.text('500 synchronized worldwide'), findsOneWidget);
     await t.pumpWidget(const SizedBox());
     Get.delete<PlayerController>(tag: sid, force: true);
     await e.dispose();
