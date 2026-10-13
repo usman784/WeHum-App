@@ -38,7 +38,8 @@ void main() {
     expect(find.text('-14 bpm'), findsOneWidget);
     await t.scrollUntilVisible(find.byKey(const Key('r-breath')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('COMING SOON'), findsAtLeastNWidgets(2));
-    await t.drag(find.byType(ListView).first, const Offset(0, -500)); // clear of the bottom bar
+    await t.ensureVisible(find.byKey(const Key('r-reminders')));
+    await t.drag(find.byType(ListView).first, const Offset(0, 200)); // content down: the row clear of the top edge
     await t.pump();
     await t.tap(find.byKey(const Key('r-reminders')));
     await settle(t);

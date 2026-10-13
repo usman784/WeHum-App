@@ -138,7 +138,7 @@ class YouPage extends StatelessWidget {
           // ── settings & offline
           _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
           AppCard(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: Gap.x16, vertical: 4),
             child: Column(children: [
               for (final (key, title, sub, route, badge) in [
                 ('r-downloads', 'Downloaded meditations', 'Listen without internet', AppRoutes.downloads, null),

@@ -348,7 +348,7 @@ class ThemePage extends StatelessWidget {
       body: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
             Row(children: [IconTile(themeIcon(ctrl.theme?.iconKey), size: 52), const SizedBox(width: 12), Expanded(child: Text(ctrl.subtitle, key: const Key('theme-sub'), style: AppText.bodyLarge.copyWith(color: c.textSecondary)))]),
             const SizedBox(height: 14),
-            SingleChildScrollView(scrollDirection: Axis.horizontal, child: PillGroup<String>(options: const ['all', 'free', 'premium', 'online', 'video'], selected: {ctrl.tab.value}, onToggle: (v) => ctrl.tab.value = v, labelOf: (v) => switch (v) { 'all' => 'All', 'free' => 'Free', 'premium' => 'Premium', 'online' => 'Online library', _ => 'Video' })),
+            SingleChildScrollView(scrollDirection: Axis.horizontal, child: PillGroup<String>(options: const ['all', 'free', 'premium', 'video'], selected: {ctrl.tab.value}, onToggle: (v) => ctrl.tab.value = v, labelOf: (v) => switch (v) { 'all' => 'All', 'free' => 'Free', 'premium' => 'Premium', _ => 'Video' })),
             const SizedBox(height: 8),
             for (final s in ctrl.items) SessionRow(s: s, onTap: () => openSessionDetail(s), showFree: !member),
             if (ctrl.items.isEmpty) const EmptyState(title: 'Nothing here yet', body: 'New meditations are added regularly.', icon: Icons.spa_outlined),
