@@ -2,6 +2,8 @@ import '../services/logger.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:video_player/video_player.dart';
+import 'package:webview_flutter/webview_flutter.dart' show PlatformWebViewCookieManagerCreationParams;
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yt;
 import 'audio_engine.dart';
 
@@ -100,9 +102,11 @@ class VideoEngine implements AudioEngine {
 ///
 /// Monetisation rules this class follows (YouTube embedded-player policy): the player is YouTube's own, with its own
 /// controls; a play only counts as a view, and ads only run as on youtube.com, when it starts from YouTube's play button,
-/// so the free player has no play button of its own. It keeps the package's privacy-enhanced host (`youtube-nocookie.com`):
-/// on a real phone neither that host nor `youtube.com` with an own origin or a browser user agent made YouTube serve an ad
-/// in the embedded player (the YouTube app on the same phone did), so the safer host is the right default.
+/// so the free player has no play button of its own. It keeps the package's defaults (`youtube-nocookie.com`, no custom
+/// origin): an app-id origin stops the player's postMessage calls (origin mismatch, error invalidParam) and the video never
+/// starts. Embedded players showed no ads on any device or browser tried (Pixel 5 app and Chrome, Mac Chrome), while
+/// youtube.com and the YouTube app did, so ad serving in embeds is YouTube's call. On Android third-party cookies are
+/// accepted for this web view (off by default).
 class YoutubeEngine implements AudioEngine {
   yt.YoutubePlayerController? controller;
   final _pos = StreamController<Duration>.broadcast();
@@ -141,7 +145,12 @@ class YoutubeEngine implements AudioEngine {
   @override
   Future<Duration?> open(EngineSource src, {Duration start = Duration.zero}) async {
     final id = (src as YoutubeSource).videoId;
-    controller = yt.YoutubePlayerController.fromVideoId(videoId: id, startSeconds: start.inSeconds.toDouble(), params: const yt.YoutubePlayerParams(showControls: true, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true));
+    controller = yt.YoutubePlayerController.fromVideoId(
+      videoId: id,
+      startSeconds: start.inSeconds.toDouble(),
+      params: const yt.YoutubePlayerParams(showControls: true, showFullscreenButton: false, strictRelatedVideos: true, enableCaption: true),
+    );
+    _acceptThirdPartyCookies(controller!);
     _s1 = controller!.videoStateStream.listen((s) {
       _p = s.position;
       _pos.add(s.position);
@@ -173,6 +182,12 @@ class YoutubeEngine implements AudioEngine {
       }
     });
     return null;
+  }
+
+  static void _acceptThirdPartyCookies(yt.YoutubePlayerController c) {
+    final p = c.webViewController.platform;
+    if (p is! AndroidWebViewController) return;
+    unawaited(AndroidWebViewCookieManager(const PlatformWebViewCookieManagerCreationParams()).setAcceptThirdPartyCookies(p, true).catchError((Object e) => logd('youtube', 'third-party cookies: $e')));
   }
 
   @override
