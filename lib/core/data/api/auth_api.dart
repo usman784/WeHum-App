@@ -38,7 +38,7 @@ class AuthApi implements AuthRepository {
         if (d.osVersion != null) 'osVersion': d.osVersion, if (d.model != null) 'model': d.model,
         if (proof != null) 'attestation': proof,
       }, options: Options(extra: {'noAuth': true}));
-      return _save((r.data as Map).cast<String, dynamic>());
+      return await _save((r.data as Map).cast<String, dynamic>());
     } catch (e) {
       throw ApiClient.map(e);
     }
@@ -48,7 +48,7 @@ class AuthApi implements AuthRepository {
   Future<AuthSession> social(String provider, String firebaseIdToken, {String? firstName}) async {
     try {
       final r = await _api.dio.post('/v1/auth/$provider', data: {'idToken': firebaseIdToken, if (firstName != null) 'firstName': firstName});
-      return _save((r.data as Map).cast<String, dynamic>());
+      return await _save((r.data as Map).cast<String, dynamic>());
     } catch (e) {
       throw ApiClient.map(e);
     }

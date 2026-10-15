@@ -65,7 +65,7 @@ class AccountService extends GetxService {
     try {
       final c = await _credential(provider);
       final s = await repo.linkSocial(provider, c.idToken, firstName: c.firstName);
-      return _done(s, provider);
+      return await _done(s, provider);
     } on SocialAuthCancelled {
       return const AccountCancelled();
     } catch (e) {
@@ -75,7 +75,7 @@ class AccountService extends GetxService {
 
   Future<AccountResult> linkEmail({required String email, required String password, String? firstName, String? lastName, String? username}) async {
     try {
-      return _done(await repo.linkEmail(email: email, password: password, firstName: firstName, lastName: lastName, username: username), 'email');
+      return await _done(await repo.linkEmail(email: email, password: password, firstName: firstName, lastName: lastName, username: username), 'email');
     } catch (e) {
       return _fail(e, provider: 'email');
     }
@@ -85,7 +85,7 @@ class AccountService extends GetxService {
   Future<AccountResult> loginSocial(String provider) async {
     try {
       final c = await _credential(provider);
-      return _done(await repo.social(provider, c.idToken, firstName: c.firstName), provider, login: true);
+      return await _done(await repo.social(provider, c.idToken, firstName: c.firstName), provider, login: true);
     } on SocialAuthCancelled {
       return const AccountCancelled();
     } catch (e) {
@@ -95,7 +95,7 @@ class AccountService extends GetxService {
 
   Future<AccountResult> loginEmail({required String email, required String password}) async {
     try {
-      return _done(await repo.emailLogin(email: email, password: password), 'email', login: true);
+      return await _done(await repo.emailLogin(email: email, password: password), 'email', login: true);
     } catch (e) {
       return _fail(e);
     }
@@ -103,7 +103,7 @@ class AccountService extends GetxService {
 
   Future<AccountResult> verifyMagicLink(String token) async {
     try {
-      return _done(await repo.verifyMagicLink(token), 'email', login: true);
+      return await _done(await repo.verifyMagicLink(token), 'email', login: true);
     } catch (e) {
       return _fail(e);
     }
