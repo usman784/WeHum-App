@@ -7,8 +7,11 @@ abstract class ApiBase {
   ApiBase(this.api);
   final ApiClient api;
 
-  Future<Json> getJson(String path, {Map<String, dynamic>? query, bool etag = false, CancelToken? cancel}) => _run(() async {
+  /// With [unchangedOn304] a `304` that has nothing cached (the server's "nothing newer") returns an empty object,
+  /// which the caller reads as "unchanged"; without it that case is an error like any other malformed body.
+  Future<Json> getJson(String path, {Map<String, dynamic>? query, bool etag = false, bool unchangedOn304 = false, CancelToken? cancel}) => _run(() async {
         final r = await api.dio.get(path, queryParameters: query, cancelToken: cancel, options: Options(extra: {if (etag) 'etag': true}));
+        if (unchangedOn304 && (r.statusCode == 304 || r.data is! Map)) return <String, dynamic>{};
         return asJson((r.data as Map)['data']);
       });
 

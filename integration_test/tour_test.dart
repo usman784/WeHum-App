@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:meditation/bootstrap.dart' as app;
+import 'package:meditation/core/services/account_service.dart';
 
 const sid = String.fromEnvironment('SID');
 const fid = String.fromEnvironment('FID');
@@ -12,6 +13,9 @@ const tid = String.fromEnvironment('TID');
 const pid = String.fromEnvironment('PID');
 const teid = String.fromEnvironment('TEID');
 const cid = String.fromEnvironment('CID');
+/// Optional: sign in with an e-mail account first, so the tour shows the member (premium) screens.
+const premiumEmail = String.fromEnvironment('PREMIUM_EMAIL');
+const premiumPassword = String.fromEnvironment('PREMIUM_PASSWORD');
 
 Future<void> settle(WidgetTester t, [int ms = 1500]) async {
   for (var i = 0; i < ms ~/ 100; i++) {
@@ -31,6 +35,11 @@ void main() {
     app.bootstrap();
     await settle(t, 6000);
     await binding.convertFlutterSurfaceToImage();
+    if (premiumEmail.isNotEmpty) {
+      final r = await Get.find<AccountService>().loginEmail(email: premiumEmail, password: premiumPassword);
+      debugPrint('PREMIUM login: $r');
+      await settle(t, 4000);
+    }
     Future<void> shot(String name) async {
       await settle(t, 1800);
       await binding.takeScreenshot(name);

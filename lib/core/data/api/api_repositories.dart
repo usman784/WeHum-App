@@ -63,7 +63,7 @@ class CatalogApi extends ApiBase implements CatalogRepository {
   CatalogApi(super.api);
   @override
   Future<Catalog?> catalog({int? knownVersion}) async {
-    final j = await getJson('/v1/catalog', query: {if (knownVersion != null) 'version': knownVersion}, etag: true);
+    final j = await getJson('/v1/catalog', query: {if (knownVersion != null) 'version': knownVersion}, etag: true, unchangedOn304: true);
     if (j.isEmpty) return null; // 304 / nothing newer
     final c = Catalog.fromJson(j);
     return (knownVersion != null && c.version == knownVersion) ? null : c;
