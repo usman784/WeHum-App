@@ -46,13 +46,13 @@ class UsernameFieldState extends State<UsernameField> {
   }
 
   @override
-  void didUpdateWidget(covariant UsernameField old) {
-    super.didUpdateWidget(old);
-    if (widget.initial != old.initial && _text.text != widget.initial) {
+  void didUpdateWidget(covariant UsernameField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initial != oldWidget.initial && _text.text != widget.initial) {
       _text.text = widget.initial;
       _ok = widget.initial.isNotEmpty ? true : null;
     }
-    if (widget.autoFill && widget.initial.isEmpty && widget.seed != old.seed && widget.seed.trim().length >= 2 && (_text.text.isEmpty || _text.text == _auto)) {
+    if (widget.autoFill && widget.initial.isEmpty && widget.seed != oldWidget.seed && widget.seed.trim().length >= 2 && (_text.text.isEmpty || _text.text == _auto)) {
       _reseed?.cancel();
       _reseed = Timer(const Duration(milliseconds: 600), () {
         if (mounted && (_text.text.isEmpty || _text.text == _auto)) _loadSuggestions(force: true);

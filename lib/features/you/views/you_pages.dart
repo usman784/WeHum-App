@@ -95,7 +95,7 @@ class YouPage extends StatelessWidget {
             ),
           // ── streak
           if (ctrl.streak != null) ...[
-            _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
+            const _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
             _StreakBlock(streak: ctrl.streak!),
           ],
           AppCard(
@@ -111,7 +111,7 @@ class YouPage extends StatelessWidget {
             ]),
           ),
           // ── lifetime
-          _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
+          const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
           Row(children: [
             Expanded(child: _Metric('TOTAL SITS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
             const SizedBox(width: 10),
@@ -136,7 +136,7 @@ class YouPage extends StatelessWidget {
               ]),
             ),
           // ── settings & offline
-          _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
+          const _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
           AppCard(
             padding: const EdgeInsets.symmetric(horizontal: Gap.x16, vertical: 4),
             child: Column(children: [

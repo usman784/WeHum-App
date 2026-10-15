@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
-import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/errors/error_code.dart';
-import 'package:meditation/core/network/api_client.dart';
 import 'package:meditation/core/services/account_service.dart';
 import 'package:meditation/core/services/deep_links.dart';
 import 'package:meditation/core/services/inbox_service.dart';
@@ -114,7 +112,7 @@ void main() {
   group('notifications', () {
     test('a link to the meditation of the day opens it; the daily message link opens that day', () {
       expect(DeepLinks.parse('wehum://motd').route, AppRoutes.motdRoom);
-      expect(DeepLinks.parse('wehum://message/2026-10-12'), LinkTarget(AppRoutes.dailyMessage, const {'date': '2026-10-12'}));
+      expect(DeepLinks.parse('wehum://message/2026-10-12'), const LinkTarget(AppRoutes.dailyMessage, {'date': '2026-10-12'}));
       expect(DeepLinks.parse(null).route, AppRoutes.todayMember);
     });
 
