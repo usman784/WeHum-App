@@ -60,7 +60,7 @@ void main() {
     expect(find.text('30 min'), findsOneWidget);
     expect(find.text('45 min'), findsOneWidget);
     expect(find.text('Join the sit'), findsOneWidget);
-    expect(find.text('Wait for the group'), findsOneWidget);
+    expect(find.text('Wait in the lobby'), findsOneWidget);
     expect(find.byKey(const Key('streak-chip')), findsOneWidget);
     expect(find.text('5-day streak'), findsWidgets);
     await t.scrollUntilVisible(find.byKey(const Key('streak-card')), 200, scrollable: find.byType(Scrollable).first);
@@ -119,7 +119,7 @@ void main() {
     await e.dispose();
   });
 
-  testWidgets('Wait for the group → lobby; hero tap → MOTD room', (t) async {
+  testWidgets('Wait in the lobby → lobby; hero tap → MOTD room', (t) async {
     final e = await openToday(t);
     await t.tap(find.byKey(const Key('wait-group')));
     await settle(t);

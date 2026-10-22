@@ -104,7 +104,7 @@ class HeroActions extends StatelessWidget {
       if (g != null) ...[
         const SizedBox(height: 8),
         Semantics(
-          button: true, label: 'Wait for the group, ${g.time}, ${g.live ? 'started' : 'starts in ${g.countdown}'}',
+          button: true, label: 'Wait in the lobby, ${g.time}, ${g.live ? 'started' : 'starts in ${g.countdown}'}',
           child: Material(
             key: const Key('wait-group'), color: Colors.white.withValues(alpha: .10), shape: StadiumBorder(side: BorderSide(color: Colors.white.withValues(alpha: .20))),
             child: InkWell(
@@ -117,7 +117,7 @@ class HeroActions extends StatelessWidget {
                     child: Row(children: [
                       const Icon(Icons.groups_2_rounded, color: Colors.white, size: 20),
                       const SizedBox(width: 8),
-                      Expanded(child: Text('Wait for the group', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600))),
+                      Expanded(child: Text('Wait in the lobby', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600))),
                       const SizedBox(width: 8),
                       Text(g.live ? '${g.time} · started' : '${g.time} · ${g.countdown}', style: AppText.caption.copyWith(color: Colors.white70, fontFeatures: AppText.tabular)),
                       const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 18),

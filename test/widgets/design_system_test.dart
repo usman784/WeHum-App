@@ -25,7 +25,7 @@ Widget gallery() => Column(crossAxisAlignment: CrossAxisAlignment.start, childre
       const SizedBox(height: 8),
       const PrimaryButton('Disabled'),
       const SizedBox(height: 8),
-      OutlineButton('Wait for the group', sub: '16:00 · in 12:04', onPressed: () {}),
+      OutlineButton('Wait in the lobby', sub: '16:00 · in 12:04', onPressed: () {}),
       const SizedBox(height: 8),
       SecondaryButton('Secondary', onPressed: () {}, icon: Icons.apple),
       const SizedBox(height: 8),
