@@ -1,3 +1,4 @@
+import '../data/models/json.dart' show countryCounts;
 /// Socket event names and payloads — mirror of backend `src/realtime/socket-events.ts` (backend spec §7.2).
 abstract final class SocketEvents {
   // client → server
@@ -98,15 +99,24 @@ class MotdStats {
   factory MotdStats.fromJson(Map<String, dynamic> j) => MotdStats(date: j['date'] as String, practicedToday: _i(j['practicedToday']));
 }
 
+/// The Silence Room right now (`silence:live`): people, belts and countries (ISO-2), never who.
 class SilenceLive {
-  const SilenceLive({required this.people, this.americas = 0, this.emea = 0, this.apac = 0, this.quiet = true});
-  final int people, americas, emea, apac;
+  const SilenceLive({required this.people, this.countries = 0, this.top = const [], this.todayTop = const [], this.americas = 0, this.emea = 0, this.apac = 0, this.quiet = true});
+  final int people, countries, americas, emea, apac;
+  /// Countries meditating in silence right now, most people first.
+  final List<({String country, int n})> top;
+  /// Where people meditated in silence today (the map of a quiet room).
+  final List<({String country, int n})> todayTop;
   final bool quiet;
   factory SilenceLive.fromJson(Map<String, dynamic> j) {
     final b = ((j['belts'] as Map?) ?? const {});
-    return SilenceLive(people: _i(j['people']), americas: _i(b['americas']), emea: _i(b['emea']), apac: _i(b['apac']), quiet: j['quiet'] != false);
+    return SilenceLive(
+      people: _i(j['people']), countries: _i(j['countries']), americas: _i(b['americas']), emea: _i(b['emea']), apac: _i(b['apac']), quiet: j['quiet'] != false,
+      top: countryCounts(j['top']), todayTop: countryCounts(j['todayTop']),
+    );
   }
 }
+
 
 class LobbyState {
   const LobbyState({required this.date, required this.waiting, required this.countries, required this.regions, required this.startsAt, this.americas = 0, this.emea = 0, this.apac = 0, this.intentions = const {}});

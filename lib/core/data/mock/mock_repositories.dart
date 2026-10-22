@@ -130,7 +130,8 @@ class MockTodayRepository implements TodayRepository {
       belts: [WorldBelt(key: 'US', name: 'United States', sittingNow: 1120, minutesToday: 22800, syncShare: 41), WorldBelt(key: 'GB', name: 'United Kingdom', sittingNow: 842, minutesToday: 14200, syncShare: 38)]);
   @override
   Future<SilenceInfo> silence() async => const SilenceInfo(
-      sittingNow: 214, belts: Belts(americas: 68, emea: 114, apac: 32), quiet: false, todayTotal: 842, todayZones: 3,
+      sittingNow: 214, belts: Belts(americas: 68, emea: 114, apac: 32), quiet: false, todayTotal: 842, todayZones: 3, countries: 4,
+      top: [(country: 'GB', n: 61), (country: 'US', n: 58), (country: 'IN', n: 30), (country: 'PK', n: 22)], todayTop: [(country: 'GB', n: 240), (country: 'US', n: 210)],
       opening: [BellOption(id: 'bell-bowl', name: 'Tibetan bowl')], interval: [BellOption(id: 'bell-chime', name: 'Soft chime')], closing: [BellOption(id: 'bell-gongs', name: 'Three dissolving gongs')]);
   @override
   Future<LibrarySummary> librarySummary() async => const LibrarySummary(

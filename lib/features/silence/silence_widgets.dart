@@ -4,10 +4,12 @@ import '../../core/data/models/stitch.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/widgets/controls.dart';
+import '../../core/utils/countries.dart';
 import '../../core/widgets/motion.dart';
+import '../../core/widgets/painters.dart';
 import '../../core/widgets/stitch.dart';
 
-/// "● 214 SITTING IN SILENCE NOW" + "LIVE SYNC": the pulsing pill at the top of the Silence Room.
+/// "● 214 MEDITATING IN SILENCE NOW" + "LIVE SYNC": the pulsing pill at the top of the Silence Room.
 class LivePresenceRow extends StatelessWidget {
   const LivePresenceRow({super.key, required this.label, required this.quiet, this.right = 'Live sync'});
   final String label, right;
@@ -198,15 +200,7 @@ class _BreathRingState extends State<BreathRing> with SingleTickerProviderStateM
                 const SizedBox(width: 4),
                 Text(open ? 'OPEN' : 'MIN', style: AppText.navTitle.copyWith(color: c.ember)),
               ]),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3), decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(99)),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.air_rounded, size: 13, color: c.success),
-                  const SizedBox(width: 6),
-                  Text('CADENCE: ${widget.inhaleSec}S / ${widget.exhaleSec}S', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
-                ]),
-              ),
+              // breathing cadence chip hidden — breathing feature is coming later
             ]),
           ]),
         ),
@@ -316,6 +310,75 @@ class AcousticRow extends StatelessWidget {
           child: Container(margin: const EdgeInsets.only(right: 6), padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(6)), child: Text(chip!.toUpperCase(), style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
         ),
         AppToggle(key: toggleKey, value: value, onChanged: onChanged, label: title),
+      ]),
+    );
+  }
+}
+
+/// 🇵🇰 from "PK" (regional indicator letters); empty for anything that is not two letters.
+String flagOf(String code) {
+  final c = code.toUpperCase();
+  if (c.length != 2 || !RegExp(r'^[A-Z]{2}$').hasMatch(c)) return '';
+  return String.fromCharCodes(c.codeUnits.map((u) => 0x1F1E6 + u - 65));
+}
+
+/// The Silence Room's connection with the world: a live dot map of where people are meditating in silence and the
+/// countries with their counts, updated from `silence:live`. Country level only, never who.
+/// [live] false = nobody is in the room right now, so the rows are where people meditated in silence today.
+/// [compact]: the meditating screen (no card, smaller map, one line of countries).
+class SilenceWhereCard extends StatelessWidget {
+  const SilenceWhereCard({super.key, required this.rows, required this.live, this.compact = false, this.max = 6});
+  final List<({String country, int n})> rows;
+  final bool live, compact;
+  final int max;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final hot = {for (final r in rows) r.country: r.n};
+    if (compact) {
+      if (rows.isEmpty) return const SizedBox.shrink();
+      final shown = rows.take(3).map((r) => '${flagOf(r.country)} ${countryName(r.country)} ${groupedInt(r.n)}'.trim()).join(' · ');
+      final more = rows.length > 3 ? ' · +${rows.length - 3}' : '';
+      return Column(key: const Key('silence-where-compact'), mainAxisSize: MainAxisSize.min, children: [
+        WorldDotMap(hot: hot, height: 84),
+        const SizedBox(height: 6),
+        Text('${live ? 'Meditating now in' : 'Meditated here today in'} $shown$more', key: const Key('silence-where-line'), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
+            style: AppText.caption.copyWith(color: c.textTertiary)),
+      ]);
+    }
+    return Container(
+      key: const Key('silence-where'), padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          if (live) PulseDot(color: c.success, size: 3.5) else Icon(Icons.public_rounded, size: 14, color: c.textTertiary),
+          const SizedBox(width: 6),
+          Expanded(child: Text(live ? 'WHERE PEOPLE ARE MEDITATING' : 'WHERE PEOPLE MEDITATED TODAY', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10.5, letterSpacing: .6))),
+          if (rows.isNotEmpty)
+            Text(live ? '${rows.length} ${rows.length == 1 ? 'COUNTRY' : 'COUNTRIES'} LIVE' : '${rows.length} ${rows.length == 1 ? 'COUNTRY' : 'COUNTRIES'}', key: const Key('silence-where-count'),
+                style: AppText.overline.copyWith(color: live ? c.success : c.textTertiary, fontSize: 10)),
+        ]),
+        const SizedBox(height: 10),
+        ClipRRect(borderRadius: BorderRadius.circular(10), child: Container(color: c.bgDeep, padding: const EdgeInsets.all(6), child: WorldDotMap(hot: hot, height: 140))),
+        const SizedBox(height: 10),
+        if (rows.isEmpty)
+          Text('No one yet today. Your meditation lights up your country here.', style: AppText.caption.copyWith(color: c.textSecondary))
+        else ...[
+          for (final r in rows.take(max))
+            Padding(
+              key: Key('silence-country-${r.country}'), padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(children: [
+                SizedBox(width: 26, child: Text(flagOf(r.country), style: const TextStyle(fontSize: 17))),
+                Expanded(child: Text(countryName(r.country), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textPrimary))),
+                Text(live ? '${groupedInt(r.n)} meditating now' : '${groupedInt(r.n)} today', style: AppText.caption.copyWith(color: live ? c.success : c.textSecondary, fontFeatures: AppText.tabular)),
+              ]),
+            ),
+          if (rows.length > max)
+            Padding(padding: const EdgeInsets.only(top: 4), child: Text('+${rows.length - max} more ${rows.length - max == 1 ? 'country' : 'countries'}', style: AppText.caption.copyWith(color: c.textTertiary))),
+        ],
+        const SizedBox(height: 6),
+        Text('Country level only. We never show who is meditating.', style: AppText.micro.copyWith(color: c.textTertiary)),
       ]),
     );
   }

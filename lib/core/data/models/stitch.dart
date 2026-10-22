@@ -96,12 +96,14 @@ class BellOption {
 
 class SilenceInfo {
   const SilenceInfo({
-    this.sittingNow = 0, this.belts = const Belts(), this.quiet = true, this.todayTotal = 0, this.todayZones = 0,
+    this.sittingNow = 0, this.belts = const Belts(), this.quiet = true, this.todayTotal = 0, this.todayZones = 0, this.countries = 0, this.top = const [], this.todayTop = const [],
     this.durations = const [5, 10, 15, 20, 30, 45, 60, 0], this.inhaleSec = 4, this.exhaleSec = 6, this.extendMin = 5,
     this.opening = const [], this.interval = const [], this.closing = const [],
   });
-  final int sittingNow, todayTotal, todayZones, inhaleSec, exhaleSec, extendMin;
+  final int sittingNow, todayTotal, todayZones, inhaleSec, exhaleSec, extendMin, countries;
   final Belts belts;
+  /// Countries meditating in silence now / today (ISO-2, most people first): the map and "where people are meditating".
+  final List<({String country, int n})> top, todayTop;
   final bool quiet;
   /// Minutes; 0 = open-ended.
   final List<int> durations;
@@ -115,6 +117,7 @@ class SilenceInfo {
     final b = asJson(j['bells']);
     return SilenceInfo(
       sittingNow: asInt(j['sittingNow']), belts: Belts.from(j['belts']), quiet: j['quiet'] != false, todayTotal: asInt(j['todayTotal']), todayZones: asInt(j['todayZones']),
+      countries: asInt(j['countries']), top: countryCounts(j['top']), todayTop: countryCounts(j['todayTop']),
       durations: [for (final d in ((j['durations'] as List?) ?? const [5, 10, 15, 20, 30, 45, 60, 0])) (d as num).toInt()],
       inhaleSec: asInt(c['inhaleSec'], 4), exhaleSec: asInt(c['exhaleSec'], 6), extendMin: asInt(j['extendMin'], 5),
       opening: bells(b['opening']), interval: bells(b['interval']), closing: bells(b['closing']),

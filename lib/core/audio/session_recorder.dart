@@ -21,10 +21,10 @@ class SessionRecorder {
 
   void start() => startedAt ??= _now().toUtc();
 
-  /// Playing started or resumed.
-  void playing() {
-    start();
-    _playingSince ??= _now();
+  /// Playing started or resumed. [at]: when it really started, if that was a moment ago (a timer that began on time).
+  void playing([DateTime? at]) {
+    startedAt ??= (at ?? _now()).toUtc();
+    _playingSince ??= at ?? _now();
   }
 
   /// Paused, stalled or ended.

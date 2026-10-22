@@ -96,6 +96,7 @@ void main() {
       await r.ctrl.enter();
       expect(r.ctrl.phase.value, SilencePhase.running);
       expect(r.nav.events, ['run']);
+      now = now.add(SilenceController.openingGap); // the opening bell rings, then 3 s of quiet before the timer starts
       now = now.add(const Duration(minutes: 12, seconds: 31)); // phone was suspended: no timer ticks happened
       r.ctrl.refreshTime(); // what runs when the app returns
       expect(r.ctrl.remaining.value.inSeconds, 30 * 60 - (12 * 60 + 31));
@@ -117,7 +118,7 @@ void main() {
       final r = Rig();
       r.ctrl.minutes.value = 10;
       await r.ctrl.enter();
-      now = now.add(const Duration(minutes: 3));
+      now = now.add(SilenceController.openingGap + const Duration(minutes: 3));
       r.ctrl.pause();
       expect(r.ctrl.phase.value, SilencePhase.paused);
       expect(r.notif.calls, contains('cancelBell'));
@@ -154,7 +155,7 @@ void main() {
       r.ctrl.minutes.value = 0;
       await r.ctrl.enter();
       expect(r.notif.calls.where((c) => c == 'bell'), isEmpty);
-      now = now.add(const Duration(minutes: 2));
+      now = now.add(SilenceController.openingGap + const Duration(minutes: 2));
       r.ctrl.refreshTime();
       expect(r.ctrl.elapsed.value, const Duration(minutes: 2));
       await r.ctrl.finish(completed: false);
@@ -184,6 +185,52 @@ void main() {
     });
   });
 
+  test('opening bell, then 3 seconds of quiet, then the meditation starts; the gap is not counted or pausable', () async {
+    var now = DateTime.utc(2026, 10, 7, 8);
+    await withClock(Clock(() => now), () async {
+      final r = Rig();
+      r.ctrl.minutes.value = 5;
+      await r.ctrl.enter();
+      expect(r.bell.rings, 1); // the bell rings at once
+      expect(r.ctrl.settleLeft.value, 3);
+      expect(r.ctrl.remaining.value, const Duration(minutes: 5));
+      now = now.add(const Duration(seconds: 1));
+      r.ctrl.refreshTime();
+      expect(r.ctrl.settleLeft.value, 2);
+      r.ctrl.pause(); // not during the gap
+      expect(r.ctrl.phase.value, SilencePhase.running);
+      now = now.add(const Duration(seconds: 1));
+      r.ctrl.refreshTime();
+      expect(r.ctrl.settleLeft.value, 1);
+      expect(r.ctrl.elapsed.value, Duration.zero);
+      now = now.add(const Duration(seconds: 1)); // 3 s after the bell: the timer starts
+      r.ctrl.refreshTime();
+      expect(r.ctrl.settleLeft.value, 0);
+      expect(r.ctrl.remaining.value, const Duration(minutes: 5));
+      now = now.add(const Duration(minutes: 5));
+      r.ctrl.refreshTime();
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(r.ctrl.phase.value, SilencePhase.done);
+      expect(r.bell.rings, 2); // opening and closing
+      expect(r.nav.complete!.record!.durationSec, 300); // the 3-second gap is not part of the meditation
+      expect(r.nav.complete!.record!.startedAt, DateTime.utc(2026, 10, 7, 8, 0, 3));
+    });
+  });
+
+  test('no opening bell: no gap, the timer starts at once', () async {
+    var now = DateTime.utc(2026, 10, 7, 8);
+    await withClock(Clock(() => now), () async {
+      final r = Rig();
+      r.ctrl.bellStart.value = false;
+      r.ctrl.minutes.value = 5;
+      await r.ctrl.enter();
+      expect(r.ctrl.settleLeft.value, 0);
+      now = now.add(const Duration(seconds: 2));
+      r.ctrl.refreshTime();
+      expect(r.ctrl.elapsed.value, const Duration(seconds: 2));
+    });
+  });
+
   test('bells can be switched off', () async {
     final r = Rig();
     r.ctrl.bellStart.value = false;
@@ -196,32 +243,82 @@ void main() {
 
   testWidgets('50/51 screens: honest numbers from the silence room (busy, then quiet), durations, Enter opens the run screen with the timer', (t) async {
     phone(t);
-    t.view.physicalSize = const Size(1170, 4200); // the whole page is built
+    t.view.physicalSize = const Size(1170, 6000); // the whole page is built
     final e = await TestEnv.create(member: true, onboardingDone: true);
     await e.socket.connect();
     e.socketServer.serverConnects();
+    final bell = FakeBell();
+    Get.put(SilenceController(bell: bell, screen: FakeScreen())); // no real audio / wakelock plugins in a widget test
     await t.pumpWidget(e.app(initial: AppRoutes.silenceRoomSetup));
     await t.pump();
     await t.pump(const Duration(milliseconds: 600));
     // snapshot from GET /v1/silence: busy room
-    expect(find.text('214 SITTING IN SILENCE NOW'), findsOneWidget);
+    expect(find.text('214 MEDITATING IN SILENCE NOW'), findsOneWidget);
     expect(find.byKey(const Key('silence-belts')), findsOneWidget);
+    // the room's connection with the world: map + where people are meditating, from the setup snapshot
+    expect(find.byKey(const Key('silence-where')), findsOneWidget);
+    expect(find.text('WHERE PEOPLE ARE MEDITATING'), findsOneWidget);
+    expect(find.text('4 COUNTRIES LIVE'), findsOneWidget);
+    expect(find.text('United Kingdom'), findsOneWidget);
+    expect(find.text('61 meditating now'), findsOneWidget);
+    // a socket update moves the map and the list at once (no reload)
+    e.socketServer.serverPushes('silence:live', {'people': 5, 'countries': 2, 'top': [{'c': 'PK', 'n': 3}, {'c': 'DE', 'n': 2}], 'todayTop': [], 'belts': {'americas': 0, 'emea': 2, 'apac': 3}, 'quiet': false, 'at': 1});
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 20));
+    expect(find.text('2 COUNTRIES LIVE'), findsOneWidget);
+    expect(find.byKey(const Key('silence-country-PK')), findsOneWidget);
+    expect(find.text('3 meditating now'), findsOneWidget);
+    expect(find.text('United Kingdom'), findsNothing);
     // the room empties: the quiet variant shows the day's total and the honest-presence note
-    e.socketServer.serverPushes('silence:live', {'people': 3, 'belts': {'americas': 1, 'emea': 2, 'apac': 0}, 'quiet': true, 'at': 1});
+    e.socketServer.serverPushes('silence:live', {'people': 3, 'countries': 2, 'top': [{'c': 'DE', 'n': 2}, {'c': 'US', 'n': 1}], 'todayTop': [{'c': 'JP', 'n': 4}], 'belts': {'americas': 1, 'emea': 2, 'apac': 0}, 'quiet': true, 'at': 1});
     await t.pump();
     await t.pump(const Duration(milliseconds: 20));
     expect(find.text('842'), findsOneWidget);
-    expect(find.text('sat in this room today'), findsOneWidget);
+    expect(find.text('meditated in this room today'), findsOneWidget);
+    expect(find.text('2 COUNTRIES LIVE'), findsOneWidget); // a quiet room still shows where its few people are
     expect(find.text('3 quietly right now · across 3 zones'), findsOneWidget);
     expect(find.byKey(const Key('honest-card')), findsOneWidget);
+    // the room empties: the map and list switch to where people meditated in silence today
+    e.socketServer.serverPushes('silence:live', {'people': 0, 'countries': 0, 'top': [], 'todayTop': [{'c': 'JP', 'n': 4}], 'belts': {'americas': 0, 'emea': 0, 'apac': 0}, 'quiet': true, 'at': 2});
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 20));
+    expect(find.text('WHERE PEOPLE MEDITATED TODAY'), findsOneWidget);
+    expect(find.text('4 today'), findsOneWidget);
     await t.tap(find.byKey(const Key('dur-30')));
     await t.pump();
     expect(find.textContaining('30 minutes, then the bell.'), findsOneWidget);
+    // no breathing labels in a meditation: no cadence chip, no "Breathing cue" line
+    expect(find.textContaining('CADENCE'), findsNothing);
+    expect(find.textContaining('Breathing cue'), findsNothing);
     await t.tap(find.byKey(const Key('dur-0')));
     await t.pump();
     expect(find.text('No end: finish whenever you like.'), findsOneWidget);
     await t.tap(find.byKey(const Key('dur-10')));
     await t.pump();
+    // the run screen: the timer, and no "Breathe in / Breathe out" words over the ring
+    expect(find.text('SELECT MEDITATION DURATION'), findsOneWidget); // "meditation", not "sit"
+    await t.tap(find.byKey(const Key('silence-enter')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    // the bell rings, then 3 seconds of quiet, counted down live before the timer starts
+    expect(bell.rings, 1);
+    expect(find.text('BEGINS IN 3'), findsOneWidget);
+    expect(find.byKey(const Key('silence-where-line')), findsOneWidget); // the run screen keeps the world in view
+    expect(find.textContaining('Meditated here today in'), findsOneWidget);
+    e.socketServer.serverPushes('silence:live', {'people': 2, 'countries': 1, 'top': [{'c': 'PK', 'n': 2}], 'todayTop': [], 'belts': {'americas': 0, 'emea': 0, 'apac': 2}, 'quiet': true, 'at': 3});
+    await t.pump();
+    expect(find.textContaining('Meditating now in'), findsOneWidget);
+    expect(find.textContaining('Pakistan 2'), findsOneWidget);
+    expect(find.text('10:00'), findsOneWidget);
+    expect(find.text('End meditation'), findsOneWidget);
+    await t.pump(const Duration(seconds: 1));
+    expect(find.text('BEGINS IN 2'), findsOneWidget);
+    expect(find.byKey(const Key('silence-time')), findsOneWidget);
+    expect(find.byKey(const Key('breath-cue')), findsNothing);
+    expect(find.textContaining('Breathe'), findsNothing);
+    await t.tap(find.byKey(const Key('silence-end'))); // ending in the gap records nothing and stops the timers
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
     await t.pumpWidget(const SizedBox());
     Get.delete<SilenceController>(force: true);
     await e.dispose();

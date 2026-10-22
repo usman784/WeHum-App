@@ -47,7 +47,7 @@ class SilenceSetupPage extends StatelessWidget {
       body: Obx(() {
         final info = ctrl.info.value;
         final quiet = ctrl.quietRoom;
-        final belts = ctrl.live.silence.value == null ? (info?.belts ?? const Belts()) : Belts(americas: ctrl.live.silence.value!.americas, emea: ctrl.live.silence.value!.emea, apac: ctrl.live.silence.value!.apac);
+        final belts = ctrl.belts;
         final dur = ctrl.durations;
         final opening = info?.opening ?? const <BellOption>[], interval = info?.interval ?? const <BellOption>[], closing = info?.closing ?? const <BellOption>[];
         return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 6, Gap.gutter, 28), children: staggered([
@@ -67,23 +67,25 @@ class SilenceSetupPage extends StatelessWidget {
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Icon(Icons.verified_user_outlined, size: 18, color: c.tealText),
                 const SizedBox(width: 10),
-                Expanded(child: Text('Honest presence. We never add synthetic sitters or inflate activity. When the room rests in quiet, we show everyone who sat here today.', style: AppText.caption.copyWith(color: c.textSecondary))),
+                Expanded(child: Text('Honest presence. We never add synthetic meditators or inflate activity. When the room rests in quiet, we show everyone who meditated here today.', style: AppText.caption.copyWith(color: c.textSecondary))),
               ]),
             ),
           ] else ...[
             LivePresenceRow(label: '${ctrl.bigNum} ${ctrl.bigLabel}', quiet: false),
             if (!belts.isEmpty) BeltsCard(belts: belts, onTap: () => Get.toNamed(AppRoutes.worldMapWorldVibration)),
           ],
+          // the room's connection with the world: live map + where people are meditating (socket `silence:live`)
+          if (!ctrl.live.paused) SilenceWhereCard(rows: ctrl.whereRows, live: ctrl.countriesLive),
           BreathRing(minutes: ctrl.minutes.value, inhaleSec: ctrl.inhaleSec, exhaleSec: ctrl.exhaleSec),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Expanded(child: Text('SELECT SIT DURATION', style: AppText.overline.copyWith(color: c.textSecondary))),
+              Expanded(child: Text('SELECT MEDITATION DURATION', style: AppText.overline.copyWith(color: c.textSecondary))),
               Text('Free unguided room', style: AppText.caption.copyWith(color: c.textSecondary)),
             ]),
             const SizedBox(height: 10),
             DurationGrid(options: dur, selected: ctrl.minutes.value, onPick: (v) => ctrl.minutes.value = v),
             const SizedBox(height: 8),
-            Text(ctrl.openEnded ? 'No end: finish whenever you like.' : '${ctrl.minutes.value} minutes, then the bell. Breathing cue: ${ctrl.inhaleSec} s in · ${ctrl.exhaleSec} s out', style: AppText.caption.copyWith(color: c.textTertiary)),
+            Text(ctrl.openEnded ? 'No end: finish whenever you like.' : '${ctrl.minutes.value} minutes, then the bell.', style: AppText.caption.copyWith(color: c.textTertiary)), // breathing cue removed — future feature
           ]),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
@@ -113,11 +115,11 @@ class SilenceSetupPage extends StatelessWidget {
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Icon(Icons.brightness_low_rounded, size: 18, color: c.textSecondary),
               const SizedBox(width: 10),
-              Expanded(child: Text('The screen dims to near-black 5 seconds after the sit starts. Tap anywhere to wake the controls.', style: AppText.caption.copyWith(color: c.textSecondary, height: 1.5))),
+              Expanded(child: Text('The screen dims to near-black 5 seconds after the meditation starts. Tap anywhere to wake the controls.', style: AppText.caption.copyWith(color: c.textSecondary, height: 1.5))),
             ]),
           ),
           Column(children: [
-            PrimaryButton(ctrl.openEnded ? 'Begin silent sit' : 'Begin silent sit · ${ctrl.minutes.value} min', key: const Key('silence-enter'), icon: Icons.play_arrow_rounded, onPressed: ctrl.enter),
+            PrimaryButton(ctrl.openEnded ? 'Begin silent meditation' : 'Begin silent meditation · ${ctrl.minutes.value} min', key: const Key('silence-enter'), icon: Icons.play_arrow_rounded, onPressed: ctrl.enter),
             const SizedBox(height: 12),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
@@ -154,12 +156,13 @@ class SilenceRunPage extends StatelessWidget {
               final shown = ctrl.openEnded ? ctrl.elapsed.value : ctrl.remaining.value;
               final next = ctrl.nextChimeAt;
               final people = ctrl.sittingNow;
+              final settle = ctrl.settleLeft.value;
               return AnimatedOpacity(
                 opacity: dim ? .15 : 1, duration: const Duration(milliseconds: 600),
                 child: Padding(
                   padding: const EdgeInsets.all(Gap.gutterOnboarding),
                   child: Column(children: [
-                    Align(alignment: Alignment.centerRight, child: TextLink('End sit', key: const Key('silence-end'), onPressed: () => ctrl.finish(completed: false), color: c.textSecondary)),
+                    Align(alignment: Alignment.centerRight, child: TextLink('End meditation', key: const Key('silence-end'), onPressed: () => ctrl.finish(completed: false), color: c.textSecondary)),
                     const Spacer(),
                     Text('SILENCE ROOM · ${ctrl.openEnded ? 'OPEN' : '${ctrl.minutes.value} MIN'}', style: AppText.overline.copyWith(color: c.textTertiary)),
                     const SizedBox(height: 14),
@@ -168,8 +171,8 @@ class SilenceRunPage extends StatelessWidget {
                       progress: ctrl.openEnded || ctrl.planned.inSeconds == 0 ? 0 : (ctrl.elapsed.value.inSeconds / ctrl.planned.inSeconds).clamp(0.0, 1.0),
                       people: (people ?? 0).clamp(0, 40),
                       center: Column(mainAxisSize: MainAxisSize.min, children: [
-                        const BreathCue(),
-                        const SizedBox(height: 6),
+                        // BreathCue removed — breathing feature is coming later
+                        if (settle > 0) Text('BEGINS IN $settle', key: const Key('silence-settle'), style: AppText.overline.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
                         Text(formatCountdown(shown), key: const Key('silence-time'), style: AppText.display.copyWith(color: Colors.white, fontSize: 52, fontFeatures: AppText.tabular)),
                       ]),
                     ),
@@ -179,10 +182,14 @@ class SilenceRunPage extends StatelessWidget {
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
                         if (!paused && !ctrl.live.paused && people != null && people > 1) ...[PulseDot(color: c.success, size: 4), const SizedBox(width: 8)],
                         Flexible(child: Text(
-                          paused ? 'Paused' : (ctrl.live.paused ? 'Live counts paused' : (people != null && people > 1 ? '${groupedInt(people)} sitting with you right now' : 'You’re sitting in silence')),
+                          paused ? 'Paused' : settle > 0 ? 'Let the bell settle' : (ctrl.live.paused ? 'Live counts paused' : (people != null && people > 1 ? '${groupedInt(people)} meditating with you right now' : 'You’re meditating in silence')),
                           key: const Key('silence-with'), style: AppText.bodySmall.copyWith(color: c.textPrimary))),
                       ]),
                     ),
+                    if (!ctrl.live.paused && MediaQuery.sizeOf(context).height > 720) ...[
+                      const SizedBox(height: 12),
+                      SilenceWhereCard(rows: ctrl.whereRows, live: ctrl.countriesLive, compact: true),
+                    ],
                     if (next != null && !paused) ...[
                       const SizedBox(height: 6),
                       Text('Next chime at ${DateFormat('HH:mm').format(next.toLocal())}', key: const Key('next-chime'), style: AppText.caption.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
@@ -191,7 +198,7 @@ class SilenceRunPage extends StatelessWidget {
                     Row(children: [
                       if (!ctrl.openEnded) Expanded(child: OutlineButton('+${ctrl.extendMin} min', key: const Key('silence-extend'), onPressed: ctrl.extend)),
                       if (!ctrl.openEnded) const SizedBox(width: 10),
-                      Expanded(child: PrimaryButton(paused ? 'Resume' : 'Pause', key: const Key('silence-pause'), onPressed: paused ? ctrl.resume : ctrl.pause)),
+                      Expanded(child: PrimaryButton(paused ? 'Resume' : 'Pause', key: const Key('silence-pause'), onPressed: settle > 0 ? null : (paused ? ctrl.resume : ctrl.pause))),
                       const SizedBox(width: 10),
                       Expanded(child: OutlineButton(ctrl.chimeOn.value ? 'Chime on' : 'Chime off', key: const Key('silence-chime'), onPressed: () => ctrl.chimeOn.value = !ctrl.chimeOn.value)),
                     ]),

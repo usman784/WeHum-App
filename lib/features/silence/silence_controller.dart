@@ -121,6 +121,11 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   final remaining = Duration.zero.obs;
   final elapsed = Duration.zero.obs;
   final dimmed = false.obs;
+  /// Seconds left of the quiet gap between the opening bell and the start of the timer; 0 = the timer is running.
+  final settleLeft = 0.obs;
+
+  /// The opening bell rings, then 3 seconds of quiet, then the meditation starts (no gap when the bell is off).
+  static const openingGap = Duration(seconds: 3);
 
   late final LiveService live = Get.find();
   SessionRecorder? _rec;
@@ -138,6 +143,28 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   /// Quiet room: the "low traffic" variant (a few people, so we say "N sat here today" instead of a crowd).
   bool get quietRoom => live.silence.value?.quiet ?? info.value?.quiet ?? true;
 
+  /// Countries meditating in silence right now (live socket first, then the setup snapshot), most people first.
+  /// Empty while the live numbers are paused: old numbers are never shown as live.
+  List<({String country, int n})> get liveCountries => live.paused ? const [] : (live.silence.value?.top ?? info.value?.top ?? const []);
+
+  /// Where people meditated in silence today (the quiet room's map and list).
+  List<({String country, int n})> get todayCountries => live.paused ? const [] : (live.silence.value?.todayTop ?? info.value?.todayTop ?? const []);
+
+  /// True when the rows are "right now"; false when the room is empty and we show where people meditated today.
+  bool get countriesLive => liveCountries.isNotEmpty;
+
+  /// The rows for "Where people are meditating": live first, else today's.
+  List<({String country, int n})> get whereRows => countriesLive ? liveCountries : todayCountries;
+
+  /// Glowing countries on the dot map.
+  Map<String, int> get mapHot => {for (final t in whereRows) t.country: t.n};
+
+  /// Belts right now (socket first).
+  Belts get belts {
+    final s = live.silence.value;
+    return s == null ? (info.value?.belts ?? const Belts()) : Belts(americas: s.americas, emea: s.emea, apac: s.apac);
+  }
+
   /// Honest count only (spec: never fake): quiet room → "N sat here today".
   String get bigNum {
     if (info.value == null && live.silence.value == null) return live.agg.value == null ? '–' : groupNumber(live.agg.value!.headline);
@@ -147,7 +174,7 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   String get bigLabel {
     if (live.paused) return 'Live counts paused';
     if (info.value == null && live.silence.value == null) return (live.agg.value?.quiet ?? true) ? 'meditated here today' : 'meditating now';
-    return quietRoom ? 'sat in this room today' : 'sitting in silence now';
+    return quietRoom ? 'meditated in this room today' : 'meditating in silence now';
   }
 
   /// "7:30" style clock of the next interval marker, or null when there is none (open-ended sits count up).
@@ -230,16 +257,16 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   // ───────────── session
   Future<void> enter() async {
     _rec = SessionRecorder(kind: 'silence', plannedSec: openEnded ? null : planned.inSeconds);
-    _startedAt = clock.now();
     _paused = Duration.zero;
     _pausedAt = null;
     phase.value = SilencePhase.running;
-    _rec!.playing();
     _analytics.track('silence_start', {'length': minutes.value, 'bells': bellStart.value || bellEnd.value});
     await _screen.keepAwake(true);
     await _resolveBells();
     _lastIntervalMark = 0;
     if (bellStart.value) unawaited(_bell.ring(url: _openingUrl));
+    // the timer (and the recorded minutes) start after the gap, so the bell is not part of the meditation
+    _startedAt = clock.now().add(bellStart.value ? openingGap : Duration.zero);
     // the end bell also rings as a local notification if the app is suspended
     if (!openEnded && bellEnd.value) await _notifications.scheduleEndBell(_startedAt!.toUtc().add(planned));
     await _presence.start(meditationId: _rec!.id, kind: 'silence', mode: 'silence', lengthMin: openEnded ? null : minutes.value);
@@ -254,6 +281,14 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
     final s = _startedAt;
     if (s == null || phase.value == SilencePhase.done) return;
     final now = _pausedAt ?? clock.now();
+    if (now.isBefore(s)) {
+      settleLeft.value = (s.difference(now).inMilliseconds / 1000).ceil();
+      elapsed.value = Duration.zero;
+      if (!openEnded) remaining.value = planned;
+      return;
+    }
+    settleLeft.value = 0;
+    if (_rec?.started == false) _rec!.playing(s);
     final e = now.difference(s) - _paused;
     elapsed.value = e.isNegative ? Duration.zero : e;
     if (chimeOn.value && intervalMin.value > 0 && phase.value == SilencePhase.running) {
@@ -274,6 +309,7 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
   void pause() {
     if (phase.value != SilencePhase.running) return;
     refreshTime();
+    if (settleLeft.value > 0) return; // the 3-second gap after the bell is not pausable
     _pausedAt = clock.now();
     phase.value = SilencePhase.paused;
     _rec?.paused();
