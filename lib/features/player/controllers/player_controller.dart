@@ -170,7 +170,7 @@ class PlayerController extends GetxController {
   /// The second line on the lock screen and in the notification (Stitch "Raphael • Guided Synchronous Sit").
   String get _lockSubtitle {
     final who = (args.subtitle ?? 'Raphael').replaceFirst(RegExp(r'^with ', caseSensitive: false), '');
-    return args.kind == 'sos' ? '$who • SoS' : '$who • Guided ${args.kind == 'motd' || args.kind == 'group' ? 'Synchronous ' : ''}Sit';
+    return args.kind == 'sos' ? '$who • SoS' : '$who • Guided ${args.kind == 'motd' || args.kind == 'group' ? 'Synchronous ' : ''}Meditation';
   }
 
   Future<void> _load() async {

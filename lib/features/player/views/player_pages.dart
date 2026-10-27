@@ -162,9 +162,9 @@ class PlayerPage extends StatelessWidget {
     final cat = Get.isRegistered<CatalogService>() ? Get.find<CatalogService>().catalog.value : null;
     final s = a.sessionId == null ? null : cat?.session(a.sessionId!);
     final theme = s?.themeId == null ? null : cat?.theme(s!.themeId!)?.name;
-    if (a.global) return 'Global sit';
+    if (a.global) return 'Global meditation';
     if (theme != null) return theme;
-    return switch (a.kind) { 'motd' => 'Meditation of the Day', 'group' => 'Group sit', 'sos' => 'SoS', 'custom' => 'Build your own', 'program' => 'Program', _ => 'Active practice' };
+    return switch (a.kind) { 'motd' => 'Meditation of the Day', 'group' => 'Group meditation', 'sos' => 'SoS', 'custom' => 'Build your own', 'program' => 'Program', _ => 'Active practice' };
   }
 
   @override

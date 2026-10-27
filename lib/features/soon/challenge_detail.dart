@@ -148,9 +148,9 @@ class ChallengeDetailPage extends StatelessWidget {
                 const SizedBox(height: 22),
                 const SectionLabel('Cohort mechanics'),
                 const SizedBox(height: 8),
-                _Mechanic(icon: Icons.schedule_rounded, title: 'Daily ${d.unlockTime} sit window', body: 'Each day opens at ${d.unlockTime} your time, so the whole cohort sits together.'),
+                _Mechanic(icon: Icons.schedule_rounded, title: 'Daily ${d.unlockTime} meditation window', body: 'Each day opens at ${d.unlockTime} your time, so the whole cohort meditates together.'),
                 _Mechanic(icon: Icons.verified_user_outlined, title: '${d.graceDays} grace day${d.graceDays == 1 ? '' : 's'}', body: 'Miss a day without losing your pace.'),
-                const _Mechanic(icon: Icons.download_for_offline_outlined, title: 'Offline-ready tracks', body: 'Download a day’s sit and practise without a connection.'),
+                const _Mechanic(icon: Icons.download_for_offline_outlined, title: 'Offline-ready tracks', body: 'Download a day’s meditation and practise without a connection.'),
                 if (d.leadName != null) ...[
                   const SizedBox(height: 22),
                   const SectionLabel('Lead facilitator'),

@@ -177,7 +177,7 @@ class PreviewPage extends StatelessWidget {
                   ),
                   if (ctrl.practicedToday.value > 0) ...[
                     const SizedBox(height: 12),
-                    Text('${groupedInt(ctrl.practicedToday.value)} people sat this today', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                    Text('${groupedInt(ctrl.practicedToday.value)} people meditated with this today', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                   ],
                   const SizedBox(height: 22),
                   const SectionLabel('Free vs membership'),
@@ -230,7 +230,7 @@ class _Matrix extends StatelessWidget {
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       col('Free', const ['30-second previews', 'Online streaming only', 'Free library from Raphael'], on: false),
       const SizedBox(width: 10),
-      col('Membership', const ['Full-length meditations', 'Offline downloads', 'Group sits & daily message'], on: true),
+      col('Membership', const ['Full-length meditations', 'Offline downloads', 'Group meditations & daily message'], on: true),
     ]);
   }
 }

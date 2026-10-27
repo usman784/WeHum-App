@@ -35,8 +35,8 @@ class StreakInfo {
   final bool doneToday;
   final List<StreakDay> week;
 
-  /// "1 sit to reach weekly goal" / "Weekly goal reached".
-  String get goalLine => daysToGoal <= 0 ? 'Weekly goal reached' : '$daysToGoal ${daysToGoal == 1 ? 'sit' : 'sits'} to reach weekly goal';
+  /// "1 meditation to reach weekly goal" / "Weekly goal reached".
+  String get goalLine => daysToGoal <= 0 ? 'Weekly goal reached' : '$daysToGoal ${daysToGoal == 1 ? 'meditation' : 'meditations'} to reach weekly goal';
 
   static StreakInfo? from(Object? v) {
     if (v is! Map) return null;

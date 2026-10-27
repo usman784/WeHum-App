@@ -73,7 +73,7 @@ abstract final class MockData {
         date: date, startsAt: starts, endsAt: starts.add(const Duration(minutes: 30)), lobbyOpensAt: starts.subtract(const Duration(minutes: 3)),
         lengthMin: 30, state: phase, waiting: 120, sessionId: 's-motd', title: 'Steady Under Pressure',
         intentions: const ['Calm under pressure', 'Deep physical release', 'Mindful stillness'], myIntention: myIntention,
-        focus: const GroupFocus(title: 'The Midday Coherence Sit', summary: 'Breath anchoring & autonomic settling', quote: 'Equalize inhale and exhale.', attribution: 'Raphael'),
+        focus: const GroupFocus(title: 'The Midday Coherence Meditation', summary: 'Breath anchoring & autonomic settling', quote: 'Equalize inhale and exhale.', attribution: 'Raphael'),
         waitingByBelt: const Belts(americas: 186, emea: 214, apac: 82));
   }
 

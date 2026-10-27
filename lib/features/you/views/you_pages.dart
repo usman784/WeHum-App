@@ -77,7 +77,7 @@ class YouPage extends StatelessWidget {
                     PulseDot(color: c.success, size: 3.5),
                     const SizedBox(width: 6),
                     Expanded(child: Text('Live now', style: AppText.navTitle.copyWith(color: c.success, fontSize: 13))),
-                    Text('${groupedInt(live)} sitting now', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                    Text('${groupedInt(live)} meditating now', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
                   ]),
                 ),
               ],
@@ -114,14 +114,14 @@ class YouPage extends StatelessWidget {
           // ── lifetime
           const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
           Row(children: [
-            Expanded(child: _Metric('TOTAL SITS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
+            Expanded(child: _Metric('MEDITATIONS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
           ]),
           Row(children: [
-            Expanded(child: _Metric('GROUP SITS', '${l?.together ?? life?.together ?? 0}', l == null ? 'Sat live with others' : 'Sat live with others (${l.togetherPct}%)', Icons.groups_2_outlined)),
+            Expanded(child: _Metric('GROUP MEDITATIONS', '${l?.together ?? life?.together ?? 0}', l == null ? 'Meditated live with others' : 'Meditated live with others (${l.togetherPct}%)', Icons.groups_2_outlined)),
             const SizedBox(width: 10),
-            Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per sit', Icons.donut_large_rounded)),
+            Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per meditation', Icons.donut_large_rounded)),
           ]),
           if (l?.hrShiftBpm != null)
             AppCard(
@@ -131,7 +131,7 @@ class YouPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Mean heart-rate shift', style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                  Text('Across the sits where your phone supplied it', style: AppText.caption.copyWith(color: c.textSecondary)),
+                  Text('Across the meditations where your phone supplied it', style: AppText.caption.copyWith(color: c.textSecondary)),
                 ])),
                 Text('${l!.hrShiftBpm! > 0 ? '+' : ''}${l.hrShiftBpm} bpm', style: AppText.title.copyWith(color: c.success, fontFeatures: AppText.tabular)),
               ]),
@@ -157,13 +157,13 @@ class PreferenceRows extends StatelessWidget {
         child: Column(children: [
           for (final (key, title, sub, route, badge) in [
             ('r-downloads', 'Downloaded meditations', 'Listen without internet', AppRoutes.downloads, null),
-            ('r-reminders', 'Reminders & sounds', 'Daily sit reminder, bells, group warnings', AppRoutes.reminders, null),
+            ('r-reminders', 'Reminders & sounds', 'Daily meditation reminder, bells, group warnings', AppRoutes.reminders, null),
             ('r-membership', 'Membership', access.isMember ? (access.isTrial ? 'Free trial' : 'Active') : 'Free plan', AppRoutes.manageMembership, null),
             ('r-recipes', 'My meditations', 'Your saved blends', AppRoutes.myMeditations, null),
-            ('r-notifications', 'Notifications', 'Messages from Raphael and group sits', AppRoutes.notifications, null),
+            ('r-notifications', 'Notifications', 'Messages from Raphael and group meditations', AppRoutes.notifications, null),
             if (heartRateOn) ('r-heart', 'Heart rate', 'Watch, band or chest strap', AppRoutes.heartRate, null),
             ('r-challenges', 'Challenges', 'Cohort sprints with a grace day', AppRoutes.challenges, !challengesOn),
-            ('r-milestones', 'Milestones', 'Badges for first sit, streaks, minutes and group sits', AppRoutes.milestones, true),
+            ('r-milestones', 'Milestones', 'Badges for first meditation, streaks, minutes and group meditations', AppRoutes.milestones, true),
             ('r-breath', 'Breathwork', 'Guided breathing lessons', AppRoutes.breathwork, true),
             ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
             ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),
@@ -287,7 +287,7 @@ class _StreakBlock extends StatelessWidget {
             Icon(Icons.verified_user_outlined, size: 18, color: c.success),
             const SizedBox(width: 10),
             Expanded(child: Text(
-              streak.graceLeft > 0 ? 'One grace day each week. A missed day uses it first, so the run keeps going without a punitive reset.' : 'Your grace day is used this week. Sit tomorrow to keep the run.',
+              streak.graceLeft > 0 ? 'One grace day each week. A missed day uses it first, so the run keeps going without a punitive reset.' : 'Your grace day is used this week. Meditate tomorrow to keep the run.',
               style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45))),
           ]),
         ),
@@ -340,7 +340,7 @@ class _Tile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [Text(value, style: AppText.title.copyWith(color: c.emberText)), Text(label, style: AppText.caption.copyWith(color: c.textSecondary)), if (hint != null) Text(hint!, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textTertiary, fontSize: 10))]));
+    return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [Text(value, style: AppText.title.copyWith(color: c.emberText)), Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)), if (hint != null) Text(hint!, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textTertiary, fontSize: 10))]));
   }
 }
 
@@ -377,7 +377,7 @@ class ProgressPage extends StatelessWidget {
                 SegmentedControl<Period>(options: Period.values, value: ctrl.period.value, onChanged: ctrl.select, labelOf: (p) => switch (p) { Period.week => 'Week', Period.month => 'Month', Period.year => 'Year', Period.all => 'Lifetime' }),
                 const SizedBox(height: 16),
                 AdaptiveGrid(baseExtent: 112, children: [
-                  _Tile('${d.minutes}', 'MINUTES', 'Time you sat'), _Tile('${d.meditations}', 'MEDITATIONS', 'Sits you finished'), _Tile('${d.together}', 'GROUP SITS', 'Sat live with others'), _Tile('${d.average}', 'AVG. MINUTES', 'Per meditation'),
+                  _Tile('${d.minutes}', 'MINUTES', 'Time you meditated'), _Tile('${d.meditations}', 'MEDITATIONS', 'Meditations you finished'), _Tile('${d.together}', 'GROUP MEDITATIONS', 'Meditated live with others'), _Tile('${d.average}', 'AVG. MINUTES', 'Per meditation'),
                 ]),
                 const SizedBox(height: 16),
                 Text(ctrl.chartTitle, style: AppText.navTitle.copyWith(color: c.textPrimary)),
@@ -567,10 +567,10 @@ class PrivacyPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(PrivacyController());
     const matrix = [
-      (Icons.timer_outlined, 'Practice history', 'Your sits, minutes and streak. Kept on our servers, linked to your account, so they follow you to a new phone.', 'ACCOUNT'),
-      (Icons.groups_outlined, 'Collective presence', 'Only your country, and only while you sit. No GPS, no device fingerprint. Switch it off below.', 'EPHEMERAL'),
+      (Icons.timer_outlined, 'Practice history', 'Your meditations, minutes and streak. Kept on our servers, linked to your account, so they follow you to a new phone.', 'ACCOUNT'),
+      (Icons.groups_outlined, 'Collective presence', 'Only your country, and only while you meditate. No GPS, no device fingerprint. Switch it off below.', 'EPHEMERAL'),
       (Icons.volunteer_activism_outlined, 'Dedications', 'Your first name and, if you chose it, your city. You can strip both from every past post here.', 'YOU DECIDE'),
-      (Icons.favorite_border_rounded, 'Heart rate (optional)', 'Read on your phone from Apple Health or Health Connect. Only one number per sit leaves the phone, and only if you allow it.', 'DEVICE ONLY'),
+      (Icons.favorite_border_rounded, 'Heart rate (optional)', 'Read on your phone from Apple Health or Health Connect. Only one number per meditation leaves the phone, and only if you allow it.', 'DEVICE ONLY'),
     ];
     String mb(int b) => '${(b / 1048576).round()} MB';
     return AppScaffold(
@@ -620,7 +620,7 @@ class PrivacyPage extends StatelessWidget {
             const SizedBox(height: 8),
             AppCard(
               padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-              child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “sitting now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
+              child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “meditating now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
             ),
           ]),
           AppCard(

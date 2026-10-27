@@ -281,7 +281,7 @@ class DownloadsPage extends StatelessWidget {
             ]),
           ),
           const SizedBox(height: 8),
-          Text('Sits you finish offline are saved on this phone and sync when you reconnect.', style: AppText.caption.copyWith(color: c.textTertiary)),
+          Text('Meditations you finish offline are saved on this phone and sync when you reconnect.', style: AppText.caption.copyWith(color: c.textTertiary)),
           const SizedBox(height: 16),
           PrimaryButton('Browse library for more', key: const Key('browse-library'), icon: Icons.explore_outlined, onPressed: () => Get.offAllNamed(AppRoutes.library)),
           const SizedBox(height: 10),

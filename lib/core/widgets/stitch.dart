@@ -81,11 +81,11 @@ class StreakStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     String desc(StreakDay d) => switch (d.state) {
-          DayState.done => '${d.label} sat',
+          DayState.done => '${d.label} meditated',
           DayState.rest => '${d.label} rest',
           DayState.today => '${d.label} today',
           DayState.upcoming => d.label,
-          DayState.missed => '${d.label} not sat',
+          DayState.missed => '${d.label} no meditation',
         };
     return Semantics(
       label: week.map(desc).join(', '),
@@ -244,7 +244,7 @@ class HeatmapCard extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         if (quiet)
-          Text('It’s quiet right now. Everyone who sits adds to the field.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textSecondary))
+          Text('It’s quiet right now. Everyone who meditates adds to the field.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textSecondary))
         else
           BeltCounts(belts: belts),
       ]),

@@ -65,7 +65,7 @@ class TodayPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   AccelRow(
                     key: const Key('silence-row'), icon: Icons.self_improvement_rounded, title: 'Silence Room',
-                    subtitle: ctrl.silenceNow > 0 ? 'Timer & bells · ${groupNumber(ctrl.silenceNow)} ${ctrl.silenceNow == 1 ? 'person' : 'people'} sitting in silence' : 'Timer & bells · a quiet room, together',
+                    subtitle: ctrl.silenceNow > 0 ? 'Timer & bells · ${groupNumber(ctrl.silenceNow)} ${ctrl.silenceNow == 1 ? 'person' : 'people'} meditating in silence' : 'Timer & bells · a quiet room, together',
                     onTap: () => Get.toNamed(AppRoutes.silenceRoomSetup)),
                   const SizedBox(height: 10),
                   AccelRow(key: const Key('byo-row'), icon: Icons.tune_rounded, title: 'Build your own', subtitle: 'Custom length, ambient sound & chimes', onTap: () => Get.toNamed(AppRoutes.buildYourOwn)),
@@ -118,13 +118,13 @@ class _MotdHero extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
               Row(children: [
-                Expanded(child: Align(alignment: Alignment.centerLeft, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(4)), child: Text('TODAY’S HERO SIT · ${ctrl.length.value} MIN', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5))))),
+                Expanded(child: Align(alignment: Alignment.centerLeft, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(4)), child: Text('TODAY’S MEDITATION · ${ctrl.length.value} MIN', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5))))),
                 const SizedBox(width: 8),
                 if (live > 0)
                   Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: c.bgDeep.withValues(alpha: .8), borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
                     const SizedBox(width: 6),
-                    Text('${groupNumber(live)} sitting now', key: const Key('hero-live'), style: AppText.caption.copyWith(color: c.textPrimary, fontSize: 11)),
+                    Text('${groupNumber(live)} meditating now', key: const Key('hero-live'), style: AppText.caption.copyWith(color: c.textPrimary, fontSize: 11)),
                   ])),
               ]),
               const SizedBox(height: 16),
@@ -137,7 +137,7 @@ class _MotdHero extends StatelessWidget {
                   Text('With ${m.teacher ?? 'Raphael'}', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 14)),
                   if ((m.theme ?? '').isNotEmpty) Text(m.theme!, style: AppText.caption.copyWith(color: c.textSecondary)),
                 ])),
-                if (ctrl.practiced > 0) Text('${groupNumber(ctrl.practiced)} sat today', key: const Key('practiced'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+                if (ctrl.practiced > 0) Flexible(child: Text('${groupNumber(ctrl.practiced)} meditated today', key: const Key('practiced'), maxLines: 2, textAlign: TextAlign.end, style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
               ]),
               if (m.lengths.length > 1) ...[const SizedBox(height: 14), SegmentedControl<int>(options: m.lengths, value: ctrl.length.value, onChanged: (v) => ctrl.length.value = v, labelOf: (v) => '$v min')],
               const SizedBox(height: 16),
@@ -205,7 +205,7 @@ class _StreakCard extends StatelessWidget {
         StreakStrip(week: streak.week),
         if (streak.graceLeft == 0 && streak.current > 0) ...[
           const SizedBox(height: 10),
-          Text('Your rest day is used this week. Sit tomorrow to keep the run.', style: AppText.micro.copyWith(color: c.textSecondary)),
+          Text('Your rest day is used this week. Meditate tomorrow to keep the run.', style: AppText.micro.copyWith(color: c.textSecondary)),
         ],
       ]),
     );

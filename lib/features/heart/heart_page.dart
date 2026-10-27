@@ -66,9 +66,9 @@ class HeartRatePage extends StatelessWidget {
         final name = ctrl.sensor.pairedName.value;
         final paired = ctrl.sensor.paired;
         return ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
-          Text('See how your body settles. Your heart rate is read only while you sit, and only the average and the shift are saved to your account.', style: AppText.body.copyWith(color: c.textSecondary)),
+          Text('See how your body settles. Your heart rate is read only while you meditate, and only the average and the shift are saved to your account.', style: AppText.body.copyWith(color: c.textSecondary)),
           const SizedBox(height: 20),
-          Text('AFTER EACH SIT', style: AppText.overline.copyWith(color: c.textTertiary)),
+          Text('AFTER EACH MEDITATION', style: AppText.overline.copyWith(color: c.textTertiary)),
           const SizedBox(height: 8),
           AppCard(
             key: const Key('hr-health'),
@@ -82,7 +82,7 @@ class HeartRatePage extends StatelessWidget {
                 ])),
               ]),
               const SizedBox(height: 10),
-              Text('Apple Watch, Garmin, Whoop, Samsung, Fitbit and any other wearable that syncs to $health. A summary appears after each sit, once your device has synced.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              Text('Apple Watch, Garmin, Whoop, Samsung, Fitbit and any other wearable that syncs to $health. A summary appears after each meditation, once your device has synced.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
               const SizedBox(height: 14),
               if (ctrl.healthMissing.value)
                 PrimaryButton('Get Health Connect', key: const Key('hr-install'), icon: Icons.download_rounded, onPressed: ctrl.health.installHealthConnect)
@@ -93,7 +93,7 @@ class HeartRatePage extends StatelessWidget {
             ]),
           ),
           const SizedBox(height: 22),
-          Text('DURING THE SIT', style: AppText.overline.copyWith(color: c.textTertiary)),
+          Text('DURING THE MEDITATION', style: AppText.overline.copyWith(color: c.textTertiary)),
           const SizedBox(height: 8),
           AppCard(
             key: const Key('hr-sensor'),
@@ -103,7 +103,7 @@ class HeartRatePage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(paired ? (name ?? 'Heart-rate sensor') : 'Bluetooth sensor', style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                  Text(paired ? 'Paired · connects when a sit starts' : 'Not paired', style: AppText.caption.copyWith(color: paired ? c.success : c.textSecondary)),
+                  Text(paired ? 'Paired · connects when a meditation starts' : 'Not paired', style: AppText.caption.copyWith(color: paired ? c.success : c.textSecondary)),
                 ])),
                 if (ctrl.sensor.bpm.value != null) Text('${ctrl.sensor.bpm.value} bpm', key: const Key('hr-test'), style: AppText.navTitle.copyWith(color: c.emberText, fontFeatures: AppText.tabular)),
               ]),
@@ -124,7 +124,7 @@ class HeartRatePage extends StatelessWidget {
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(Icons.lock_outline_rounded, size: 16, color: c.textTertiary),
             const SizedBox(width: 8),
-            Expanded(child: Text('Heart-rate data is read with your permission and never sold or shared. Readings stay on your phone; WeHum saves only the average and the change for each sit. You can disconnect at any time.', style: AppText.caption.copyWith(color: c.textTertiary))),
+            Expanded(child: Text('Heart-rate data is read with your permission and never sold or shared. Readings stay on your phone; WeHum saves only the average and the change for each meditation. You can disconnect at any time.', style: AppText.caption.copyWith(color: c.textTertiary))),
           ]),
         ]);
       }),

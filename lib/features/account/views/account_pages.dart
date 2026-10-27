@@ -31,7 +31,7 @@ class SaveProgressPage extends StatelessWidget {
           const SizedBox(height: 10),
           Text('Save your practice ritual.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
           const SizedBox(height: 10),
-          Text(free ? 'You can keep sitting with the free meditations without an account. A free account lets you:' : 'Your membership already works on this phone. A free account preserves your streak, stats and sit time, and lets you:', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+          Text(free ? 'You can keep using the free meditations without an account. A free account lets you:' : 'Your membership already works on this phone. A free account preserves your streak, stats and meditation time, and lets you:', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
           const SizedBox(height: 12),
           if (free) ...const [Benefit('Keep your streak, stats and minutes safe'), Benefit('Pick up on another phone')] else ...const [Benefit('Keep your streak and stats if you change phones'), Benefit('Use WeHum on iPhone and Android'), Benefit('Post dedications')],
           const SizedBox(height: 24),

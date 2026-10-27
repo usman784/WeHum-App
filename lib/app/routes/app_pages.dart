@@ -91,7 +91,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.together, page: () => const TogetherPage(), transition: Transition.noTransition, transitionDuration: Duration.zero), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.groupMeditationLobby, page: () => const LobbyPage()),
     GetPage(name: AppRoutes.crisisDirectory, page: () => const CrisisDirectoryPage()),
-    GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next sit', child: NextSitPage())),
+    GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next meditation', child: NextSitPage())),
     GetPage(name: AppRoutes.you, page: () => const YouPage(), transition: Transition.noTransition, transitionDuration: Duration.zero), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),
     GetPage(name: AppRoutes.editProfile, page: () => const EditProfilePage()),

@@ -165,7 +165,7 @@ void main() {
     await t.pumpWidget(e.app(initial: AppRoutes.setup2MeditationReminder));
     await settle(t);
     expect(find.byKey(const Key('members-line')), findsOneWidget);
-    expect(find.text('1,420 members sit together in this block'), findsOneWidget);
+    expect(find.text('1,420 members meditate together in this block'), findsOneWidget);
     expect(find.text('Dawn Stillness'), findsOneWidget);
     await t.tap(find.byKey(const Key('block-12:30')));
     await t.pump();

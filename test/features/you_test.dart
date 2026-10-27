@@ -72,6 +72,8 @@ void main() {
   testWidgets('54 Sign out asks first, then signs out on the server, drops the push token and returns to the start', (t) async {
     final e = await open(t, AppRoutes.you, profile: const MeProfile(id: 'u', firstName: 'Lena', isGuest: false, entitlement: Entitlement(active: true)));
     await t.scrollUntilVisible(find.byKey(const Key('sign-out')), 300, scrollable: find.byType(Scrollable).first);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -300)); // clear of the bottom nav
+    await t.pump();
     await t.tap(find.byKey(const Key('sign-out')));
     await settle(t);
     expect(find.text('Your downloads stay on this phone. You can log in again any time.'), findsOneWidget);
@@ -88,6 +90,8 @@ void main() {
     e.authRepo.guestError = ApiException(ErrorCode.authRequired, status: 401); // e.g. attestation refused / offline right after the logout
     final you = Get.find<YouController>(); // the start screen replaces the page (and the controller) afterwards
     await t.scrollUntilVisible(find.byKey(const Key('sign-out')), 300, scrollable: find.byType(Scrollable).first);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -300)); // clear of the bottom nav
+    await t.pump();
     await t.tap(find.byKey(const Key('sign-out')));
     await settle(t);
     await t.tap(find.byKey(const Key('confirm-sign-out')));

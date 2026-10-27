@@ -297,7 +297,7 @@ class MockCommunityRepository implements CommunityRepository {
   @override
   Future<Page<FeedItem>> feed({String? cursor}) async => Page([
         FeedItem(dedication: Dedication(id: 'f1', firstName: 'Elena', text: 'For hospital night shift workers in London.', holdingCount: 48, createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 12))), place: 'London, United Kingdom', sessionTitle: 'Steady Under Pressure'),
-        FeedItem(dedication: Dedication(id: 'f2', firstName: 'Raphael', text: 'Sitting for everyone feeling scattered by modern work urgency.', holdingCount: 230, isTeacher: true, createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 2))), isTeacher: true),
+        FeedItem(dedication: Dedication(id: 'f2', firstName: 'Raphael', text: 'Meditating for everyone feeling scattered by modern work urgency.', holdingCount: 230, isTeacher: true, createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 2))), isTeacher: true),
       ], null);
   @override
   Future<int> membersAt(String time) async => 1420;

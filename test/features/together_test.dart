@@ -90,7 +90,7 @@ void main() {
       await e.dispose();
     });
 
-    testWidgets('the Global meditation starts the same synchronised player, marked as the Global sit, with its own length', (t) async {
+    testWidgets('the Global meditation starts the same synchronised player, marked as the Global meditation, with its own length', (t) async {
       phone(t);
       final e = await TestEnv.create(member: true, onboardingDone: true);
       e.today.groupStartsIn = const Duration(minutes: 1);
@@ -111,7 +111,7 @@ void main() {
       expect(a.global, true);
       expect(a.mode, 'group');
       expect(a.title, 'Global meditation');
-      expect(find.text('GLOBAL SIT'), findsOneWidget);
+      expect(find.text('GLOBAL MEDITATION'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });

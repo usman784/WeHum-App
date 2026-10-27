@@ -148,7 +148,7 @@ class DailyMessagePage extends StatelessWidget {
                     ),
                 ],
                 const SizedBox(height: 16),
-                PrimaryButton('Sit with today’s insight', key: const Key('dm-sit'), icon: Icons.self_improvement_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
+                PrimaryButton('Meditate with today’s insight', key: const Key('dm-sit'), icon: Icons.self_improvement_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
                 const SizedBox(height: 10),
                 Row(children: [
                   Expanded(child: SecondaryButton(m.saved ? 'Saved to notes' : 'Save to notes', key: const Key('dm-save'), icon: m.saved ? Icons.bookmark_rounded : Icons.bookmark_add_outlined, onPressed: ctrl.toggleSave)),

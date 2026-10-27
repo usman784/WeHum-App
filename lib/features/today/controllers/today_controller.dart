@@ -68,7 +68,7 @@ class TodayController extends GetxController {
   /// Busy room: "1,248 sitting worldwide right now"; a quiet room says so honestly (liveText).
   String get liveStrip {
     final n = liveCount;
-    return n > 0 && !liveQuiet && !live.paused ? '${groupNumber(n)} sitting worldwide right now' : (liveText ?? '');
+    return n > 0 && !liveQuiet && !live.paused ? '${groupNumber(n)} meditating worldwide right now' : (liveText ?? '');
   }
 
   int get liveCount => live.agg.value?.total ?? data.value?.live?.total ?? 0;

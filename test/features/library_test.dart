@@ -31,15 +31,20 @@ Future<TestEnv> open(WidgetTester t, String route, {bool member = true}) async {
 }
 
 void main() {
-  testWidgets('31 library (member): protocols, themes with counts, program in progress, free items unlabelled, My Meditations, Downloads', (t) async {
+  testWidgets('31 library (member): themes as square tiles with counts, no protocols/programs/challenges, free items unlabelled', (t) async {
     final e = await open(t, AppRoutes.library);
     expect(find.text('PREMIUM'), findsNothing); // members see no lock
-    expect(find.text('ACTIVE PROTOCOLS'), findsOneWidget);
-    expect(find.byKey(const Key('program-card')), findsNothing);
+    // client: the earlier Library (square theme tiles); no protocols, programs or "sits"
+    expect(find.text('ACTIVE PROTOCOLS'), findsNothing);
+    expect(find.text('ALL PROGRAMS'), findsNothing);
+    expect(find.byKey(const Key('program-in-progress')), findsNothing);
+    expect(find.textContaining(RegExp(r'\bSITS?\b|\bsits?\b', caseSensitive: false)), findsNothing);
+    expect(find.textContaining('meditations'), findsWidgets);
     await t.scrollUntilVisible(find.byKey(const Key('themes-title')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Anxiety & Stress'), findsOneWidget);
     expect(find.textContaining('8–10 min'), findsOneWidget);
-    expect(find.textContaining('2,400 sat today'), findsOneWidget);
+    final tile = t.getSize(find.byKey(const Key('theme-t-anx')));
+    expect(tile.width, lessThan(t.view.physicalSize.width / t.view.devicePixelRatio / 2)); // two per row
     await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('From Raphael’s online library'), findsOneWidget);
     expect(find.text('FREE FOR YOU'), findsNothing); // no free label for members
@@ -47,9 +52,10 @@ void main() {
     await e.dispose();
   });
 
-  testWidgets('31 library (free): the 30-second pass banner; the free section is "Free for you" with labels', (t) async {
+  testWidgets('31 library (free): no "masterclass" banner; the free section is "Free for you" with labels', (t) async {
     final e = await open(t, AppRoutes.library, member: false);
-    expect(find.byKey(const Key('preview-banner')), findsOneWidget); // free people see the 30-second pass
+    expect(find.byKey(const Key('preview-banner')), findsNothing); // client: no masterclass banner
+    expect(find.textContaining('masterclass'), findsNothing);
     await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Free for you'), findsOneWidget);
     await t.drag(find.byType(Scrollable).first, const Offset(0, -240));

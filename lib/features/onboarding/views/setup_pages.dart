@@ -72,7 +72,7 @@ class TimePage extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const SizedBox(height: 12),
-          Text('Anchor your sit into your daily rhythm.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+          Text('Anchor your meditation into your daily rhythm.', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
           const SizedBox(height: 10),
           Text('Gentle consistency over rigid perfection. Choose the time of day when your mind is least crowded.', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
           const SizedBox(height: 8),
@@ -92,7 +92,7 @@ class TimePage extends StatelessWidget {
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Container(width: 8, height: 8, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
                 const SizedBox(width: 8),
-                Flexible(child: Text('${groupedInt(n)} ${n == 1 ? 'member sits' : 'members sit'} together in this block', key: const Key('members-line'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary))),
+                Flexible(child: Text('${groupedInt(n)} ${n == 1 ? 'member meditates' : 'members meditate'} together in this block', key: const Key('members-line'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary))),
               ]),
             );
           }),
@@ -114,12 +114,12 @@ class TimePage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Allow daily sit chime', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text('Allow daily meditation chime', style: AppText.navTitle.copyWith(color: c.textPrimary)),
                       Text('A single, quiet 10-minute heads-up before your room opens. No spam, no guilt, no promotional buzz.', style: AppText.caption.copyWith(color: c.textSecondary)),
                     ]),
                   ),
                   const SizedBox(width: 8),
-                  AppToggle(key: const Key('chime-toggle'), value: ctrl.chime.value, onChanged: (v) => ctrl.chime.value = v, label: 'Allow daily sit chime'),
+                  AppToggle(key: const Key('chime-toggle'), value: ctrl.chime.value, onChanged: (v) => ctrl.chime.value = v, label: 'Allow daily meditation chime'),
                 ]),
               )),
           const SizedBox(height: 16),

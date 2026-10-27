@@ -61,9 +61,9 @@ class CompletePage extends StatelessWidget {
                 builder: (_, v, __) => SizedBox(width: 104, height: 104, child: CustomPaint(painter: _CheckRingPainter(v, c.ember, c.track), child: Center(child: Opacity(opacity: v, child: Icon(Icons.check_rounded, size: 40, color: c.emberText))))),
               )),
               Column(children: [
-                Text('SIT COMPLETE', style: AppText.overline.copyWith(color: c.emberText)),
+                Text('MEDITATION COMPLETE', style: AppText.overline.copyWith(color: c.emberText)),
                 const SizedBox(height: 6),
-                Text('You sat ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+                Text('You meditated ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 if (ctrl.togetherLine != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(ctrl.togetherLine!, key: const Key('complete-together'), textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
               ]),
               AppCard(
@@ -87,7 +87,7 @@ class CompletePage extends StatelessWidget {
                         const SizedBox(height: 8),
                         WorldDotMap(hot: ctrl.hot, height: 110),
                         if (!ctrl.belts.isEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: KeyedSubtree(key: const Key('complete-belts'), child: BeltCounts(belts: ctrl.belts))),
-                        if (ctrl.minutesToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupedInt(ctrl.minutesToday)} minutes sat by everyone today', key: const Key('complete-collective'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
+                        if (ctrl.minutesToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupedInt(ctrl.minutesToday)} minutes meditated by everyone today', key: const Key('complete-collective'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
                       ]),
                     ),
                   ],
@@ -144,7 +144,7 @@ class CompletePage extends StatelessWidget {
                   child: Row(children: [
                     Icon(Icons.groups_2_outlined, color: c.textSecondary),
                     const SizedBox(width: 12),
-                    Expanded(child: Text('${groupedInt(ctrl.finishers)} finished this sit today', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16, fontFeatures: AppText.tabular))),
+                    Expanded(child: Text('${groupedInt(ctrl.finishers)} finished this meditation today', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16, fontFeatures: AppText.tabular))),
                     if (ctrl.canKudos)
                       TextLink(ctrl.kudosSent.value ? 'Kudos sent' : 'Send kudos', key: const Key('send-kudos'), onPressed: ctrl.kudosSent.value ? null : ctrl.sendKudos, color: ctrl.kudosSent.value ? c.textTertiary : c.emberText),
                   ]),
@@ -225,7 +225,7 @@ class _DedicateCard extends StatelessWidget {
 /// 47 Write a dedication (sheet), after the finished meditation.
 Future<void> showDedicationSheet(BuildContext context, CompleteController complete) => showComposerSheet(
       context, Get.put(composerFor(complete), tag: complete.meditationId),
-      overline: 'Sit complete · ${complete.minutes} min${complete.result != null && complete.result!.togetherPeople > 1 ? ' · ${groupedInt(complete.result!.togetherPeople)} sat with you' : ''}',
+      overline: 'Meditation complete · ${complete.minutes} min${complete.result != null && complete.result!.togetherPeople > 1 ? ' · ${groupedInt(complete.result!.togetherPeople)} meditated with you' : ''}',
       onPosted: (text) {
         complete.lastDedication = text;
         Get.toNamed('/dedications/${complete.player.sessionId}', arguments: {'sessionId': complete.player.sessionId, 'compose': true});

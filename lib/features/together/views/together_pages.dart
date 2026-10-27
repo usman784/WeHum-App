@@ -190,7 +190,7 @@ class WorldPage extends StatelessWidget {
                     else
                       Text('Quiet · ${ctrl.vibrationWord}', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                     const SizedBox(height: 2),
-                    Text('sat so far today', style: AppText.caption.copyWith(color: c.textSecondary)),
+                    Text('meditated so far today', style: AppText.caption.copyWith(color: c.textSecondary)),
                     const SizedBox(height: 4),
                     Text('/ 100 · ${ctrl.vibrationWord}', key: const Key('vibration'), style: AppText.caption.copyWith(color: c.textTertiary)),
                   ]),
@@ -216,14 +216,14 @@ class WorldPage extends StatelessWidget {
               WorldDotMap(hot: ctrl.paused ? const {} : ctrl.hot, height: 190),
             ]),
           ),
-          PrimaryButton('Join the global sit', icon: Icons.play_circle_outline_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
+          PrimaryButton('Join the global meditation', icon: Icons.play_circle_outline_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),
           if (ctrl.regions.isNotEmpty) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('ACTIVE REGIONAL BELTS', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
             const SizedBox(height: 8),
             for (final r in ctrl.regions) Padding(padding: const EdgeInsets.only(bottom: 10), child: _BeltRow(key: Key('belt-${r.key}'), b: r, name: r.name)),
           ]),
           if (ctrl.countryRows.isNotEmpty) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('WHERE PEOPLE ARE SITTING', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+            Text('WHERE PEOPLE ARE MEDITATING', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
             const SizedBox(height: 8),
             for (final b in ctrl.countryRows.take(8)) Padding(padding: const EdgeInsets.only(bottom: 10), child: _BeltRow(key: Key('country-${b.key}'), b: b, name: b.name)),
           ]),
@@ -235,7 +235,7 @@ class WorldPage extends StatelessWidget {
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('ZERO-TRACKING PRIVACY GUARANTEE', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
                 const SizedBox(height: 4),
-                Text('Country-level numbers only. We never access, store or show your GPS, your IP trail or who is sitting. Counts come from the server, not from guesses.', style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45)),
+                Text('Country-level numbers only. We never access, store or show your GPS, your IP trail or who is meditating. Counts come from the server, not from guesses.', style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45)),
               ])),
             ]),
           ),
@@ -273,11 +273,11 @@ class _BeltRow extends StatelessWidget {
         Container(width: 40, height: 40, margin: const EdgeInsets.only(right: 12), decoration: BoxDecoration(color: c.bgDeep, shape: BoxShape.circle), child: Icon(Icons.public_rounded, size: 20, color: c.success)),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(name, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
-          Text('${groupedInt(b.sittingNow)} sitting now · ${groupedInt(b.minutesToday)} min today', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
+          Text('${groupedInt(b.sittingNow)} meditating now · ${groupedInt(b.minutesToday)} min today', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
         ])),
         if (b.sittingNow > 0) Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Text('${b.syncShare}%', style: AppText.navTitle.copyWith(color: c.emberText, fontFeatures: AppText.tabular)),
-          Text('in group sits', style: AppText.micro.copyWith(color: c.textTertiary)),
+          Text('in group meditations', style: AppText.micro.copyWith(color: c.textTertiary)),
         ]),
       ]),
     );
@@ -314,10 +314,10 @@ class TogetherPage extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text('${groupedInt(g.waiting)} already waiting · ${g.lengthMin} min', style: AppText.bodySmall.copyWith(color: c.textBody, fontFeatures: AppText.tabular)),
                       const SizedBox(height: 12),
-                      PrimaryButton(g.state == GroupPhase.live ? 'Join the sit now' : 'Go to the lobby', key: const Key('go-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby)),
+                      PrimaryButton(g.state == GroupPhase.live ? 'Join the meditation now' : 'Go to the lobby', key: const Key('go-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby)),
                       const SizedBox(height: 8),
                       Row(children: [
-                        Expanded(child: OutlineButton('Sit details', key: const Key('next-sit'), onPressed: () => Get.toNamed(AppRoutes.nextSit))),
+                        Expanded(child: OutlineButton('Meditation details', key: const Key('next-sit'), onPressed: () => Get.toNamed(AppRoutes.nextSit))),
                         const SizedBox(width: 10),
                         Expanded(child: OutlineButton(ctrl.reminder.value ? 'Reminder on' : 'Notify me', key: const Key('together-remind'), onPressed: ctrl.toggleReminder)),
                       ]),
@@ -341,7 +341,7 @@ class TogetherPage extends StatelessWidget {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text('Silence Room', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
                         const SizedBox(height: 4),
-                        Text(ctrl.silenceCount > 0 ? '${groupedInt(ctrl.silenceCount)} sitting in silence · unguided, timer only' : 'Unguided, timer-only shared sit with a quiet collective pulse.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                        Text(ctrl.silenceCount > 0 ? '${groupedInt(ctrl.silenceCount)} meditating in silence · unguided, timer only' : 'Unguided, timer-only shared meditation with a quiet collective pulse.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                       ])),
                       Container(width: 38, height: 38, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)), child: Icon(Icons.hourglass_empty_rounded, size: 18, color: c.textSecondary)),
                     ]),
@@ -370,14 +370,14 @@ class TogetherPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text('Who or what do you dedicate your practice to?', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
                 const SizedBox(height: 4),
-                Text('Text only · 1 dedication per finished sit · real people', style: AppText.caption.copyWith(color: c.textTertiary)),
+                Text('Text only · 1 dedication per finished meditation · real people', style: AppText.caption.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 8),
                 if (ctrl.feed.isEmpty)
                   for (final d in ctrl.dedications.take(2)) DedicationLine(d)
                 else
                   for (final it in ctrl.feed.take(8)) _FeedCard(key: Key('feed-${it.dedication.id}'), it: it, onHold: () => ctrl.hold(it)),
                 const SizedBox(height: 10),
-                Text('Dedicate your sit during the final reflection. It is shown here, with your first name.', style: AppText.caption.copyWith(color: c.textTertiary)),
+                Text('Dedicate your meditation during the final reflection. It is shown here, with your first name.', style: AppText.caption.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 12),
                 AppCard(outlined: true, child: Row(children: [Text('Gratitude feed', style: AppText.navTitle.copyWith(color: c.textPrimary)), const Spacer(), const AppBadge(BadgeKind.comingSoon)])),
                 const SizedBox(height: 8),
@@ -435,12 +435,12 @@ class LobbyPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(LobbyController());
     return AppScaffold(
-      title: ctrl.isGlobal ? (ctrl.group.value?.title ?? 'Global meditation') : 'Scheduled sit', stitch: true, sos: false,
+      title: ctrl.isGlobal ? (ctrl.group.value?.title ?? 'Global meditation') : 'Scheduled meditation', stitch: true, sos: false,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
               if (ctrl.denied.value) {
-                return EmptyState(title: ctrl.isGlobal ? 'Global meditation is for members' : 'Group meditation is for members', body: ctrl.isGlobal ? 'Once a week everyone sits together, at the same moment.' : 'Join the Meditation of the Day together with everyone, at the same moment.', icon: Icons.groups_2_outlined, ctaLabel: 'See membership options', onCta: () => openPaywall('lock'));
+                return EmptyState(title: ctrl.isGlobal ? 'Global meditation is for members' : 'Group meditation is for members', body: ctrl.isGlobal ? 'Once a week everyone meditates together, at the same moment.' : 'Join the Meditation of the Day together with everyone, at the same moment.', icon: Icons.groups_2_outlined, ctaLabel: 'See membership options', onCta: () => openPaywall('lock'));
               }
               final g = ctrl.group.value!;
               final startsAt = ctrl.startsAt ?? g.startsAt;
@@ -477,7 +477,7 @@ class LobbyPage extends StatelessWidget {
                       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Icon(Icons.all_inclusive_rounded, size: 18, color: c.textSecondary),
                         const SizedBox(width: 10),
-                        Expanded(child: Text('${ctrl.doorsLine}The sit starts by itself, for everyone at the same moment. Joining late? You land where the group is.', key: const Key('lobby-doors'), style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45))),
+                        Expanded(child: Text('${ctrl.doorsLine}The meditation starts by itself, for everyone at the same moment. Joining late? You land where the group is.', key: const Key('lobby-doors'), style: AppText.caption.copyWith(color: c.textSecondary, height: 1.45))),
                       ]),
                     ),
                   ]),
@@ -514,10 +514,10 @@ class LobbyPage extends StatelessWidget {
                 AppCard(
                   padding: const EdgeInsets.all(14),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('SIT READINESS CHECKLIST', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+                    Text('READINESS CHECKLIST', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
                     const SizedBox(height: 10),
                     const _CheckRow(icon: Icons.headphones_rounded, title: 'Headphones, if you have them', body: 'Better for presence. Speakers work too.'),
-                    const _CheckRow(icon: Icons.notifications_off_outlined, title: 'Do Not Disturb', body: 'Silence incoming notifications for the sit.'),
+                    const _CheckRow(icon: Icons.notifications_off_outlined, title: 'Do Not Disturb', body: 'Silence incoming notifications for the meditation.'),
                     Row(children: [
                       Expanded(child: _CheckRow(icon: Icons.alarm_on_rounded, title: 'Remind me', body: '${g.reminderMin} minutes before it starts.')),
                       AppToggle(key: const Key('lobby-remind'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Remind me 10 minutes before'),
@@ -528,7 +528,7 @@ class LobbyPage extends StatelessWidget {
                   PrimaryButton('You’re in the lobby', key: const Key('wait-lobby'), icon: Icons.lock_outline_rounded, onPressed: () {}),
                   const SizedBox(height: 10),
                   Row(children: [
-                    Expanded(child: OutlineButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: startsAt.toLocal(), endDate: startsAt.toLocal().add(Duration(minutes: g.lengthMin)))))),
+                    Expanded(child: OutlineButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group meditation', description: g.title ?? 'Meditation of the Day', startDate: startsAt.toLocal(), endDate: startsAt.toLocal().add(Duration(minutes: g.lengthMin)))))),
                     const SizedBox(width: 10),
                     Expanded(child: OutlineButton('Leave the lobby', key: const Key('leave-lobby'), onPressed: () {
                       ctrl.leave();
@@ -572,7 +572,7 @@ class NextSitPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(NextSitController());
     return AppScaffold(
-      title: 'Upcoming sit', stitch: true, sos: false,
+      title: 'Upcoming meditation', stitch: true, sos: false,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
@@ -591,7 +591,7 @@ class NextSitPage extends StatelessWidget {
                 Column(children: [
                   CountdownText(target: g.startsAt, now: ctrl.time.now, style: AppText.display.copyWith(color: c.textPrimary, fontSize: 56)),
                   const SizedBox(height: 8),
-                  Text('The doors open ${g.doorsOpenSec} seconds before the start. The sit begins by itself.', textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                  Text('The doors open ${g.doorsOpenSec} seconds before the start. The meditation begins by itself.', textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 ]),
                 AppCard(
                   padding: const EdgeInsets.all(18),
@@ -627,7 +627,7 @@ class NextSitPage extends StatelessWidget {
                   AppCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Row(children: [Expanded(child: Text('INTENTION FOR THIS SIT', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))), Icon(Icons.track_changes_rounded, size: 18, color: c.textSecondary)]),
+                      Row(children: [Expanded(child: Text('INTENTION FOR THIS MEDITATION', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))), Icon(Icons.track_changes_rounded, size: 18, color: c.textSecondary)]),
                       const SizedBox(height: 12),
                       Wrap(spacing: 8, runSpacing: 8, children: [
                         for (final i in g.intentions)
@@ -651,20 +651,20 @@ class NextSitPage extends StatelessWidget {
                       Text('Notify me before it starts', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 15)),
                       Text('A single heads-up, ${g.reminderMin} minutes before', style: AppText.caption.copyWith(color: c.textSecondary)),
                     ])),
-                    AppToggle(key: const Key('nextsit-notify'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Notify me before the sit starts'),
+                    AppToggle(key: const Key('nextsit-notify'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Notify me before the meditation starts'),
                   ]),
                 ),
                 Column(children: [
                   PrimaryButton('Enter the lobby', key: const Key('nextsit-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby)),
                   const SizedBox(height: 10),
-                  SecondaryButton('Sit in silence while you wait', key: const Key('nextsit-silence'), icon: Icons.air_rounded, onPressed: () => Get.toNamed(AppRoutes.silenceRoomSetup)),
+                  SecondaryButton('Meditate in silence while you wait', key: const Key('nextsit-silence'), icon: Icons.air_rounded, onPressed: () => Get.toNamed(AppRoutes.silenceRoomSetup)),
                   const SizedBox(height: 10),
-                  SecondaryButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group sit', description: g.title ?? 'Meditation of the Day', startDate: g.startsAt.toLocal(), endDate: g.startsAt.toLocal().add(Duration(minutes: g.lengthMin))))),
+                  SecondaryButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group meditation', description: g.title ?? 'Meditation of the Day', startDate: g.startsAt.toLocal(), endDate: g.startsAt.toLocal().add(Duration(minutes: g.lengthMin))))),
                 ]),
                 Column(children: [
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.sensors_rounded, size: 14, color: c.textSecondary), const SizedBox(width: 6), Flexible(child: Text('STRICT PRESENCE TELEMETRY', maxLines: 2, textAlign: TextAlign.center, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))]),
                   const SizedBox(height: 4),
-                  Text('No cameras. No talking. Just shared presence with everyone sitting at the same moment.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
+                  Text('No cameras. No talking. Just shared presence with everyone meditating at the same moment.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
                 ]),
               ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
             }),
@@ -779,7 +779,7 @@ class _GlobalCard extends StatelessWidget {
         const SizedBox(height: 16),
         Text(live ? 'Happening now' : day, style: AppText.display.copyWith(color: c.textPrimary, fontSize: 34)),
         Row(children: [
-          Text(live ? '${g.lengthMin} min · join the sit' : '$time your time · ${g.lengthMin} min', style: AppText.bodyLarge.copyWith(color: c.textBody)),
+          Text(live ? '${g.lengthMin} min · join the meditation' : '$time your time · ${g.lengthMin} min', style: AppText.bodyLarge.copyWith(color: c.textBody)),
           const Spacer(),
           if (!live)
             Container(
@@ -788,7 +788,7 @@ class _GlobalCard extends StatelessWidget {
             ),
         ]),
         const SizedBox(height: 16),
-        PrimaryButton(live ? 'Join the sit now' : (g.state == GroupPhase.lobby ? 'Go to the lobby' : 'See the lobby'), key: const Key('go-global-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby, arguments: {'kind': 'global'})),
+        PrimaryButton(live ? 'Join the meditation now' : (g.state == GroupPhase.lobby ? 'Go to the lobby' : 'See the lobby'), key: const Key('go-global-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby, arguments: {'kind': 'global'})),
       ]),
     );
   }

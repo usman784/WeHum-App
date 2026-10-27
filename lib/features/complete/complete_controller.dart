@@ -42,9 +42,9 @@ class CompleteController extends GetxController {
   /// "You sat with 412 people across 37 countries." — from the server's answer, else the last live numbers; omitted when quiet or unknown.
   String? get togetherLine {
     final r = result;
-    if (r != null && r.togetherPeople > 1) return 'You sat with ${groupNumberOf(r.togetherPeople)} people across ${r.togetherCountries} countries.';
+    if (r != null && r.togetherPeople > 1) return 'You meditated with ${groupNumberOf(r.togetherPeople)} people across ${r.togetherCountries} countries.';
     final a = live.agg.value;
-    if (a != null && !a.quiet && a.total > 1 && !live.paused) return 'You sat with ${groupNumberOf(a.total)} people across ${a.countries} countries.';
+    if (a != null && !a.quiet && a.total > 1 && !live.paused) return 'You meditated with ${groupNumberOf(a.total)} people across ${a.countries} countries.';
     return null;
   }
 

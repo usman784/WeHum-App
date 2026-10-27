@@ -139,10 +139,10 @@ class HeartSummaryCard extends StatelessWidget {
 
   String get _line {
     final d = hr.deltaBpm;
-    if (d == null) return hr.sampleCount <= 2 ? 'Your wearable shared ${hr.sampleCount == 1 ? 'one reading' : 'two readings'} for this sit.' : 'Not enough readings to compare the start and the end.';
-    if (d <= -2) return 'Your heart slowed down by the end of the sit.';
+    if (d == null) return hr.sampleCount <= 2 ? 'Your wearable shared ${hr.sampleCount == 1 ? 'one reading' : 'two readings'} for this meditation.' : 'Not enough readings to compare the start and the end.';
+    if (d <= -2) return 'Your heart slowed down by the end of the meditation.';
     if (d >= 2) return 'Your heart rate was a little higher at the end.';
-    return 'Your heart rate stayed steady through the sit.';
+    return 'Your heart rate stayed steady through the meditation.';
   }
 
   @override

@@ -162,10 +162,10 @@ void main() {
       await e.dispose();
     });
 
-    testWidgets('Your progress: Together is called Group sits and says what it counts', (t) async {
+    testWidgets('Your progress: Together is called Group meditations and says what it counts', (t) async {
       final e = await open(t, AppRoutes.yourProgress);
-      expect(find.text('GROUP SITS'), findsOneWidget);
-      expect(find.text('Sat live with others'), findsOneWidget);
+      expect(find.text('GROUP MEDITATIONS'), findsOneWidget);
+      expect(find.text('Meditated live with others'), findsOneWidget);
       expect(find.text('TOGETHER'), findsNothing);
       await t.pumpWidget(const SizedBox());
       await e.dispose();

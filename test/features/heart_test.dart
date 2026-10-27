@@ -100,7 +100,7 @@ void main() {
       await t.pumpWidget(host(HeartSummaryCard(hr)));
       expect(find.byKey(const Key('complete-hr')), findsOneWidget);
       expect(t.widget<Text>(find.byKey(const Key('hr-big'))).data!, startsWith('−'));
-      expect(find.text('Your heart slowed down by the end of the sit.'), findsOneWidget);
+      expect(find.text('Your heart slowed down by the end of the meditation.'), findsOneWidget);
       expect(find.text('Apple Watch'), findsOneWidget);
       expect(find.text('HRV'), findsOneWidget);
       expect(find.text('48'), findsOneWidget);
@@ -110,7 +110,7 @@ void main() {
       final hr = summarizeSit([s(0, 68)], source: HrSource.health, sourceName: 'Health Connect')!;
       await t.pumpWidget(host(HeartSummaryCard(hr)));
       expect(t.widget<Text>(find.byKey(const Key('hr-big'))).data, '68');
-      expect(find.text('Your wearable shared one reading for this sit.'), findsOneWidget);
+      expect(find.text('Your wearable shared one reading for this meditation.'), findsOneWidget);
       expect(find.text('HRV'), findsNothing);
     });
 
