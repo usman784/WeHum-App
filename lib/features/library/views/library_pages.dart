@@ -137,7 +137,7 @@ class LibraryPage extends StatelessWidget {
                   Text(member ? 'From Raphael’s online library' : 'Free for you', key: const Key('free-heading'), style: AppText.title.copyWith(color: c.textPrimary)),
                   for (final s in ctrl.freeItems.take(5)) SessionRow(s: s, onTap: () => ctrl.open(s), showFree: !member),
                   const SizedBox(height: 12),
-                  AppCard(key: const Key('recipes-row'), onTap: () => Get.toNamed(AppRoutes.myMeditations), child: ListRow(title: 'My Meditations', trailing: Text('${ctrl.recipeCount.value}', style: AppText.navTitle.copyWith(color: c.textSecondary)))),
+                  AppCard(key: const Key('recipes-row'), onTap: () => member ? Get.toNamed(AppRoutes.myMeditations) : openPaywall('lock'), child: ListRow(title: 'My Meditations', trailing: member ? Text('${ctrl.recipeCount.value}', style: AppText.navTitle.copyWith(color: c.textSecondary)) : const AppBadge(BadgeKind.premium))), // members only (saved Build your own mixes)
                   const SizedBox(height: 8),
                   AppCard(key: const Key('downloads-row'), onTap: () => Get.toNamed(AppRoutes.downloads), child: ListRow(title: 'Downloads', trailing: Obx(() => Text('${ctrl.downloadedIds.length}', style: AppText.navTitle.copyWith(color: c.textSecondary))))),
                   const SizedBox(height: 16),

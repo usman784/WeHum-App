@@ -67,7 +67,14 @@ void main() {
     expect(Get.currentRoute, AppRoutes.membershipPaywall); // premium for free people
     Get.back();
     await settle(t);
-    await t.scrollUntilVisible(find.byKey(const Key('programs-row')), 200, scrollable: find.byType(Scrollable).first);
+    await t.scrollUntilVisible(find.byKey(const Key('recipes-row')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.descendant(of: find.byKey(const Key('recipes-row')), matching: find.text('PREMIUM')), findsOneWidget); // My Meditations is members only
+    await t.tap(find.byKey(const Key('recipes-row')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.membershipPaywall);
+    Get.back();
+    await settle(t);
+    await t.scrollUntilVisible(find.byKey(const Key('programs-row')), -200, scrollable: find.byType(Scrollable).first);
     expect(find.descendant(of: find.byKey(const Key('programs-row')), matching: find.text('COMING SOON')), findsOneWidget);
     await t.tap(find.byKey(const Key('programs-row')));
     await settle(t);
