@@ -175,7 +175,7 @@ class CheckEmailPage extends StatelessWidget {
           const SizedBox(height: 28),
           PrimaryButton('Open email app', onPressed: () => launchUrl(Uri.parse('message://'), mode: LaunchMode.externalApplication).catchError((_) => launchUrl(Uri.parse('mailto:')))),
           const SizedBox(height: 8),
-          Center(child: TextLink('Back to log in', onPressed: () => Get.offAllNamed(AppRoutes.logIn), color: c.textSecondary)),
+          Center(child: TextLink('Back to log in', onPressed: () => backToLogIn(loginBelow: ctrl.purpose == 'reset'), color: c.textSecondary)),
           const Spacer(),
           Obx(() => Center(
                 child: ctrl.cooldown.value > 0
@@ -274,7 +274,7 @@ class AuthLinkPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text('Links work once and for a short time. Request a new one.', textAlign: TextAlign.center, style: AppText.body.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 24),
-                  PrimaryButton('Back to log in', onPressed: () => Get.offAllNamed(AppRoutes.logIn), fullWidth: false),
+                  PrimaryButton('Back to log in', onPressed: () => backToLogIn(loginBelow: false), fullWidth: false),
                 ]);
             }
           }),

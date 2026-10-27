@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         applicationId = "app.wehum.meditation"
-        minSdk = maxOf(flutter.minSdkVersion, 23) // firebase_auth / audio_service
+        minSdk = maxOf(flutter.minSdkVersion, 26) // firebase_auth / audio_service; Health Connect (health plugin) needs 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

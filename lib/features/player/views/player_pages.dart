@@ -10,6 +10,7 @@ import '../../../core/audio/engines.dart';
 import '../../../core/audio/local_media.dart';
 import '../../../core/audio/media_session.dart';
 import '../../../core/data/contracts/repositories.dart';
+import '../../../core/data/models/stitch.dart' show Belts;
 import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/presence_service.dart';
 import '../../../core/services/access_service.dart';
@@ -27,9 +28,13 @@ import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/app_scaffold.dart' show StitchHeader;
 import '../../../core/widgets/motion.dart';
+import '../../../core/widgets/stitch.dart' show HeatmapCard;
 import '../../../core/widgets/surfaces.dart';
 import '../../today/controllers/today_controller.dart';
 import '../../today/views/today_widgets.dart';
+import '../../dedications/views/dedications_panel.dart';
+import '../../../core/health/heart_service.dart';
+import '../../heart/heart_widgets.dart';
 import '../controllers/player_controller.dart';
 import '../player_args.dart';
 
@@ -37,7 +42,8 @@ PlayerController _make(PlayerArgs args, AudioEngine engine) => Get.put(
       PlayerController(
         args, engine: engine, media: Get.find<MediaRepository>(), presence: Get.find<PresenceService>(), sync: Get.find<SyncService>(), analytics: Get.find<AnalyticsService>(),
         local: Get.find<LocalMedia>(), connectivity: Get.find<ConnectivityService>(), catalog: () => Get.find<CatalogService>().catalog.value, mediaSession: Get.find<MediaSessionPort>(),
-        chime: Get.isRegistered<ChimePort>() ? Get.find<ChimePort>() : null),
+        chime: Get.isRegistered<ChimePort>() ? Get.find<ChimePort>() : null,
+        heart: Get.isRegistered<HeartService>() ? Get.find<HeartService>() : null),
       tag: args.sessionId ?? args.title,
     );
 
@@ -156,6 +162,7 @@ class PlayerPage extends StatelessWidget {
     final cat = Get.isRegistered<CatalogService>() ? Get.find<CatalogService>().catalog.value : null;
     final s = a.sessionId == null ? null : cat?.session(a.sessionId!);
     final theme = s?.themeId == null ? null : cat?.theme(s!.themeId!)?.name;
+    if (a.global) return 'Global sit';
     if (theme != null) return theme;
     return switch (a.kind) { 'motd' => 'Meditation of the Day', 'group' => 'Group sit', 'sos' => 'SoS', 'custom' => 'Build your own', 'program' => 'Program', _ => 'Active practice' };
   }
@@ -181,13 +188,12 @@ class PlayerPage extends StatelessWidget {
             final belts = live.agg.value?.belts ?? const <String, int>{};
             final playing = ctrl.phase.value == PlayerPhase.playing || ctrl.phase.value == PlayerPhase.buffering;
             final left = ctrl.duration.value - ctrl.position.value;
-            const bpm = 60 / 10; // 4 s in + 6 s out
             return Column(children: [
               _PlayerHeader(ctrl.leave),
               Expanded(
                 child: ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
                   Row(children: [
-                    _SquareBtn(key: const Key('minimize'), icon: Icons.keyboard_arrow_down_rounded, label: 'Minimise', onTap: ctrl.leave),
+                    const SizedBox(width: 40), // same width as the right side keeps the title centred; the Back arrow above is the way out
                     Expanded(child: Column(children: [
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)), const SizedBox(width: 6), Flexible(child: Text(_eyebrow(args).toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.tealText, fontSize: 10)))]),
                       Text(args.title, key: const Key('player-title'), maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 18)),
@@ -195,6 +201,7 @@ class PlayerPage extends StatelessWidget {
                     ])),
                     const SizedBox(width: 40),
                   ]),
+                  SessionAbout(args.sessionId == null || !Get.isRegistered<CatalogService>() ? null : Get.find<CatalogService>().catalog.value?.session(args.sessionId!)?.description),
                   SizedBox(
                     height: 330,
                     child: Stack(alignment: Alignment.center, children: [
@@ -203,15 +210,9 @@ class PlayerPage extends StatelessWidget {
                         center: Stack(alignment: Alignment.center, children: [
                           Opacity(opacity: .10, child: ClipOval(child: ThumbImage(args.coverUrl, key: const Key('player-art'), seed: args.sessionId ?? args.title, width: 170, height: 170))),
                           Column(mainAxisSize: MainAxisSize.min, children: [
-                            _PhaseLabel(),
-                            const SizedBox(height: 2),
                             Text(mmss(ctrl.position.value), key: const Key('pos-big'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 44, fontFeatures: AppText.tabular)),
                             const SizedBox(height: 2),
-                            Row(mainAxisSize: MainAxisSize.min, children: [
-                              Text('-${mmss(left.isNegative ? Duration.zero : left)}', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
-                              Text('  •  ', style: AppText.caption.copyWith(color: c.textTertiary)),
-                              Text('${bpm.toStringAsFixed(1)} BPM', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
-                            ]),
+                            Text('-${mmss(left.isNegative ? Duration.zero : left)}', style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
                           ]),
                         ]),
                       ),
@@ -219,6 +220,9 @@ class PlayerPage extends StatelessWidget {
                     ]),
                   ),
                   _TogetherPill(people: people, countries: t?.countries ?? 0, quiet: quiet, meditatedToday: live.agg.value?.meditatedToday ?? 0, paused: live.paused),
+                  if (ctrl.heartOn) HeartPill(live: ctrl.heartLive),
+                  // The world heat map and who is sitting where: in every meditation, solo or in a group (not while the live numbers are paused).
+                  if (!live.paused) HeatmapCard(belts: Belts(americas: belts['americas'] ?? 0, emea: belts['emea'] ?? 0, apac: belts['apac'] ?? 0), quiet: quiet),
                   Column(children: [
                     Row(children: [
                       Icon(Icons.radio_button_checked_rounded, size: 18, color: c.emberText),
@@ -227,7 +231,9 @@ class PlayerPage extends StatelessWidget {
                       if (ctrl.chapter != null) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Text('PART ${ctrl.chapter!.n}/${ctrl.chapter!.of}', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))),
                     ]),
                     const SizedBox(height: 10),
-                    Semantics(label: 'Progress ${mmss(ctrl.position.value)} of ${mmss(ctrl.duration.value)}', child: AppProgressBar(ctrl.progress)),
+                    (args.live || args.recipe != null)
+                        ? Semantics(label: 'Progress ${mmss(ctrl.position.value)} of ${mmss(ctrl.duration.value)}', child: AppProgressBar(ctrl.progress))
+                        : _ScrubBar(ctrl: ctrl),
                     const SizedBox(height: 8),
                     Row(children: [
                       Text(mmss(ctrl.position.value), key: const Key('pos'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
@@ -253,6 +259,8 @@ class PlayerPage extends StatelessWidget {
                       if (!(args.live || args.recipe != null)) _RoundBtn(key: const Key('fwd15'), icon: Icons.forward_10_rounded, label: 'Forward 15 seconds', text: '+15', onTap: ctrl.forward15),
                     ]),
                   _MixDesk(ctrl: ctrl, args: args),
+                  // during the sit too: read the dedications and write one without leaving the player
+                  if (args.sessionId != null) DedicationsPanel(sessionId: args.sessionId!),
                   Row(children: [
                     Icon(Icons.bolt_rounded, size: 16, color: c.success),
                     const SizedBox(width: 6),
@@ -286,46 +294,11 @@ class PlayerPage extends StatelessWidget {
 }
 
 /// "Inhale · Anchor" / "Exhale · Release" in step with the ring (4 s in, 6 s out).
-class _PhaseLabel extends StatefulWidget {
-  @override
-  State<_PhaseLabel> createState() => _PhaseLabelState();
-}
-
-class _PhaseLabelState extends State<_PhaseLabel> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: Motion.breatheIn + Motion.breatheOut)..repeat();
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (_, __) => Text(_c.value < .4 ? 'INHALE · ANCHOR' : 'EXHALE · RELEASE', key: const Key('breath-cue'), style: AppText.overline.copyWith(color: c.tealText, fontSize: 10, letterSpacing: 1.4)),
-    );
-  }
-}
-
 class _PlayerHeader extends StatelessWidget {
   const _PlayerHeader(this.onBack);
   final VoidCallback onBack;
   @override
   Widget build(BuildContext context) => StitchHeader(title: 'Active practice', onBack: onBack);
-}
-
-class _SquareBtn extends StatelessWidget {
-  const _SquareBtn({super.key, required this.icon, required this.label, required this.onTap});
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Semantics(button: true, label: label, child: GestureDetector(onTap: onTap, child: Container(width: 40, height: 40, decoration: BoxDecoration(color: c.surface, shape: BoxShape.circle), child: Icon(icon, size: 22, color: c.textPrimary))));
-  }
 }
 
 /// "412 synchronized worldwide · Global field active" — quiet rule: never a small number as if it were a crowd; paused: no numbers.
@@ -371,8 +344,8 @@ class _MixDesk extends StatelessWidget {
             onTapDown: (d) => onChanged(((d.localPosition.dx) / k.maxWidth).clamp(0.0, 1.0)),
             child: Container(
               height: 34, decoration: BoxDecoration(color: c.bgDeep, borderRadius: BorderRadius.circular(10)),
-              child: Stack(children: [
-                AnimatedContainer(duration: const Duration(milliseconds: 90), width: k.maxWidth * value, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10))),
+              child: Stack(alignment: Alignment.centerLeft, children: [ // centerLeft so the label row sits in the middle of the 34px bar, not at its top
+                AnimatedContainer(duration: const Duration(milliseconds: 90), width: k.maxWidth * value, height: 34, decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10))),
                 Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Row(children: [Icon(icon, size: 15, color: c.textSecondary), const SizedBox(width: 6), Expanded(child: Text(right, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))])),
               ]),
             ),
@@ -445,6 +418,7 @@ class VideoPlayerPage extends StatelessWidget {
               if (Pip.supported) const Align(child: TextLink('Picture in picture', key: Key('pip'), onPressed: Pip.enter)),
               const SizedBox(height: 16),
               if (ctrl.togetherRx.value != null) Text('${ctrl.togetherRx.value!.people} ${ctrl.togetherRx.value!.people == 1 ? 'person' : 'people'} in this session now', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              if (args.sessionId != null) ...[const SizedBox(height: 12), DedicationsPanel(sessionId: args.sessionId!)],
               const SizedBox(height: 12),
               OutlineButton('End meditation', key: const Key('end'), onPressed: ctrl.endEarly),
             ]);
@@ -503,8 +477,7 @@ class FreePlayerPage extends StatelessWidget {
                   ]),
                 ),
               const SizedBox(height: 12),
-              if (!member) Center(child: Text('Dedications are for members', style: AppText.caption.copyWith(color: c.textTertiary))),
-              const SizedBox(height: 12),
+              if (sid != null) ...[DedicationsPanel(sessionId: sid), const SizedBox(height: 12)],
               OutlineButton('End meditation', key: const Key('end'), onPressed: ctrl.endEarly),
             ]);
           }),
@@ -516,7 +489,7 @@ class FreePlayerPage extends StatelessWidget {
 
 /// "Mix & pacing" sheet: volume of this meditation, an interval chime and haptic breath pacing.
 Future<void> showMixSheet(BuildContext context, PlayerController ctrl) {
-  return showAppSheet<void>(context, title: 'Mix & pacing', builder: (ctx) {
+  return showAppSheet<void>(context, title: 'Mix', builder: (ctx) {
     final c = ctx.colors;
     return Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text('VOLUME', style: AppText.overline.copyWith(color: c.textTertiary)),
@@ -529,14 +502,41 @@ Future<void> showMixSheet(BuildContext context, PlayerController ctrl) {
             ])),
             AppToggle(key: const Key('chime-switch'), value: ctrl.chimeEveryMin.value == 5, onChanged: (v) => ctrl.setChime(v ? 5 : 0), label: 'Chime every 5 minutes'),
           ]),
-          const SizedBox(height: 8),
-          Row(children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Haptic breath pacing', style: AppText.bodyLarge.copyWith(color: c.textPrimary)),
-              Text('A light tap at the start of every breath', style: AppText.caption.copyWith(color: c.textSecondary)),
-            ])),
-            AppToggle(key: const Key('haptics-switch'), value: ctrl.haptics.value, onChanged: ctrl.setHaptics, label: 'Haptic breath pacing'),
-          ]),
+          // haptic breath pacing toggle removed — breathing feature is coming later
         ]));
   });
+}
+
+/// The progress bar you can touch and drag to move through the meditation (not in a group, where everyone stays together).
+/// The bar keeps its slim look; the touch area is tall enough for a finger.
+class _ScrubBar extends StatelessWidget {
+  const _ScrubBar({required this.ctrl});
+  final PlayerController ctrl;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return LayoutBuilder(builder: (_, k) {
+      double at(double dx) => (dx / k.maxWidth).clamp(0.0, 1.0);
+      return Semantics(
+        slider: true, label: 'Progress', value: '${mmss(ctrl.position.value)} of ${mmss(ctrl.duration.value)}',
+        increasedValue: 'forward 15 seconds', decreasedValue: 'back 15 seconds',
+        onIncrease: ctrl.forward15, onDecrease: ctrl.back15,
+        child: GestureDetector(
+          key: const Key('progress-scrub'), behavior: HitTestBehavior.opaque,
+          onTapDown: (d) => ctrl.scrubTo(at(d.localPosition.dx)),
+          onTapUp: (_) => ctrl.scrubEnd(),
+          onHorizontalDragStart: (d) => ctrl.scrubTo(at(d.localPosition.dx)),
+          onHorizontalDragUpdate: (d) => ctrl.scrubTo(at(d.localPosition.dx)),
+          onHorizontalDragEnd: (_) => ctrl.scrubEnd(),
+          child: SizedBox(
+            height: 36, // a finger-sized touch area around the slim bar
+            child: Stack(alignment: Alignment.centerLeft, children: [
+              AppProgressBar(ctrl.progress),
+              Positioned(left: (k.maxWidth * ctrl.progress.clamp(0.0, 1.0) - 7).clamp(0.0, k.maxWidth - 14), child: Container(width: 14, height: 14, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle, border: Border.all(color: c.bg, width: 2)))),
+            ]),
+          ),
+        ),
+      );
+    });
+  }
 }

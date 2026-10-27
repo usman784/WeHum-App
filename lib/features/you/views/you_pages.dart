@@ -12,6 +12,7 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/config/app_links.dart';
 import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/stitch.dart';
+import '../../../core/services/access_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -137,35 +138,71 @@ class YouPage extends StatelessWidget {
             ),
           // ── settings & offline
           const _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
-          AppCard(
-            padding: const EdgeInsets.symmetric(horizontal: Gap.x16, vertical: 4),
-            child: Column(children: [
-              for (final (key, title, sub, route, badge) in [
-                ('r-downloads', 'Downloaded meditations', 'Listen without internet', AppRoutes.downloads, null),
-                ('r-reminders', 'Reminders & sounds', 'Daily sit reminder, bells, group warnings', AppRoutes.reminders, null),
-                ('r-membership', 'Membership', ctrl.access.isMember ? (ctrl.access.isTrial ? 'Free trial' : 'Active') : 'Free plan', AppRoutes.manageMembership, null),
-                ('r-recipes', 'My meditations', 'Your saved blends', AppRoutes.myMeditations, null),
-                ('r-notifications', 'Notifications', 'Messages from Raphael and group sits', AppRoutes.notifications, null),
-                ('r-challenges', 'Challenges', 'Cohort sprints with a grace day', AppRoutes.challenges, !ctrl.challengesOn),
-                ('r-milestones', 'Milestones', 'Badges for first sit, streaks, minutes and group sits', AppRoutes.milestones, true),
-                ('r-breath', 'Breathwork', 'Guided breathing lessons', AppRoutes.breathwork, true),
-                ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
-                ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),
-              ])
-                ListRow(key: Key(key), title: title, subtitle: sub, trailing: badge == true ? const AppBadge(BadgeKind.comingSoon) : null, onTap: () => Get.toNamed(route)),
-            ]),
-          ),
-          if (!guest || p != null) DangerButton('Sign out', key: const Key('sign-out'), loading: ctrl.signingOut.value, onPressed: () async {
-            final ok = await showAppSheet<bool>(context, title: 'Sign out?', builder: (ctx) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('Your downloads stay on this phone. You can log in again any time.', style: AppText.body.copyWith(color: ctx.colors.textSecondary)),
-              const SizedBox(height: 16),
-              DangerButton('Sign out', key: const Key('confirm-sign-out'), onPressed: () => Navigator.of(ctx).pop(true)),
-              TextLink('Cancel', onPressed: () => Navigator.of(ctx).pop(false)),
-            ]));
-            if (ok == true) await ctrl.signOut();
-          }),
+          PreferenceRows(access: ctrl.access, challengesOn: ctrl.challengesOn, heartRateOn: ctrl.heartRateOn),
+          if (!guest || p != null) SignOutButton(busy: ctrl.signingOut.value, onConfirmed: ctrl.signOut),
         ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
       }),
+    );
+  }
+}
+
+/// The list of settings screens (downloads, reminders, membership, …): on the You tab and in Settings.
+class PreferenceRows extends StatelessWidget {
+  const PreferenceRows({super.key, required this.access, required this.challengesOn, required this.heartRateOn});
+  final AccessService access;
+  final bool challengesOn, heartRateOn;
+  @override
+  Widget build(BuildContext context) => AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: Gap.x16, vertical: 4),
+        child: Column(children: [
+          for (final (key, title, sub, route, badge) in [
+            ('r-downloads', 'Downloaded meditations', 'Listen without internet', AppRoutes.downloads, null),
+            ('r-reminders', 'Reminders & sounds', 'Daily sit reminder, bells, group warnings', AppRoutes.reminders, null),
+            ('r-membership', 'Membership', access.isMember ? (access.isTrial ? 'Free trial' : 'Active') : 'Free plan', AppRoutes.manageMembership, null),
+            ('r-recipes', 'My meditations', 'Your saved blends', AppRoutes.myMeditations, null),
+            ('r-notifications', 'Notifications', 'Messages from Raphael and group sits', AppRoutes.notifications, null),
+            if (heartRateOn) ('r-heart', 'Heart rate', 'Watch, band or chest strap', AppRoutes.heartRate, null),
+            ('r-challenges', 'Challenges', 'Cohort sprints with a grace day', AppRoutes.challenges, !challengesOn),
+            ('r-milestones', 'Milestones', 'Badges for first sit, streaks, minutes and group sits', AppRoutes.milestones, true),
+            ('r-breath', 'Breathwork', 'Guided breathing lessons', AppRoutes.breathwork, true),
+            ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
+            ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),
+          ])
+            ListRow(key: Key(key), title: title, subtitle: sub, trailing: badge == true ? const AppBadge(BadgeKind.comingSoon) : null, onTap: () => Get.toNamed(route)),
+        ]),
+      );
+}
+
+/// "Sign out" with its confirmation sheet.
+class SignOutButton extends StatelessWidget {
+  const SignOutButton({super.key, required this.busy, required this.onConfirmed});
+  final bool busy;
+  final Future<void> Function() onConfirmed;
+  @override
+  Widget build(BuildContext context) => DangerButton('Sign out', key: const Key('sign-out'), loading: busy, onPressed: () async {
+        final ok = await showAppSheet<bool>(context, title: 'Sign out?', builder: (ctx) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text('Your downloads stay on this phone. You can log in again any time.', style: AppText.body.copyWith(color: ctx.colors.textSecondary)),
+          const SizedBox(height: 16),
+          DangerButton('Sign out', key: const Key('confirm-sign-out'), onPressed: () => Navigator.of(ctx).pop(true)),
+          TextLink('Cancel', onPressed: () => Navigator.of(ctx).pop(false)),
+        ]));
+        if (ok == true) await onConfirmed();
+      });
+}
+
+/// Settings: opened from the gear at the top right of every tab. The same list as under You, plus Sign out.
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = Get.put(SettingsController());
+    return AppScaffold(
+      title: 'Settings',
+      body: Obx(() => ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
+            PreferenceRows(access: ctrl.access, challengesOn: ctrl.challengesOn, heartRateOn: ctrl.heartRateOn),
+            const SizedBox(height: 14),
+            SignOutButton(busy: ctrl.signingOut.value, onConfirmed: ctrl.signOut),
+          ])),
     );
   }
 }

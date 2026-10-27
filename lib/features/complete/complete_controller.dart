@@ -4,6 +4,8 @@ import '../../core/data/contracts/repositories.dart';
 import '../../core/data/models/activity.dart';
 import '../../core/data/models/content.dart';
 import '../../core/data/models/stitch.dart';
+import '../../core/health/heart_service.dart';
+import '../../core/health/hr_summary.dart';
 import '../../core/realtime/live_service.dart';
 import '../../core/services/access_service.dart';
 import '../../core/services/analytics_service.dart';
@@ -70,9 +72,22 @@ class CompleteController extends GetxController {
   StreakInfo? get streak => result?.streak;
   bool get streakExtended => result?.streakExtended ?? false;
   int get finishers => result?.finishers ?? 0;
-  Belts get belts => result?.belts ?? const Belts();
+  /// People sitting now by belt: the live numbers (they keep moving while this screen is open), else the ones the server sent with the result.
+  Belts get belts {
+    final a = live.agg.value?.belts;
+    if (a != null && !live.paused && !(live.agg.value?.quiet ?? true)) {
+      final b = Belts(americas: a['americas'] ?? 0, emea: a['emea'] ?? 0, apac: a['apac'] ?? 0);
+      if (!b.isEmpty) return b;
+    }
+    return result?.belts ?? const Belts();
+  }
   int get minutesToday => result?.minutesToday ?? 0;
-  int? get hrDelta => result?.hrDeltaBpm;
+  /// This sit's heart-rate numbers from the phone (sensor or Health), shown at once; the share card also takes the shift from here.
+  HrSummary? get hrSummary => args.hr;
+  int? get hrDelta => args.hr?.deltaBpm ?? result?.hrDeltaBpm;
+  /// Nudge to set heart rate up: only when the feature is on, nothing is connected and this sit has no reading.
+  bool get heartInvite =>
+      args.hr == null && Get.isRegistered<HeartService>() && Get.find<HeartService>().featureOn && !Get.find<HeartService>().anySource;
 
   /// Kudos are for the people who finished the same meditation (catalog sessions with a counted, completed sit).
   bool get canKudos => player.sessionId != null && args.counted && (args.record?.completed ?? false) && finishers > 1;
@@ -89,7 +104,13 @@ class CompleteController extends GetxController {
   }
 
   /// Live country counts for the small map (socket `live:agg`): empty while paused or when nobody is meditating.
-  Map<String, int> get hot => live.paused ? const {} : (live.agg.value?.where ?? const {});
+  /// Falls back to the countries the server sent with the result (where people are sitting right now) when no live push has arrived yet.
+  Map<String, int> get hot {
+    if (live.paused) return const {};
+    final live_ = live.agg.value?.where ?? const <String, int>{};
+    if (live_.isNotEmpty) return live_;
+    return {for (final t in result?.topCountries ?? const <({String country, int n})>[]) t.country: t.n};
+  }
 
   Worker? _answered;
 

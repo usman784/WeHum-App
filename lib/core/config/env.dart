@@ -12,4 +12,6 @@ abstract final class Env {
   /// Google Cloud project number for the Play Integrity API (Android only).
   static const playIntegrityProject = String.fromEnvironment('PLAY_INTEGRITY_PROJECT');
   static const useMocks = bool.fromEnvironment('USE_MOCKS', defaultValue: false);
+  /// Meta (Facebook) App ID, the `source_application` Instagram requires for "Share to Stories". Empty = use the share sheet.
+  static const metaAppId = String.fromEnvironment('META_APP_ID');
 }

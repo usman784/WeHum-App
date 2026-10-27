@@ -107,6 +107,11 @@ class VideoEngine implements AudioEngine {
 /// starts. Embedded players showed no ads on any device or browser tried (Pixel 5 app and Chrome, Mac Chrome), while
 /// youtube.com and the YouTube app did, so ad serving in embeds is YouTube's call. On Android third-party cookies are
 /// accepted for this web view (off by default).
+///
+/// Tried on a OnePlus 8 (Android 13, Pakistan SIM, 2026-10-23), none showed a pre-roll ad: the default; `privacyEnhancedMode:
+/// false` (host youtube.com), which the player refuses (error 153, "not embeddable"); and `origin: 'https://wehum.app'`, which
+/// plays but still showed no ad. All were tested from Pakistan only, where ad inventory is thin, so the open question is
+/// whether ads appear for viewers in other regions (test with a US/EU phone or VPN) and whether the channel has ads on.
 class YoutubeEngine implements AudioEngine {
   yt.YoutubePlayerController? controller;
   final _pos = StreamController<Duration>.broadcast();

@@ -10,7 +10,8 @@ import '../models/today.dart';
 abstract class TodayRepository {
   Future<TodayData> today(String date);
   Future<MotdInfo> motd(String date);
-  Future<GroupInfo> groupNext();
+  /// The next sit: a group sit through the day (`kind: 'group'`) or the weekly Global meditation (`'global'`, 404 when it is off).
+  Future<GroupInfo> groupNext({String kind = 'group'});
   Future<DailyMessage> dailyMessage(String date);
   Future<Page<DailyMessage>> archive({String? q, String? theme, String? cursor});
 
@@ -106,7 +107,8 @@ class PostResult {
 
 abstract class CommunityRepository {
   Future<Page<Dedication>> dedications(String sessionId, {String? cursor});
-  Future<PostResult> post({required String meditationId, required String text, bool showPlace = false});
+  /// After a finished sit (`meditationId`) or at any time for a session (`sessionId`, details and player): exactly one.
+  Future<PostResult> post({String? meditationId, String? sessionId, required String text, bool showPlace = false});
   Future<Page<FeedItem>> feed({String? cursor});
   Future<int> membersAt(String time);
   Future<int> anonymize();

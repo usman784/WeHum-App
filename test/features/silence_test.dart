@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,17 @@ class FakeScreen implements ScreenPort {
   Future<void> restore() async => log.add('restore');
   @override
   Future<void> keepAwake(bool on) async => log.add(on ? 'awake' : 'sleep');
+}
+
+/// keepAwake waits like a slow device; stands in for every slow step before the bell.
+class _SlowScreen extends FakeScreen {
+  _SlowScreen(this.gate);
+  final Future<void> gate;
+  @override
+  Future<void> keepAwake(bool on) async {
+    if (on) await gate;
+    log.add(on ? 'awake' : 'sleep');
+  }
 }
 
 class FakeSilenceNav implements SilenceNav {
@@ -215,6 +227,23 @@ void main() {
       expect(r.nav.complete!.record!.durationSec, 300); // the 3-second gap is not part of the meditation
       expect(r.nav.complete!.record!.startedAt, DateTime.utc(2026, 10, 7, 8, 0, 3));
     });
+  });
+
+  test('Begin opens the run screen at once; the bell and "Begins in 3" start together, slow device work does not hold them', () async {
+    final r = Rig();
+    final slow = Completer<void>();
+    r.ctrl = SilenceController(bell: r.bell, screen: _SlowScreen(slow.future), sync: r.sync, presence: r.presence, notifications: r.notif, analytics: AnalyticsService(), nav: r.nav);
+    r.ctrl.minutes.value = 5;
+    final done = r.ctrl.enter();
+    await Future<void>.delayed(Duration.zero);
+    expect(r.nav.events, ['run']); // the meditation screen right away
+    expect(r.bell.rings, 1); // the bell rings as the countdown starts
+    expect(r.ctrl.settleLeft.value, 3);
+    expect(r.ctrl.remaining.value, const Duration(minutes: 5));
+    slow.complete();
+    await done;
+    expect(r.nav.events, ['run']);
+    expect(r.bell.rings, 1);
   });
 
   test('no opening bell: no gap, the timer starts at once', () async {

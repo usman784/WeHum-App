@@ -5,6 +5,7 @@ import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/services/account_service.dart';
 import 'package:meditation/core/services/analytics_service.dart';
 import 'package:meditation/core/services/deep_links.dart';
+import 'package:meditation/core/services/onboarding_store.dart';
 import 'package:meditation/features/account/controllers/account_controllers.dart';
 import 'package:meditation/features/account/views/account_pages.dart';
 
@@ -179,6 +180,22 @@ void main() {
       expect(find.byKey(const Key('check-body')), findsOneWidget);
       expect(e2.authRepo.calls, contains('forgot:nobody@example.com'));
       await e2.dispose();
+    });
+
+    testWidgets('logging in from the start screen finishes onboarding: the next launch (or a tapped notification) never lands on the intro', (t) async {
+      phone(t);
+      final e = await TestEnv.create(onboardingDone: false);
+      expect(Get.find<OnboardingStore>().done, false);
+      await t.pumpWidget(e.app(initial: AppRoutes.logIn));
+      await settle(t);
+      await t.enterText(find.byKey(const Key('li-email')), 'a@example.com');
+      await t.enterText(find.byKey(const Key('li-password')), 'correct-password');
+      await t.tap(find.text('Log in').last);
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.todayFree);
+      expect(Get.find<OnboardingStore>().done, true);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
     });
 
     testWidgets('20 resend has a 60 s cooldown', (t) async {

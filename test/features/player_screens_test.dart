@@ -29,7 +29,7 @@ PlayerArgs motd({String kind = 'motd', String mode = 'solo', Duration startAt = 
 
 Future<TestEnv> openPlayer(WidgetTester t, PlayerArgs args, {bool member = true}) async {
   phone(t);
-  t.view.physicalSize = const Size(1170, 4200); // the whole player is built
+  t.view.physicalSize = const Size(1170, 5600); // the whole player is built (with the dedications panel)
   final e = await TestEnv.create(member: member, onboardingDone: true);
   await e.socket.connect();
   e.socketServer.serverConnects();
@@ -64,6 +64,92 @@ void main() {
     e.socketServer.serverPushes('session:live', {'sessionId': sid, 'people': 500, 'countries': 40});
     await afterPush(t);
     expect(find.text('500 synchronized worldwide'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+  });
+
+  testWidgets('42 player: no breathing labels (no inhale/exhale cue, no BPM); breath guidance belongs to Breathwork', (t) async {
+    final e = await openPlayer(t, motd());
+    e.engine.tick(const Duration(seconds: 3));
+    await afterPush(t);
+    expect(find.byKey(const Key('breath-cue')), findsNothing);
+    expect(find.textContaining('INHALE'), findsNothing);
+    expect(find.textContaining('EXHALE'), findsNothing);
+    expect(find.textContaining('BPM'), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+  });
+
+  testWidgets('42 player: touch and drag the progress bar to move through the meditation; not in a group (everyone stays together)', (t) async {
+    final e = await openPlayer(t, motd());
+    final bar = find.byKey(const Key('progress-scrub'));
+    await t.scrollUntilVisible(bar, 300, scrollable: find.byType(Scrollable).first);
+    expect(bar, findsOneWidget);
+    final box = t.getRect(bar);
+    // a tap at the middle of the bar jumps to the middle (10 min → 5:00)
+    await t.tapAt(Offset(box.left + box.width * .5, box.center.dy));
+    await afterPush(t);
+    expect(e.engine.seeks.last.inSeconds, inInclusiveRange(295, 305));
+    // dragging to 80 % seeks again, and the clock follows
+    await t.dragFrom(Offset(box.left + box.width * .5, box.center.dy), Offset(box.width * .3, 0));
+    await afterPush(t);
+    expect(e.engine.seeks.last.inSeconds, inInclusiveRange(475, 485));
+    expect(find.text('08:00'), findsWidgets);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+
+    final g = await openPlayer(t, motd(kind: 'group', mode: 'group', live: true));
+    expect(find.byKey(const Key('progress-scrub')), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await g.dispose();
+  });
+
+  testWidgets('42 player: one way back only (the Back arrow); no second down arrow that does the same', (t) async {
+    final e = await openPlayer(t, motd());
+    expect(find.byKey(const Key('minimize')), findsNothing);
+    expect(find.bySemanticsLabel('Minimise'), findsNothing);
+    expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
+    expect(find.byTooltip('Back'), findsOneWidget);
+    await t.tap(find.byTooltip('Back'));
+    await settle(t);
+    expect(Get.currentRoute, isNot(AppRoutes.playerPresenceRing));
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+  });
+
+  testWidgets('42 player: the short description written in the CMS is shown in the meditation', (t) async {
+    final e = await openPlayer(t, const PlayerArgs(kind: 'solo', title: 'Steady Under Pressure', sessionId: 's-motd', date: '2026-10-07', lengthMin: 10, target: PlayMotd('2026-10-07', 10), durationSec: 600));
+    await t.scrollUntilVisible(find.byKey(const Key('session-about')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.text('A grounding meditation for busy days.'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+  });
+
+  testWidgets('42 player (solo too): the global presence heat map and where people are sitting; a quiet world shows the map without numbers', (t) async {
+    final e = await openPlayer(t, motd(mode: 'solo'));
+    await t.scrollUntilVisible(find.byKey(const Key('presence-card')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.text('GLOBAL PRESENCE HEATMAP'), findsOneWidget);
+    expect(find.text('EXPLORE MAP'), findsNothing); // leaving to a map would abandon the meditation
+    // busy world: who is sitting where
+    e.socketServer.serverPushes('live:agg', {'total': 412, 'countries': 37, 'top': [], 'quiet': false, 'meditatedToday': 900, 'vibration': 5, 'belts': {'americas': 120, 'emea': 200, 'apac': 92}, 'at': 1});
+    await afterPush(t);
+    expect(find.text('AMERICAS'), findsOneWidget);
+    expect(find.text('120'), findsOneWidget);
+    expect(find.text('EMEA'), findsOneWidget);
+    expect(find.text('200'), findsOneWidget);
+    expect(find.text('92'), findsOneWidget);
+    // quiet world: the map stays, the small numbers do not
+    e.socketServer.serverPushes('live:agg', {'total': 3, 'countries': 2, 'top': [], 'quiet': true, 'meditatedToday': 86, 'vibration': 5, 'belts': {'americas': 1, 'emea': 2, 'apac': 0}, 'at': 2});
+    await afterPush(t);
+    expect(find.byKey(const Key('presence-card')), findsOneWidget);
+    expect(find.text('AMERICAS'), findsNothing);
+    expect(find.textContaining('quiet'), findsWidgets);
     await t.pumpWidget(const SizedBox());
     Get.delete<PlayerController>(tag: sid, force: true);
     await e.dispose();
@@ -136,6 +222,33 @@ void main() {
     });
   });
 
+  testWidgets('45 payoff: a busy world shows the lit map with the Americas / EMEA / APAC counts, even when the numbers arrive after the player closed', (t) async {
+    var now = DateTime.utc(2026, 10, 7, 8);
+    await withClock(Clock(() => now), () async {
+      final e = await openPlayer(t, motd());
+      t.view.physicalSize = const Size(1170, 4800);
+      now = now.add(const Duration(minutes: 10));
+      e.engine.setStatus(EngineStatus.completed);
+      await settle(t);
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.meditationCompletePayoff);
+      // the server pushes the busy world while the payoff is on screen
+      e.socketServer.serverPushes('live:agg', {
+        'total': 82, 'countries': 18, 'quiet': false, 'meditatedToday': 300, 'vibration': 5, 'at': 9,
+        'top': [{'c': 'US', 'n': 20}, {'c': 'DE', 'n': 12}, {'c': 'IN', 'n': 10}], 'todayTop': [{'c': 'BR', 'n': 8}],
+        'belts': {'americas': 28, 'emea': 30, 'apac': 24},
+      });
+      await settle(t);
+      expect(find.text('SYNCHRONOUS NETWORK'), findsOneWidget);
+      expect(find.byKey(const Key('complete-belts')), findsOneWidget);
+      expect(find.text('28'), findsOneWidget);
+      expect(find.text('30'), findsOneWidget);
+      expect(find.text('24'), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+  });
+
   testWidgets('45 free listener sees the locked dedication card (Members can write dedications)', (t) async {
     phone(t);
     final e = await TestEnv.create(onboardingDone: true);
@@ -162,6 +275,20 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('42 during the sit the dedications are there and a member can write one from the player', (t) async {
+    final e = await openPlayer(t, motd());
+    expect(find.byKey(const Key('dedications-panel')), findsOneWidget);
+    expect(find.textContaining('For my mother, who is unwell.'), findsOneWidget);
+    await t.ensureVisible(find.byKey(const Key('dedication-write')));
+    await t.tap(find.byKey(const Key('dedication-write')));
+    await settle(t);
+    expect(find.byKey(const Key('dedication-field')), findsOneWidget);
+    expect(Get.currentRoute, AppRoutes.playerPresenceRing); // the sheet opens over the player, the sit goes on
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+  });
+
   group('47 composer', () {
     test('limits: 200 chars, no links, daily limit', () {
       Get.reset();
@@ -181,6 +308,10 @@ void main() {
       c.text.value = 'Peace for everyone.';
       c.left.value = 0;
       expect(c.valid, false);
+      // at any time (details/player): no meditation and the limit not known yet: only the server checks it
+      final any = DedicationComposerController(sessionId: sid)..text.value = 'For my sister';
+      expect(any.valid, true);
+      expect(any.inlineError, isNull);
     });
   });
 

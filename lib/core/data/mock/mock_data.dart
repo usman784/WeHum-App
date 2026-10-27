@@ -18,7 +18,7 @@ abstract final class MockData {
   static final raphael = const Teacher(
     id: 'tc-raphael', name: 'Raphael Reiter', role: 'Meditation teacher', specialty: 'Breath, stillness, presence',
     bio: 'Raphael teaches meditation to millions on YouTube. WeHum is where you never meditate alone.', quote: 'Training, not therapy.',
-    photoUrl: '$_img/seated.jpg', youtubeUrl: 'https://youtube.com', instagramUrl: 'https://instagram.com', websiteUrl: 'https://wehum.app');
+    photoUrl: 'assets/brand/raphael.png', youtubeUrl: 'https://youtube.com', instagramUrl: 'https://instagram.com', websiteUrl: 'https://wehum.app');
 
   static final sessions = <SessionSummary>[
     SessionSummary(id: 's-motd', slug: 'steady-under-pressure', title: 'Steady Under Pressure', description: 'A grounding meditation for busy days.', type: 'audio', access: Access.premium, themeId: 't-anx', teacherId: 'tc-raphael', durationSec: 600, cover: cover('ocean'), downloadable: true, tags: const ['stress', 'grounding']),
@@ -53,6 +53,19 @@ abstract final class MockData {
   static MotdInfo motd(String date) => MotdInfo(date: date, sessionId: 's-motd', title: 'Steady Under Pressure', teacher: 'Raphael', theme: 'Anxiety & Stress', cover: cover('ocean'), lengths: const [10, 30, 45], practicedToday: 1280);
 
   /// [startsIn] negative = the group is already running (a late joiner).
+  /// The weekly Global meditation: the coming Sunday 16:00 UTC (a few days away), with its own lobby window.
+  static GroupInfo globalSit({String title = 'Global meditation'}) {
+    final now = DateTime.now().toUtc();
+    var d = DateTime.utc(now.year, now.month, now.day, 16);
+    while (d.weekday != DateTime.sunday || !d.isAfter(now)) {
+      d = d.add(const Duration(days: 1));
+    }
+    final date = d.toIso8601String().substring(0, 10);
+    return GroupInfo(
+        date: 'G$date', kind: 'global', startsAt: d, endsAt: d.add(const Duration(minutes: 30)), lobbyOpensAt: d.subtract(const Duration(minutes: 30)),
+        lengthMin: 30, reminderMin: 60, state: GroupPhase.scheduled, waiting: 0, sessionId: 's-motd', title: title);
+  }
+
   static GroupInfo group(String date, {Duration startsIn = const Duration(minutes: 12), String? myIntention}) {
     final starts = DateTime.now().toUtc().add(startsIn);
     final phase = startsIn.isNegative ? GroupPhase.live : (startsIn <= const Duration(minutes: 3) ? GroupPhase.lobby : GroupPhase.scheduled);

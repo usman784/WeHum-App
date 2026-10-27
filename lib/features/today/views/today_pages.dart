@@ -5,9 +5,7 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/data/models/stitch.dart';
 import '../../../core/data/models/today.dart';
-import '../../../core/services/config_service.dart';
 import '../../../core/services/inbox_service.dart';
-import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
@@ -24,12 +22,8 @@ import '../../player/player_args.dart';
 import '../controllers/today_controller.dart';
 import 'today_widgets.dart';
 
-/// Tab header with the avatar initial and the live unread count of the bell (`inbox:new`).
-Widget tabHeader() => Obx(() {
-      var name = Get.find<OnboardingStore>().nameRx.value;
-      if (name.isEmpty && Get.isRegistered<ConfigService>()) name = Get.find<ConfigService>().current.value?.me?.firstName ?? ''; // a new install of a signed-in person
-      return TabHeader(initials: name.isEmpty ? '' : name.substring(0, 1).toUpperCase(), unread: Get.find<InboxService>().unread.value);
-    });
+/// Tab header with the live unread count of the bell (`inbox:new`) and the Settings button.
+Widget tabHeader() => Obx(() => TabHeader(unread: Get.find<InboxService>().unread.value));
 
 /// 22 Today (member).
 class TodayPage extends StatelessWidget {
@@ -300,7 +294,7 @@ class TodayFreePage extends StatelessWidget {
               ),
             if (pick != null || free.isNotEmpty) ...[
               const SizedBox(height: 24),
-              Row(children: [Text('Free for you', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('See all', onPressed: () => Get.toNamed(AppRoutes.library))]),
+              Row(children: [Text('Free for you', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('See all', key: const Key('free-see-all'), onPressed: () => Get.toNamed(AppRoutes.library, arguments: {'filter': 'free'}))]), // Library opens with the Free filter on: the same items as this list
               const SizedBox(height: 4),
               Text('Your free meditations from Raphael’s online library. Find them all in Library under “Free for you”.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
               const SizedBox(height: 12),

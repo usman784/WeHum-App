@@ -9,6 +9,8 @@ import 'package:meditation/core/audio/session_recorder.dart';
 import 'package:meditation/core/data/mock/mock_repositories.dart';
 import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/errors/error_code.dart';
+import 'package:meditation/core/health/heart_service.dart';
+import 'package:meditation/core/health/hr_summary.dart';
 import 'package:meditation/core/realtime/presence_service.dart';
 import 'package:meditation/core/realtime/socket_service.dart';
 import 'package:meditation/core/services/analytics_service.dart';
@@ -66,8 +68,28 @@ const sid = '11111111-1111-4111-8111-111111111111';
 PlayerArgs motd({Duration startAt = Duration.zero, bool record = true, String mode = 'solo', String kind = 'motd'}) =>
     PlayerArgs(kind: kind, title: 'Steady Under Pressure', sessionId: sid, date: '2026-10-07', lengthMin: 10, target: const PlayMotd('2026-10-07', 10), durationSec: 600, startAt: startAt, record: record, mode: mode);
 
+class FakeHeart implements HeartPort {
+  FakeHeart(this.summary);
+  final HrSummary? summary;
+  final calls = <String>[];
+  @override
+  final Rxn<int> live = Rxn<int>();
+  @override
+  bool get enabled => true;
+  @override
+  Future<void> begin() async => calls.add('begin');
+  @override
+  Future<HrSummary?> end(DateTime from, DateTime to) async {
+    calls.add('end');
+    return summary;
+  }
+
+  @override
+  void cancel() => calls.add('cancel');
+}
+
 class Rig {
-  Rig(this.args, {LocalMedia? local, bool connectivity = false, DateTime Function()? now}) {
+  Rig(this.args, {LocalMedia? local, bool connectivity = false, DateTime Function()? now, HeartPort? heart}) {
     Get.reset();
     transport = FakeTransport();
     socket = SocketService(transportFactory: () => transport, refreshAccess: () async => true);
@@ -80,7 +102,7 @@ class Rig {
     engine = FakeAudioEngine();
     this.connectivity = connectivity ? FakeConnectivity() : null;
     nav = FakeNav();
-    ctrl = PlayerController(args, nav: nav, now: now, engine: engine, media: media, presence: presence, sync: sync, analytics: analytics, local: local, connectivity: this.connectivity, stallGrace: const Duration(seconds: 2));
+    ctrl = PlayerController(args, nav: nav, now: now, engine: engine, media: media, presence: presence, sync: sync, analytics: analytics, local: local, connectivity: this.connectivity, heart: heart, stallGrace: const Duration(seconds: 2));
   }
   final PlayerArgs args;
   late FakeTransport transport;
@@ -357,6 +379,58 @@ void main() {
     expect(rec.id, matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-7')));
     await r.sync.flush();
     expect(r.meditations.recorded.single.id, rec.id);
+  });
+
+  test('heart rate: the sit starts the source, and the average and shift ride in the record and the payoff', () async {
+    var now = DateTime.utc(2026, 10, 7, 8);
+    const hr = HrSummary(avgBpm: 66, deltaBpm: -9, minBpm: 58, maxBpm: 78, source: HrSource.sensor, sourceName: 'Polar H10');
+    final heart = FakeHeart(hr);
+    final r = Rig(motd(), now: () => now, heart: heart);
+    r.ctrl.onInit();
+    await r.flush();
+    await r.flush();
+    expect(heart.calls, ['begin']);
+    expect(r.ctrl.heartOn, true);
+    now = now.add(const Duration(minutes: 10));
+    r.engine.setStatus(EngineStatus.completed);
+    await r.flush();
+    await r.flush();
+    await r.flush();
+    expect(heart.calls, containsAllInOrder(['begin', 'end']));
+    final rec = r.nav.complete!.record!;
+    expect(rec.hrAvgBpm, 66);
+    expect(rec.hrDeltaBpm, -9);
+    expect(rec.toJson()['hrDeltaBpm'], -9);
+    expect(r.nav.complete!.hr, same(hr));
+    await r.sync.flush();
+    expect(r.meditations.recorded.single.hrDeltaBpm, -9);
+  });
+
+  test('heart rate: a sit that does not count never asks for readings and releases the sensor', () async {
+    final heart = FakeHeart(null);
+    final r = Rig(motd(), heart: heart);
+    r.ctrl.onInit();
+    await r.flush();
+    await r.flush();
+    await r.ctrl.endEarly();
+    expect(heart.calls, ['begin', 'cancel']);
+    expect(r.nav.complete, isNull);
+  });
+
+  test('no heart-rate source: the record carries no heart numbers (as before)', () async {
+    var now = DateTime.utc(2026, 10, 7, 8);
+    final r = Rig(motd(), now: () => now);
+    r.ctrl.onInit();
+    await r.flush();
+    await r.flush();
+    now = now.add(const Duration(minutes: 10));
+    r.engine.setStatus(EngineStatus.completed);
+    await r.flush();
+    await r.flush();
+    await r.flush();
+    expect(r.nav.complete!.record!.hrAvgBpm, isNull);
+    expect(r.nav.complete!.hr, isNull);
+    expect(r.ctrl.heartOn, false);
   });
 
   test('ending before 3 minutes records nothing countable and just goes back (meditation_abandon)', () async {

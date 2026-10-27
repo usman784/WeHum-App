@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
@@ -20,6 +21,8 @@ import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
 import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
+import '../../../core/widgets/video_description.dart' show SessionAbout;
+import '../../../core/services/catalog_service.dart';
 import '../../today/controllers/today_controller.dart';
 import '../../today/views/today_pages.dart' show tabHeader;
 import '../../today/views/today_widgets.dart';
@@ -71,6 +74,7 @@ class MotdRoomPage extends StatelessWidget {
                   Text(m.title, style: AppText.heroTitle.copyWith(color: Colors.white)),
                   Text('with ${m.teacher ?? 'Raphael'}${m.theme == null ? '' : ' · ${m.theme}'}', style: AppText.bodyLarge.copyWith(color: Colors.white70)),
                 ])),
+                SessionAbout(Get.isRegistered<CatalogService>() ? Get.find<CatalogService>().catalog.value?.session(m.sessionId)?.description : null),
                 const SizedBox(height: 12),
                 if (ctrl.practiced > 0) Text('${groupNumber(ctrl.practiced)} ${ctrl.practiced == 1 ? 'person' : 'people'} practiced this meditation today', key: const Key('practiced'), style: AppText.navTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 14),
@@ -301,7 +305,7 @@ class TogetherPage extends StatelessWidget {
                   AppCard(
                     key: const Key('next-group'),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Overline(g.hourly ? 'Hourly sit · ${ctrl.groupTime} your time' : 'Daily collective sit · ${ctrl.groupTime} your time', color: c.tealText),
+                      Overline('Group meditation · ${ctrl.groupTime} your time', color: c.tealText),
                       const SizedBox(height: 6),
                       Text(g.focus?.title ?? g.title ?? 'Meditation of the Day', style: AppText.title.copyWith(color: c.textPrimary)),
                       if ((g.focus?.summary ?? '').isNotEmpty) Padding(padding: const EdgeInsets.only(top: 2), child: Text(g.focus!.summary, style: AppText.bodySmall.copyWith(color: c.textSecondary))),
@@ -320,6 +324,10 @@ class TogetherPage extends StatelessWidget {
                       Center(child: TextLink('or begin now on your own', onPressed: () => Get.toNamed(AppRoutes.motdRoom), color: c.textSecondary)),
                     ]),
                   ),
+                if (ctrl.globalSit.value != null) ...[
+                  const SizedBox(height: 12),
+                  _GlobalCard(g: ctrl.globalSit.value!, ctrl: ctrl),
+                ],
                 const SizedBox(height: 14),
                 Row(children: [
                   Expanded(child: Text('SELF-PACED SANCTUARY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
@@ -427,12 +435,12 @@ class LobbyPage extends StatelessWidget {
     final c = context.colors;
     final ctrl = Get.put(LobbyController());
     return AppScaffold(
-      title: 'Scheduled sit', stitch: true, sos: false,
+      title: ctrl.isGlobal ? (ctrl.group.value?.title ?? 'Global meditation') : 'Scheduled sit', stitch: true, sos: false,
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
             content: () => Obx(() {
               if (ctrl.denied.value) {
-                return EmptyState(title: 'Group meditation is for members', body: 'Join the Meditation of the Day together with everyone, at the same moment.', icon: Icons.groups_2_outlined, ctaLabel: 'See membership options', onCta: () => openPaywall('lock'));
+                return EmptyState(title: ctrl.isGlobal ? 'Global meditation is for members' : 'Group meditation is for members', body: ctrl.isGlobal ? 'Once a week everyone sits together, at the same moment.' : 'Join the Meditation of the Day together with everyone, at the same moment.', icon: Icons.groups_2_outlined, ctaLabel: 'See membership options', onCta: () => openPaywall('lock'));
               }
               final g = ctrl.group.value!;
               final startsAt = ctrl.startsAt ?? g.startsAt;
@@ -458,7 +466,7 @@ class LobbyPage extends StatelessWidget {
                 AppCard(
                   padding: const EdgeInsets.all(20),
                   child: Column(children: [
-                    Text(g.hourly ? 'HOURLY SYNCHRONISED SIT · ${ctrl.startLabel}' : 'SYNCHRONISED DAILY SIT · ${ctrl.startLabel}', textAlign: TextAlign.center, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
+                    Text(ctrl.isGlobal ? '${(g.title ?? 'Global meditation').toUpperCase()} · ${ctrl.startLabel}' : 'GROUP MEDITATION · ${ctrl.startLabel}', textAlign: TextAlign.center, style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
                     const SizedBox(height: 14),
                     _CountdownRing(target: startsAt, opens: g.lobbyOpensAt, now: ctrl.time.now),
                     const SizedBox(height: 16),
@@ -511,7 +519,7 @@ class LobbyPage extends StatelessWidget {
                     const _CheckRow(icon: Icons.headphones_rounded, title: 'Headphones, if you have them', body: 'Better for presence. Speakers work too.'),
                     const _CheckRow(icon: Icons.notifications_off_outlined, title: 'Do Not Disturb', body: 'Silence incoming notifications for the sit.'),
                     Row(children: [
-                      const Expanded(child: _CheckRow(icon: Icons.alarm_on_rounded, title: 'Remind me', body: '10 minutes before it starts.')),
+                      Expanded(child: _CheckRow(icon: Icons.alarm_on_rounded, title: 'Remind me', body: '${g.reminderMin} minutes before it starts.')),
                       AppToggle(key: const Key('lobby-remind'), value: ctrl.reminder.value, onChanged: (_) => ctrl.toggleReminder(), label: 'Remind me 10 minutes before'),
                     ]),
                   ]),
@@ -577,7 +585,7 @@ class NextSitPage extends StatelessWidget {
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     PulseDot(color: c.success, size: 3.5),
                     const SizedBox(width: 6),
-                    Flexible(child: Text(g.hourly ? 'HOURLY SYNCHRONISED SIT · STARTS AT ${ctrl.startLabel}' : 'SYNCHRONISED SIT · STARTS AT ${ctrl.startLabel}', key: const Key('nextsit-kicker'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
+                    Flexible(child: Text('GROUP MEDITATION · STARTS AT ${ctrl.startLabel}', key: const Key('nextsit-kicker'), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textPrimary, fontSize: 10))),
                   ]),
                 )),
                 Column(children: [
@@ -745,3 +753,43 @@ class _CountdownRingState extends State<_CountdownRing> {
   }
 }
 
+/// The weekly Global meditation: everyone sits together at the same moment. Its own card and lobby, apart from the group meditation.
+/// The day and time are the headline (it is days away); the countdown only ticks in the last 24 hours.
+class _GlobalCard extends StatelessWidget {
+  const _GlobalCard({required this.g, required this.ctrl});
+  final GroupInfo g;
+  final TogetherController ctrl;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final local = g.startsAt.toLocal();
+    final day = DateFormat('EEEE').format(local), time = DateFormat('HH:mm').format(local);
+    final live = g.state == GroupPhase.live;
+    return AppCard(
+      key: const Key('next-global'), padding: const EdgeInsets.all(18),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(width: 40, height: 40, decoration: BoxDecoration(color: c.emberTint, borderRadius: BorderRadius.circular(12)), child: Icon(Icons.public_rounded, size: 22, color: c.emberText)),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Overline(g.title ?? 'Global meditation', color: c.emberText), // the name set in the CMS
+            Text('Once a week · everyone together', style: AppText.caption.copyWith(color: c.textSecondary)),
+          ])),
+        ]),
+        const SizedBox(height: 16),
+        Text(live ? 'Happening now' : day, style: AppText.display.copyWith(color: c.textPrimary, fontSize: 34)),
+        Row(children: [
+          Text(live ? '${g.lengthMin} min · join the sit' : '$time your time · ${g.lengthMin} min', style: AppText.bodyLarge.copyWith(color: c.textBody)),
+          const Spacer(),
+          if (!live)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)),
+              child: CountdownText(target: g.startsAt, now: ctrl.time.now, daysAndHours: true, style: AppText.bodySmall.copyWith(color: c.textPrimary, fontWeight: FontWeight.w700)),
+            ),
+        ]),
+        const SizedBox(height: 16),
+        PrimaryButton(live ? 'Join the sit now' : (g.state == GroupPhase.lobby ? 'Go to the lobby' : 'See the lobby'), key: const Key('go-global-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby, arguments: {'kind': 'global'})),
+      ]),
+    );
+  }
+}

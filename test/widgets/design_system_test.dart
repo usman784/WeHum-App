@@ -123,6 +123,13 @@ void main() {
     expect(find.text('00:00'), findsOneWidget);
     expect(done, 1);
     expect(formatCountdown(const Duration(hours: 2, minutes: 5, seconds: 9)), '2:05:09');
+    expect(formatCountdown(const Duration(days: 3, hours: 4, minutes: 12, seconds: 21)), '3d 04:12:21');
+    // a sit that is days away reads as days and hours, with no ticking seconds; inside the last day it is the live countdown
+    expect(untilLabel(const Duration(days: 3, hours: 22, minutes: 32, seconds: 24)), 'in 3 days 22 h');
+    expect(untilLabel(const Duration(days: 1, hours: 0, minutes: 5)), 'in 1 day');
+    expect(untilLabel(const Duration(hours: 23, minutes: 59, seconds: 59)), '23:59:59');
+    expect(untilLabel(const Duration(minutes: 2, seconds: 5)), '02:05');
+    expect(formatCountdown(const Duration(hours: 23, minutes: 59, seconds: 59)), '23:59:59');
   });
 
   testWidgets('presence ring is static and hidden from semantics with Reduce Motion', (t) async {

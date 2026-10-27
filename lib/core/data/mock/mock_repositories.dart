@@ -15,9 +15,15 @@ import 'mock_data.dart';
 
 /// Mocks return the payloads from backend spec §5.4 (spec §0 rule 6). Used with USE_MOCKS=true and in widget tests.
 class MockAuthRepository implements AuthRepository {
+  /// Test control: the next guest calls fail with this (the server refusing a new guest, no network).
+  ApiException? guestError;
+
   @override
-  Future<AuthSession> guest(DeviceInfoDto d) async => const AuthSession(
-        accessToken: 'mock-access', refreshToken: 'mock-refresh-token-0000000000', me: Me(id: 'mock-user', isGuest: true));
+  Future<AuthSession> guest(DeviceInfoDto d) async {
+    final e = guestError;
+    if (e != null) throw e;
+    return const AuthSession(accessToken: 'mock-access', refreshToken: 'mock-refresh-token-0000000000', me: Me(id: 'mock-user', isGuest: true));
+  }
 
   @override
   Future<AuthSession> social(String provider, String firebaseIdToken, {String? firstName}) async => AuthSession(
@@ -80,7 +86,7 @@ class MockBootstrapRepository implements BootstrapRepository {
         'serverTime': DateTime.now().toUtc().millisecondsSinceEpoch,
         'updateRequired': false,
         'maintenance': false,
-        'features': {'intent': false, 'challenges': false, 'gratitude': false, 'breathwork': false, 'milestones': false},
+        'features': {'intent': false, 'challenges': false, 'gratitude': false, 'breathwork': false, 'milestones': false, 'heartRate': true},
         'catalogVersion': 1,
         'founding': {'left': 588, 'cap': 1000, 'open': true},
         'me': {'id': 'mock-user', 'isGuest': true, 'theme': 'system'},
@@ -93,12 +99,21 @@ class MockTodayRepository implements TodayRepository {
   bool member;
   bool groupReminder = false;
   Duration groupStartsIn = const Duration(minutes: 12);
+  /// The weekly Global meditation: on by default, a few days from now.
+  bool globalOn = true;
+  String globalTitle = 'Global meditation';
   @override
   Future<TodayData> today(String date) async => MockData.today(date, member: member, groupStartsIn: groupStartsIn);
   @override
   Future<MotdInfo> motd(String date) async => MockData.motd(date);
   @override
-  Future<GroupInfo> groupNext() async => MockData.group(DateTime.now().toIso8601String().substring(0, 10), startsIn: groupStartsIn, myIntention: intentions.values.firstOrNull);
+  Future<GroupInfo> groupNext({String kind = 'group'}) async {
+    if (kind == 'global') {
+      if (!globalOn) throw ApiException(ErrorCode.notFound, status: 404);
+      return MockData.globalSit(title: globalTitle);
+    }
+    return MockData.group(DateTime.now().toIso8601String().substring(0, 10), startsIn: groupStartsIn, myIntention: intentions.values.firstOrNull);
+  }
   @override
   Future<DailyMessage> dailyMessage(String date) async {
     // premium messages are for members (free ones are open to everyone, see the server's `access`)
@@ -270,12 +285,14 @@ class MockCommunityRepository implements CommunityRepository {
   @override
   Future<Page<Dedication>> dedications(String sessionId, {String? cursor}) async => Page(MockData.dedications, null);
   @override
-  Future<PostResult> post({required String meditationId, required String text, bool showPlace = false}) async {
+  Future<PostResult> post({String? meditationId, String? sessionId, required String text, bool showPlace = false}) async {
     lastShowPlace = showPlace;
+    lastPost = (meditationId: meditationId, sessionId: sessionId, text: text);
     return PostResult(id: 'new', status: 'visible', leftToday: --left);
   }
 
   bool lastShowPlace = false;
+  ({String? meditationId, String? sessionId, String text})? lastPost;
   int anonymized = 0;
   @override
   Future<Page<FeedItem>> feed({String? cursor}) async => Page([

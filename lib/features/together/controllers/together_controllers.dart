@@ -11,6 +11,7 @@ import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/lobby_service.dart';
 import '../../../core/realtime/socket_events.dart';
 import '../../../core/realtime/socket_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/notification_service.dart';
@@ -188,11 +189,18 @@ class LobbyController extends GetxController {
   final denied = false.obs; // PREMIUM_REQUIRED
   Worker? _started;
 
-  /// The slot id of this sit (`2026-10-12`, or `2026-10-12T08` for an hourly sit).
+  /// `global` when opened from the Global meditation card (or its link), else a group sit.
+  final String kind = (Get.arguments is Map && (Get.arguments as Map)['kind'] == 'global') ? 'global' : 'group';
+  bool get isGlobal => kind == 'global';
+
+  /// The slot id of this sit (`2026-10-12`, `2026-10-12T08` for a sit through the day, `G2026-10-18` for the Global meditation).
   String get date => group.value?.date ?? localDate();
 
   /// The calendar day of the slot: what the Meditation of the Day is keyed by.
-  String get day => date.length >= 10 ? date.substring(0, 10) : date;
+  String get day {
+    final d = date.startsWith('G') ? date.substring(1) : date;
+    return d.length >= 10 ? d.substring(0, 10) : d;
+  }
 
   /// "The lobby opens 15 minutes before." from the server's group config (never a fixed number in the app).
   String get doorsLine {
@@ -202,6 +210,8 @@ class LobbyController extends GetxController {
     return min <= 0 ? '' : 'The lobby opens $min ${min == 1 ? 'minute' : 'minutes'} before. ';
   }
 
+  Worker? _config;
+
   @override
   void onReady() {
     super.onReady();
@@ -209,12 +219,21 @@ class LobbyController extends GetxController {
       if (g != null) _begin();
     });
     load();
+    // new start time, lobby window, length or intentions from the CMS: update the open lobby (it stays joined)
+    if (Get.isRegistered<ConfigService>()) {
+      _config = ever(Get.find<ConfigService>().current, (_) async {
+        try {
+          final g = await _repo.groupNext(kind: kind);
+          if (g.date == group.value?.date) group.value = g;
+        } catch (_) {}
+      });
+    }
   }
 
   Future<void> load() async {
     state.value = ViewState.loading;
     try {
-      final g = await _repo.groupNext();
+      final g = await _repo.groupNext(kind: kind);
       group.value = g;
       if (!access.isMember) {
         denied.value = true;
@@ -255,9 +274,9 @@ class LobbyController extends GetxController {
     final startAt = lobby.lateOffset();
     Get.find<AnalyticsService>().track('group_start', {'date': date, 'waiting': waiting});
     Get.offNamed(AppRoutes.playerPresenceRing, arguments: PlayerArgs(
-      kind: 'group', mode: 'group', title: g?.title ?? 'Group meditation', subtitle: 'Meditation of the Day · Raphael', sessionId: (s?.sessionId.isNotEmpty ?? false) ? s!.sessionId : g?.sessionId,
+      kind: 'group', mode: 'group', title: g?.title ?? (isGlobal ? 'Global meditation' : 'Group meditation'), subtitle: 'Meditation of the Day · Raphael', sessionId: (s?.sessionId.isNotEmpty ?? false) ? s!.sessionId : g?.sessionId,
       date: day, lengthMin: (s?.lengthMin ?? 0) > 0 ? s!.lengthMin : g?.lengthMin, target: PlayMotd(day, (s?.lengthMin ?? 0) > 0 ? s!.lengthMin : (g?.lengthMin ?? 30)),
-      durationSec: ((s?.lengthMin ?? 0) > 0 ? s!.lengthMin : (g?.lengthMin ?? 30)) * 60, startAt: startAt, live: true));
+      durationSec: ((s?.lengthMin ?? 0) > 0 ? s!.lengthMin : (g?.lengthMin ?? 30)) * 60, startAt: startAt, live: true, global: isGlobal));
   }
 
   Future<void> toggleReminder() async {
@@ -279,6 +298,7 @@ class LobbyController extends GetxController {
   @override
   void onClose() {
     _started?.dispose();
+    _config?.dispose();
     if (!_launched) lobby.leave(); // stay "in the lobby" only while this screen is open
     super.onClose();
   }
@@ -294,6 +314,8 @@ class TogetherController extends GetxController {
 
   final state = ViewState.loading.obs;
   final group = Rxn<GroupInfo>();
+  /// The weekly Global meditation (its own card and lobby); null when it is switched off.
+  final globalSit = Rxn<GroupInfo>();
   final dedications = <Dedication>[].obs;
   final gratitudeOn = false.obs;
   /// "Shared intent": the newest dedications across meditations.
@@ -303,19 +325,36 @@ class TogetherController extends GetxController {
   final silenceDurations = <int>[].obs;
   final reminder = false.obs;
 
+  Worker? _config;
+
   @override
   void onReady() {
     super.onReady();
     live.acquireWorld();
     live.acquireSilence();
     load();
+    // the CMS changed the group / Global settings (socket config:changed refreshes the config): show the new sits at once
+    if (Get.isRegistered<ConfigService>()) _config = ever(Get.find<ConfigService>().current, (_) => reloadSits());
   }
 
   @override
   void onClose() {
+    _config?.dispose();
     live.releaseWorld();
     live.releaseSilence();
     super.onClose();
+  }
+
+  /// Only the two sits (group and Global): cheap, and nothing else on the screen flickers.
+  Future<void> reloadSits() async {
+    try {
+      group.value = await _repo.groupNext();
+    } catch (_) {}
+    try {
+      globalSit.value = await _repo.groupNext(kind: 'global');
+    } catch (_) {
+      globalSit.value = null;
+    }
   }
 
   int get silenceCount => live.silence.value?.people ?? silenceNow.value;
@@ -355,6 +394,11 @@ class TogetherController extends GetxController {
       group.value = await _repo.groupNext();
       state.value = ViewState.content;
       try {
+        globalSit.value = await _repo.groupNext(kind: 'global');
+      } catch (_) {
+        globalSit.value = null; // off, or not reachable: no card
+      }
+      try {
         feed.assignAll((await Get.find<CommunityRepository>().feed()).items);
       } catch (_) {/* the feed fills in when the connection is back */}
       try {
@@ -393,16 +437,21 @@ class NextSitController extends GetxController {
   final reminder = false.obs;
   Timer? _poll;
 
+  Worker? _config;
+
   @override
   void onInit() {
     super.onInit();
     load();
     _poll = Timer.periodic(const Duration(seconds: 15), (_) => _refresh());
+    // a change in the CMS (time, intentions, focus, doors) shows at once, not at the next poll
+    if (Get.isRegistered<ConfigService>()) _config = ever(Get.find<ConfigService>().current, (_) => _refresh());
   }
 
   @override
   void onClose() {
     _poll?.cancel();
+    _config?.dispose();
     super.onClose();
   }
 

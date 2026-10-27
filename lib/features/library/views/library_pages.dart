@@ -104,7 +104,7 @@ class LibraryPage extends StatelessWidget {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(children: [
-                    for (final (k, label) in const [('all', 'All'), ('short', 'Under 10 min'), ('mid', '10–20 min'), ('free', 'Free back-catalogue'), ('downloaded', 'Downloaded')])
+                    for (final (k, label) in const [('all', 'All'), ('short', 'Under 10 min'), ('mid', '10–20 min'), ('free', 'Free'), ('downloaded', 'Downloaded')])
                       Padding(padding: const EdgeInsets.only(right: 8), child: _Chip(key: Key('chip-$k'), label: label, selected: ctrl.chipOn(k), onTap: () => ctrl.chip(k))),
                   ]),
                 ),
@@ -210,7 +210,7 @@ class LibraryPage extends StatelessWidget {
                       ),
                     ),
                   if (ctrl.topToday.isNotEmpty) ...[
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 8),
                     Text('Top today', key: const Key('top-today'), style: AppText.title.copyWith(color: c.textPrimary)),
                     const SizedBox(height: 8),
                     for (final t in ctrl.topToday.take(3))
@@ -230,7 +230,6 @@ class LibraryPage extends StatelessWidget {
                         ),
                       ),
                   ],
-                  const SizedBox(height: 16),
                   AppCard(key: const Key('sos-row'), onTap: () => Get.toNamed(AppRoutes.sosHowCanIHelp), child: const ListRow(title: 'SoS', subtitle: '8 short meditations for hard times', leading: IconTile(Icons.favorite_border_rounded))),
                   const SizedBox(height: 20),
                   Text(member ? 'From Raphael’s online library' : 'Free for you', key: const Key('free-heading'), style: AppText.title.copyWith(color: c.textPrimary)),

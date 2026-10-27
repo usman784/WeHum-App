@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
+import 'package:meditation/core/services/config_service.dart';
 import 'package:meditation/core/services/catalog_service.dart';
 
 import '../support/test_env.dart';
@@ -71,6 +72,14 @@ void main() {
     await t.tap(find.byKey(const Key('intent-Mindful stillness')));
     await settle(t);
     expect(e.today.intentions.values, contains('Mindful stillness'));
+    expect(find.textContaining('GROUP MEDITATION · STARTS AT'), findsOneWidget);
+    // the sit moves in the CMS: the open screen follows at once (config:changed), not at the next 15-second poll
+    final before = find.byKey(const Key('nextsit-kicker')).evaluate().single.widget.toStringShort();
+    e.today.groupStartsIn = const Duration(hours: 2, minutes: 7);
+    await Get.find<ConfigService>().refresh();
+    await settle(t);
+    expect(find.textContaining('2:0'), findsWidgets); // the countdown now reads about two hours
+    expect(before, isNotEmpty);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

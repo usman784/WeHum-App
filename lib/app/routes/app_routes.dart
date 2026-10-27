@@ -53,6 +53,8 @@ abstract final class AppRoutes {
   static const reminders = '/reminders'; // 57
   static const downloads = '/downloads'; // 58
   static const privacyData = '/privacy'; // 59
+  static const settings = '/settings'; // top-right gear: the preferences list and Sign out
+  static const heartRate = '/heart-rate'; // heart-rate sources (behind features.heartRate)
   static const helpAbout = '/help'; // 60
   // Rows 9–11 (no route column in §12)
   static const manageMembership = '/membership/manage'; // 61

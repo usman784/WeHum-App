@@ -28,7 +28,7 @@ import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../player/player_args.dart';
-import '../../together/views/together_pages.dart' show DedicationLine;
+import '../../dedications/views/dedications_panel.dart';
 import '../../today/controllers/today_controller.dart';
 
 String formatBytes(int b) => b >= 1048576 ? '${(b / 1048576).toStringAsFixed(b >= 10 * 1048576 ? 0 : 1)} MB' : '${(b / 1024).round()} KB';
@@ -175,11 +175,9 @@ class SessionDetailPage extends StatelessWidget {
                 if (ctrl.liveNow != null && ctrl.liveNow!.people > 0)
                   Text('${groupNumber(ctrl.liveNow!.people)} meditating this right now · ${ctrl.liveNow!.countries} ${ctrl.liveNow!.countries == 1 ? 'country' : 'countries'}', key: const Key('session-live'), style: AppText.bodySmall.copyWith(color: c.success, fontWeight: FontWeight.w600)),
                 if (d != null && d.practicedToday > 0) Text('${groupNumber(d.practicedToday)} ${d.practicedToday == 1 ? 'person' : 'people'} meditated with this today', key: const Key('practiced-today'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                if (d != null && d.dedications.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Row(children: [Text('Dedications', style: AppText.title.copyWith(color: c.textPrimary)), const Spacer(), TextLink('See all', onPressed: () => Get.toNamed('/dedications/${s.id}', arguments: {'sessionId': s.id}))]),
-                  for (final x in d.dedications.take(2)) DedicationLine(x),
-                ],
+                // always: read the newest and write one at any time, before or after playing
+                const SizedBox(height: 16),
+                DedicationsPanel(sessionId: s.id),
               ]));
             }),
           )),

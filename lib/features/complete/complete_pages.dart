@@ -11,7 +11,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../app/routes/app_routes.dart';
 import '../../core/data/models/content.dart';
+import '../../core/services/access_service.dart';
 import '../../core/services/analytics_service.dart';
+import '../../core/services/instagram_share.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/tokens.dart';
@@ -25,9 +27,11 @@ import '../../core/widgets/stitch.dart';
 import '../../core/widgets/surfaces.dart';
 import '../account/views/account_pages.dart';
 import '../dedications/controllers/dedications_controllers.dart';
+import '../heart/heart_widgets.dart';
 import '../player/controllers/player_controller.dart';
 import '../today/views/today_widgets.dart';
 import 'complete_controller.dart';
+import 'share_card.dart';
 
 /// 45 Meditation complete · payoff (Stitch). Busy room: presence heat-map, belts, finishers and kudos. Quiet room or
 /// solo: the compact summary. Streak and heart-rate cards only when there is real data.
@@ -109,7 +113,22 @@ class CompletePage extends StatelessWidget {
                     ])),
                   ]),
                 ),
-              if (hr != null)
+              if (ctrl.hrSummary != null)
+                HeartSummaryCard(ctrl.hrSummary!)
+              else if (ctrl.heartInvite)
+                AppCard(
+                  key: const Key('complete-hr-invite'), onTap: () => Get.toNamed(AppRoutes.heartRate), semanticLabel: 'Set up heart rate',
+                  child: Row(children: [
+                    Icon(Icons.favorite_border_rounded, color: c.emberText),
+                    const SizedBox(width: 12),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('See your heart settle', style: AppText.navTitle.copyWith(color: c.textPrimary)),
+                      Text('Connect a watch, band or chest strap', style: AppText.caption.copyWith(color: c.textSecondary)),
+                    ])),
+                    Icon(Icons.chevron_right_rounded, color: c.textSecondary),
+                  ]),
+                )
+              else if (hr != null)
                 AppCard(
                   key: const Key('complete-hr'),
                   child: Row(children: [
@@ -133,7 +152,7 @@ class CompletePage extends StatelessWidget {
               _DedicateCard(ctrl: ctrl),
               if (ctrl.player.sessionId != null) OutlineButton('Read today’s dedications', key: const Key('read-dedications'), onPressed: ctrl.readDedications),
               Column(children: [
-                PrimaryButton('Share your sit', key: const Key('share-sit'), icon: Icons.ios_share_rounded, onPressed: ctrl.share),
+                PrimaryButton('Share your meditation', key: const Key('share-sit'), icon: Icons.ios_share_rounded, onPressed: ctrl.share),
                 const SizedBox(height: 10),
                 SecondaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
               ]),
@@ -203,14 +222,41 @@ class _DedicateCard extends StatelessWidget {
   }
 }
 
-/// 47 Write a dedication (sheet).
-Future<void> showDedicationSheet(BuildContext context, CompleteController complete) async {
-  final ctrl = Get.put(composerFor(complete), tag: complete.meditationId);
+/// 47 Write a dedication (sheet), after the finished meditation.
+Future<void> showDedicationSheet(BuildContext context, CompleteController complete) => showComposerSheet(
+      context, Get.put(composerFor(complete), tag: complete.meditationId),
+      overline: 'Sit complete · ${complete.minutes} min${complete.result != null && complete.result!.togetherPeople > 1 ? ' · ${groupedInt(complete.result!.togetherPeople)} sat with you' : ''}',
+      onPosted: (text) {
+        complete.lastDedication = text;
+        Get.toNamed('/dedications/${complete.player.sessionId}', arguments: {'sessionId': complete.player.sessionId, 'compose': true});
+      },
+    );
+
+/// Write a dedication at any time (meditation details, player, all dedications): members with an account only; a
+/// guest member is asked for a name, a free listener sees the paywall. Anyone can read.
+Future<void> showWriteDedication(BuildContext context, String sessionId, {String? overline, void Function()? onPosted}) async {
+  final access = Get.find<AccessService>();
+  if (!access.isMember) return openPaywall('dedication');
+  if (access.isGuest.value) {
+    if (await showAccountGate(context)) access.isGuest.refresh();
+    return;
+  }
+  if (!context.mounted) return;
+  final tag = 'compose-$sessionId';
+  if (Get.isRegistered<DedicationComposerController>(tag: tag)) Get.delete<DedicationComposerController>(tag: tag);
+  await showComposerSheet(context, Get.put(DedicationComposerController(sessionId: sessionId), tag: tag), overline: overline, onPosted: (_) {
+    if (context.mounted) AppSnack.success(context, 'Thank you. Your dedication is posted.');
+    onPosted?.call();
+  });
+  Get.delete<DedicationComposerController>(tag: tag);
+}
+
+/// The composer itself, shared by the complete screen and "write at any time".
+Future<void> showComposerSheet(BuildContext context, DedicationComposerController ctrl, {String? overline, required void Function(String text) onPosted}) async {
   await showAppSheet<void>(context, title: 'Write a dedication', builder: (ctx) {
     final c = ctx.colors;
     return Obx(() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Overline('Sit complete · ${complete.minutes} min${complete.result != null && complete.result!.togetherPeople > 1 ? ' · ${groupedInt(complete.result!.togetherPeople)} sat with you' : ''}'),
-          const SizedBox(height: 8),
+          if (overline != null) ...[Overline(overline), const SizedBox(height: 8)],
           Text('Who or what do you dedicate your practice to today?', style: AppText.title.copyWith(color: c.textPrimary)),
           const SizedBox(height: 4),
           Text('A family member, a colleague under pressure, or your own quiet resolve. Keep it honest and brief.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
@@ -239,7 +285,7 @@ Future<void> showDedicationSheet(BuildContext context, CompleteController comple
             AppToggle(key: const Key('location-toggle'), value: ctrl.showPlace.value, onChanged: (v) => ctrl.showPlace.value = v, label: 'Show my city and country'),
           ]),
           const SizedBox(height: 6),
-          Text('Text only · monitored for safety and respect · no links or self-promotion. ${ctrl.left.value} of 3 dedications left today.', style: AppText.caption.copyWith(color: c.textSecondary)),
+          Text('Text only · monitored for safety and respect · no links or self-promotion.${ctrl.left.value == null ? '' : ' ${ctrl.left.value} of 3 dedications left today.'}', style: AppText.caption.copyWith(color: c.textSecondary)),
           const SizedBox(height: 14),
           PrimaryButton('Post dedication', key: const Key('post-dedication'), loading: ctrl.busy.value, onPressed: ctrl.valid
               ? () async {
@@ -247,9 +293,8 @@ Future<void> showDedicationSheet(BuildContext context, CompleteController comple
                   final out = await ctrl.post();
                   switch (out) {
                     case PostOutcome.posted || PostOutcome.pending:
-                      complete.lastDedication = ctrl.text.value.trim();
                       nav.pop();
-                      Get.toNamed('/dedications/${complete.player.sessionId}', arguments: {'sessionId': complete.player.sessionId, 'compose': true});
+                      onPosted(ctrl.text.value.trim());
                     case PostOutcome.accountRequired:
                       nav.pop();
                       if (context.mounted) await showAccountGate(context);
@@ -282,7 +327,7 @@ class DedicationsPage extends StatelessWidget {
       title: 'Dedications',
       body: Obx(() => StateSwitcher(
             state: ctrl.state.value, onRetry: ctrl.load,
-            empty: const EmptyState(title: 'No dedications yet', body: 'Be the first to dedicate a meditation.', icon: Icons.favorite_border_rounded),
+            empty: EmptyState(title: 'No dedications yet', body: 'Be the first to dedicate this meditation.', icon: Icons.favorite_border_rounded, ctaLabel: 'Write a dedication', onCta: () => showWriteDedication(context, sid, onPosted: ctrl.load)),
             content: () => NotificationListener<ScrollNotification>(
               onNotification: (n) {
                 if (n.metrics.pixels > n.metrics.maxScrollExtent - 200) ctrl.more();
@@ -293,7 +338,8 @@ class DedicationsPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     for (final d in ctrl.items) _DedicationCard(key: Key('ded-${d.id}'), d: d, ctrl: ctrl),
                     const SizedBox(height: 8),
-                    Text(ctrl.canCompose ? 'Thank you for dedicating your meditation.' : 'Dedications can be written after you finish a meditation.', style: AppText.caption.copyWith(color: c.textTertiary)),
+                    if (ctrl.canCompose) Text('Thank you for dedicating your meditation.', style: AppText.caption.copyWith(color: c.textTertiary))
+                    else OutlineButton('Write a dedication', key: const Key('dedication-write'), icon: Icons.favorite_border_rounded, onPressed: () => showWriteDedication(context, sid, onPosted: ctrl.load)),
                   ])),
             ),
           )),
@@ -356,23 +402,9 @@ Future<void> showReportSheet(BuildContext context, DedicationsController ctrl, D
   });
 }
 
-/// 46 Share your meditation: 9:16 story or 1:1 post, optional dedication, rendered to a PNG at 3× for the share sheet or Photos.
-class _ShareStat extends StatelessWidget {
-  const _ShareStat(this.label, this.value, {super.key, this.accent = false});
-  final String label, value;
-  final bool accent;
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: .06), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withValues(alpha: .08))),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: AppText.overline.copyWith(color: Colors.white54, fontSize: 9)),
-          const SizedBox(height: 4),
-          Text(value, style: AppText.navTitle.copyWith(color: accent ? const Color(0xFFFF9B70) : Colors.white, fontFeatures: AppText.tabular)),
-        ]),
-      );
-}
-
+/// 46 Share your meditation: a 9:16 story or 1:1 post card ([ShareCard]) rendered to a PNG at 3×. "Share to Instagram
+/// Stories" hands it straight to Instagram's story composer (no Instagram login); without Instagram (or before the
+/// Meta App ID is set) the same image goes to the system share sheet. Also "More apps" and "Save image".
 class SharePage extends StatefulWidget {
   const SharePage({super.key});
   @override
@@ -387,36 +419,75 @@ class _SharePageState extends State<SharePage> {
   bool includeHr = false;
   bool busy = false;
   late final CompleteController complete = Get.arguments as CompleteController;
+  late final InstagramShare instagram = Get.isRegistered<InstagramShare>() ? Get.find<InstagramShare>() : InstagramShare();
+  late final AnalyticsService analytics = Get.find();
+
+  /// People who meditated together and their countries: the server's answer first, else the last live numbers; 0 when quiet.
+  (int, int) get together {
+    final r = complete.result;
+    if (r != null && r.togetherPeople > 1) return (r.togetherPeople, r.togetherCountries);
+    final a = complete.live.agg.value;
+    if (a != null && !a.quiet && a.total > 1 && !complete.live.paused) return (a.total, a.countries);
+    return (0, 0);
+  }
 
   /// 1080×1920 (9:16) or 1080×1080 (1:1) PNG bytes (spec §13).
-  Future<List<int>> render() async {
+  Future<Uint8List> render() async {
     final b = _key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    final w = format == '9x16' ? 360.0 : 360.0;
-    final img = await b.toImage(pixelRatio: 1080 / w);
+    final img = await b.toImage(pixelRatio: 1080 / 360);
     final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
     return bytes!.buffer.asUint8List();
   }
 
-  Future<void> share() async {
+  Future<File> _file() async {
+    final dir = await getTemporaryDirectory();
+    final f = File('${dir.path}/wehum-meditation-$format.png');
+    await f.writeAsBytes(await render());
+    return f;
+  }
+
+  Map<String, Object> get _props => {'format': format, 'include_dedication': showDedication && complete.lastDedication != null};
+
+  /// One tap into the Instagram story composer; the share sheet when Instagram can't be opened.
+  Future<void> shareInstagram() async {
+    if (busy) return;
     setState(() => busy = true);
-    final analytics = Get.find<AnalyticsService>()..track('share_format', {'format': format, 'include_dedication': showDedication});
     try {
-      final bytes = await render();
-      final dir = await getTemporaryDirectory();
-      final f = File('${dir.path}/wehum-meditation-$format.png');
-      await f.writeAsBytes(bytes);
-      await SharePlus.instance.share(ShareParams(files: [XFile(f.path)], text: 'wehum.app'));
-      analytics.track('share_complete', {'format': format, 'include_dedication': showDedication});
+      final f = await _file();
+      final opened = await instagram.available() && await instagram.shareStory(f.path);
+      analytics.track('share_instagram', {..._props, 'opened': opened});
+      if (!opened) await _sheet(f);
+    } catch (_) {
+      if (mounted) AppSnack.error(context, 'Couldn’t prepare the image.');
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  /// WhatsApp, Messages, Instagram's own share extension and the rest: the system share sheet.
+  Future<void> shareMore() async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      await _sheet(await _file());
+    } catch (_) {
+      if (mounted) AppSnack.error(context, 'Couldn’t prepare the image.');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _sheet(File f) async {
+    analytics.track('share_format', _props);
+    await SharePlus.instance.share(ShareParams(files: [XFile(f.path)], text: 'Meditate with me · wehum.app'));
+    analytics.track('share_complete', _props);
   }
 
   Future<void> save() async {
     setState(() => busy = true);
     try {
       if (await Gal.requestAccess()) {
-        await Gal.putImageBytes(Uint8List.fromList(await render()));
+        await Gal.putImageBytes(await render());
         if (mounted) AppSnack.success(context, 'Saved to Photos');
       } else if (mounted) {
         AppSnack.error(context, 'Allow Photos access in Settings to save the image.');
@@ -433,67 +504,79 @@ class _SharePageState extends State<SharePage> {
     final c = context.colors;
     final story = format == '9x16';
     return AppScaffold(
-      title: 'Share your sit',
+      title: 'Share your meditation',
       body: Column(children: [
         Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: SegmentedControl<String>(options: const ['9x16', '1x1'], value: format, onChanged: (v) => setState(() => format = v), labelOf: (v) => v == '9x16' ? 'Story' : 'Post')),
         const SizedBox(height: 12),
         Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: Center(
-          child: FittedBox( // a narrow phone shrinks the preview; the saved image is still 360 wide
+          child: FittedBox( // a narrow phone shrinks the preview; the saved image is still 1080 wide
             fit: BoxFit.scaleDown,
-            child: RepaintBoundary(
-            key: _key,
-            child: Container(
-              width: 360, height: story ? 640 : 360, padding: const EdgeInsets.all(28),
-              decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF123C3A), Color(0xFF0B0D0E)])),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Text('WEHUM', style: AppText.overline.copyWith(color: const Color(0xFFFF9B70), fontSize: 13)),
-                  const Spacer(),
-                  const PulseDot(color: Color(0xFF4ADE80), size: 4),
-                  const SizedBox(width: 6),
-                  Text('SAT TODAY', style: AppText.overline.copyWith(color: Colors.white70, fontSize: 10)),
-                ]),
-                const Spacer(),
-                Text('I sat ${complete.minutes} ${complete.minutes == 1 ? 'minute' : 'minutes'} today.', key: const Key('share-minutes'), style: AppText.heroTitle.copyWith(color: Colors.white, fontSize: story ? 30 : 26)),
-                const SizedBox(height: 10),
-                if (complete.togetherLine != null) Text(complete.togetherLine!.replaceFirst('You sat', 'I sat'), style: AppText.bodyLarge.copyWith(color: Colors.white70)),
-                const SizedBox(height: 16),
-                Row(children: [
-                  Expanded(child: _ShareStat('DURATION', '${complete.minutes} min')),
-                  const SizedBox(width: 10),
-                  Expanded(child: _ShareStat('THIS WEEK', '${complete.daysThisWeek} ${complete.daysThisWeek == 1 ? 'day' : 'days'}')),
-                ]),
-                if ((complete.streak != null && complete.streak!.current > 1) || (includeHr && complete.hrDelta != null)) ...[
-                  const SizedBox(height: 10),
-                  Row(children: [
-                    if (complete.streak != null && complete.streak!.current > 1) Expanded(child: _ShareStat('MOMENTUM', 'Day ${complete.streak!.current}', key: const Key('share-streak'), accent: true)),
-                    if (complete.streak != null && complete.streak!.current > 1 && includeHr && complete.hrDelta != null) const SizedBox(width: 10),
-                    if (includeHr && complete.hrDelta != null) Expanded(child: _ShareStat('CALM SHIFT', '${complete.hrDelta! > 0 ? '+' : ''}${complete.hrDelta} bpm', key: const Key('share-hr'))),
-                  ]),
-                ],
-                const SizedBox(height: 12),
-                Text(complete.player.title, style: AppText.title.copyWith(color: Colors.white)),
-                if (showDedication && complete.lastDedication != null) ...[
-                  const SizedBox(height: 14),
-                  Text('“${complete.lastDedication}”', key: const Key('share-dedication'), style: AppText.body.copyWith(color: Colors.white70, fontStyle: FontStyle.italic)),
-                ],
-                const Spacer(),
-                Text('wehum.app', style: AppText.bodySmall.copyWith(color: Colors.white54)),
-              ]),
+            child: DecoratedBox(
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), boxShadow: [BoxShadow(color: ShareCard.ember.withValues(alpha: .18), blurRadius: 40, spreadRadius: -6)]),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: RepaintBoundary(
+                  key: _key,
+                  child: Obx(() {
+                    final (people, countries) = together;
+                    return ShareCard(
+                      story: story, minutes: complete.minutes, title: complete.player.title, date: DateTime.now(),
+                      togetherPeople: people, togetherCountries: countries, hot: complete.hot, daysThisWeek: complete.daysThisWeek,
+                      streakDay: complete.streak?.current, hrDelta: includeHr ? complete.hrDelta : null,
+                      dedication: showDedication ? complete.lastDedication : null,
+                    );
+                  }),
+                ),
+              ),
             ),
-          ),
           ),
         ))),
         const SizedBox(height: 12),
         Padding(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 20), child: Column(children: [
-        if (complete.lastDedication != null) Row(children: [Expanded(child: Text('Show my dedication', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(key: const Key('toggle-dedication'), value: showDedication, onChanged: (v) => setState(() => showDedication = v), label: 'Show my dedication')]),
-        if (complete.hrDelta != null) Row(children: [Expanded(child: Text('Include heart-rate shift', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(key: const Key('toggle-hr'), value: includeHr, onChanged: (v) => setState(() => includeHr = v), label: 'Include heart-rate shift')]),
-        const SizedBox(height: 8),
-        PrimaryButton('Share to Stories or WhatsApp', key: const Key('share-btn'), loading: busy, onPressed: share),
-        const SizedBox(height: 8),
-        OutlineButton('Save image', key: const Key('save-btn'), onPressed: busy ? null : save),
+          if (complete.lastDedication != null) Row(children: [Expanded(child: Text('Show my dedication', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(key: const Key('toggle-dedication'), value: showDedication, onChanged: (v) => setState(() => showDedication = v), label: 'Show my dedication')]),
+          if (complete.hrDelta != null) Row(children: [Expanded(child: Text('Include heart-rate shift', style: AppText.bodyLarge.copyWith(color: c.textPrimary))), AppToggle(key: const Key('toggle-hr'), value: includeHr, onChanged: (v) => setState(() => includeHr = v), label: 'Include heart-rate shift')]),
+          const SizedBox(height: 8),
+          if (story) ...[
+            _InstagramButton(key: const Key('share-instagram'), busy: busy, onPressed: shareInstagram),
+            const SizedBox(height: 8),
+          ],
+          Row(children: [
+            Expanded(child: OutlineButton(story ? 'More apps' : 'Share', key: const Key('share-btn'), icon: Icons.ios_share_rounded, onPressed: busy ? null : shareMore)),
+            const SizedBox(width: 8),
+            Expanded(child: OutlineButton('Save', key: const Key('save-btn'), icon: Icons.download_rounded, onPressed: busy ? null : save)),
+          ]),
         ])),
       ]),
     );
   }
+}
+
+/// "Share to Instagram Stories": the Instagram gradient pill.
+class _InstagramButton extends StatelessWidget {
+  const _InstagramButton({super.key, required this.busy, required this.onPressed});
+  final bool busy;
+  final VoidCallback onPressed;
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true, label: 'Share to Instagram Stories',
+        child: Material(
+          shape: const StadiumBorder(), clipBehavior: Clip.antiAlias,
+          child: Ink(
+            decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Color(0xFFFEDA75), Color(0xFFFA7E1E), Color(0xFFD62976), Color(0xFF962FBF), Color(0xFF4F5BD5)])),
+            child: InkWell(
+              onTap: busy ? null : onPressed,
+              child: SizedBox(
+                height: Sizes.primaryButton,
+                child: Center(child: busy
+                    ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                    : ExcludeSemantics(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 20),
+                        const SizedBox(width: 10),
+                        Text('Share to Instagram Stories', style: AppText.navTitle.copyWith(color: Colors.white, fontSize: 16)),
+                      ]))),
+              ),
+            ),
+          ),
+        ),
+      );
 }

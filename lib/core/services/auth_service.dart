@@ -84,7 +84,12 @@ class AuthService extends GetxService {
     await _repo.logout();
     me.value = null;
     await _crash.setUser(null);
-    await ensureSession();
+    try {
+      await ensureSession();
+    } catch (_) {
+      // The account is already signed out locally. If the new guest can't be created right now (offline, refused), the
+      // start screen creates it, with its own retry button; sign-out itself must not fail because of it.
+    }
   }
 
   /// Shown instead of a real profile when `/v1/me` is unreachable (offline start).

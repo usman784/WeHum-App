@@ -53,6 +53,9 @@ class LibraryController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // "Free for you → See all" on Today opens the Library with the Free filter already on
+    final a = Get.arguments;
+    if (a is Map && a['filter'] == 'free') filters.value = const LibraryFilters(type: 'free');
     load();
   }
 

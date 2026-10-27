@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -37,6 +38,10 @@ class AssetBellPlayer implements BellPlayer {
         await _p.setAsset('assets/audio/bell.wav');
       }
       await _p.seek(Duration.zero);
+      // a playback session, as in the guided player: the bell is heard with the iPhone's ring switch on silent
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.speech());
+      await session.setActive(true);
       await _p.play();
     } catch (_) {
       // a bell that cannot load falls back to the bundled one; a missing bell never stops the meditation
@@ -205,6 +210,7 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
       openingId.value ??= i.opening.firstOrNull?.id;
       intervalId.value ??= i.interval.firstOrNull?.id;
       closingId.value ??= i.closing.firstOrNull?.id;
+      unawaited(_resolveBells()); // ready before "Begin", so the opening bell rings on the tap
     } catch (_) {/* the page keeps working with the built-in options */}
   }
 
@@ -221,11 +227,17 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
         return null;
       }
     }
+    final key = _bellKey;
     final r = await Future.wait([url(openingId.value), url(intervalId.value), url(closingId.value)]);
     _openingUrl = r[0];
     _intervalUrl = r[1];
     _closingUrl = r[2];
+    _bellsFor = key;
   }
+
+  /// Which bell choice the resolved URLs belong to (a new choice on the setup screen resolves again).
+  String get _bellKey => '${openingId.value}|${intervalId.value}|${closingId.value}';
+  String? _bellsFor;
 
   /// "+5 min": the sit gets longer (a timed sit only; the end bell moves with it).
   void extend() {
@@ -261,19 +273,21 @@ class SilenceController extends GetxController with WidgetsBindingObserver {
     _pausedAt = null;
     phase.value = SilencePhase.running;
     _analytics.track('silence_start', {'length': minutes.value, 'bells': bellStart.value || bellEnd.value});
-    await _screen.keepAwake(true);
-    await _resolveBells();
+    // the bells were resolved on the setup screen; only a missing URL waits here, and never long
+    if (_bellsFor != _bellKey) await _resolveBells().timeout(const Duration(seconds: 2), onTimeout: () {});
+    // the run screen opens on the tap, and the bell rings as "Begins in 3" starts: nothing slow comes before them
     _lastIntervalMark = 0;
     if (bellStart.value) unawaited(_bell.ring(url: _openingUrl));
     // the timer (and the recorded minutes) start after the gap, so the bell is not part of the meditation
     _startedAt = clock.now().add(bellStart.value ? openingGap : Duration.zero);
-    // the end bell also rings as a local notification if the app is suspended
-    if (!openEnded && bellEnd.value) await _notifications.scheduleEndBell(_startedAt!.toUtc().add(planned));
-    await _presence.start(meditationId: _rec!.id, kind: 'silence', mode: 'silence', lengthMin: openEnded ? null : minutes.value);
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => refreshTime());
     refreshTime();
     _armDim();
     _nav.toRun();
+    await _screen.keepAwake(true);
+    // the end bell also rings as a local notification if the app is suspended
+    if (!openEnded && bellEnd.value) await _notifications.scheduleEndBell(_startedAt!.toUtc().add(planned));
+    await _presence.start(meditationId: _rec!.id, kind: 'silence', mode: 'silence', lengthMin: openEnded ? null : minutes.value);
   }
 
   /// Recomputes the time from timestamps. Called every second and when the app returns to the foreground.

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/config/app_links.dart';
 import '../../../core/services/access_service.dart';
+import '../../../core/services/onboarding_store.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -12,8 +13,16 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/sheets.dart';
 import '../controllers/account_controllers.dart';
 
-/// Where to go after signing in: Today for members, Today (free) otherwise.
-String todayRoute() => Get.find<AccessService>().isMember ? AppRoutes.todayMember : AppRoutes.todayFree;
+/// "Back to log in" is a way back: when the log in screen is further down the stack (the forgot-password flow) it slides back to it
+/// instead of coming in from the right like a new screen. Otherwise (a link opened from outside) it opens a fresh log in.
+void backToLogIn({required bool loginBelow}) => loginBelow ? Get.until((r) => r.settings.name == AppRoutes.logIn) : Get.offAllNamed<void>(AppRoutes.logIn);
+
+/// Where to go after signing in: Today for members, Today (free) otherwise. Leaving the start screen this way also ends onboarding,
+/// so the next launch (or a tapped notification) opens the app, not the intro again.
+String todayRoute() {
+  Get.find<OnboardingStore>().done = true;
+  return Get.find<AccessService>().isMember ? AppRoutes.todayMember : AppRoutes.todayFree;
+}
 
 /// Apple / Google / email. Apple only on iOS (on Android it needs a web flow that is not set up).
 class SocialButtons extends StatelessWidget {

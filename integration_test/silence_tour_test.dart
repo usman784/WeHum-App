@@ -9,6 +9,11 @@ import 'package:get/get.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/bootstrap.dart' as app;
+import 'package:meditation/core/services/account_service.dart';
+
+/// Optional: sign in with a premium e-mail account first (the Silence Room is a member feature).
+const premiumEmail = String.fromEnvironment('PREMIUM_EMAIL');
+const premiumPassword = String.fromEnvironment('PREMIUM_PASSWORD');
 
 Future<void> settle(WidgetTester t, [int ms = 1500]) async {
   for (var i = 0; i < ms ~/ 100; i++) {
@@ -22,6 +27,11 @@ void main() {
     app.bootstrap();
     await settle(t, 6000);
     await binding.convertFlutterSurfaceToImage();
+    if (premiumEmail.isNotEmpty) {
+      final r = await Get.find<AccountService>().loginEmail(email: premiumEmail, password: premiumPassword);
+      debugPrint('PREMIUM login: $r');
+      await settle(t, 4000);
+    }
     Future<void> shot(String name, [int wait = 1200]) async {
       await settle(t, wait);
       await binding.takeScreenshot(name);

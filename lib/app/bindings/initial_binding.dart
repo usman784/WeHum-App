@@ -12,6 +12,9 @@ import '../../core/audio/engines.dart';
 import '../../core/audio/recipe_engine.dart';
 import '../../core/audio/local_media.dart';
 import '../../core/data/contracts/auth_repository.dart';
+import '../../core/health/health_service.dart';
+import '../../core/health/heart_service.dart';
+import '../../core/health/hr_sensor_service.dart';
 import '../../core/data/contracts/bootstrap_repository.dart';
 import '../../core/data/contracts/repositories.dart';
 import 'dart:io';
@@ -101,7 +104,11 @@ class InitialBinding extends Bindings {
     // ── services
     Get.put(AnalyticsService(repo: Get.find<AnalyticsRepository>(), db: Get.find<AppDatabase>())..serverClock = time.now, permanent: true);
     auth = Get.put(AuthService(Get.find(), store, crash, refreshToken: api.refreshAccessToken, cache: kv), permanent: true);
-    Get.put(ConfigService(Get.find(), time), permanent: true);
+    final config = Get.put(ConfigService(Get.find(), time), permanent: true);
+    // heart rate (behind the CMS flag): nothing touches Bluetooth or Health until the person sets a source up
+    final health = Get.put(HealthService(), permanent: true);
+    final sensor = Get.put(HrSensorService(), permanent: true);
+    Get.put(HeartService(health, sensor, config), permanent: true);
     final access = Get.put(AccessService(), permanent: true);
     final downloads = Get.put(
       DownloadService(db: Get.find<AppDatabase>(), media: media, engine: DioDownloadEngine(), root: Get.find<Directory>(tag: 'downloads'), access: access, analytics: Get.find<AnalyticsService>(),

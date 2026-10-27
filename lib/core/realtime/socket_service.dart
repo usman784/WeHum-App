@@ -74,9 +74,16 @@ class SocketService extends GetxService {
     };
     t.onConnectError = (e) async {
       logd('socket', 'connect_error $e');
-      if (_isTokenExpired(e) && await refreshAccess()) {
-        t.connect(); // the auth function reads the new token
-        return;
+      if (_isTokenExpired(e) && _tokenRetries++ < 3) {
+        if (await refreshAccess()) {
+          t.connect(); // the auth function reads the new token
+          return;
+        }
+        // nothing to refresh yet (the socket came up before the first session): try again shortly, when the session exists
+        _tokenTimer?.cancel();
+        _tokenTimer = Timer(tokenRetryDelay * _tokenRetries, () {
+          if (_wantConnected && state.value != SocketState.connected) t.connect();
+        });
       }
       _markDown();
     };
@@ -86,16 +93,26 @@ class SocketService extends GetxService {
     t.connect();
   }
 
+  /// The handshake was refused for want of a valid access token: expired, or not there yet (the socket connected before the
+  /// first refresh). A refresh and a new attempt fix both; without it the socket would stay down and nothing would be live.
+  static const _tokenCodes = {'TOKEN_EXPIRED', 'AUTH_REQUIRED'};
+  /// At most two refresh-and-retry rounds until the next successful connect: a server that keeps refusing cannot cause a loop.
+  int _tokenRetries = 0;
+  Timer? _tokenTimer;
+  /// Wait before trying again when there was no token to refresh (grows a little with each try). Changed in tests.
+  static Duration tokenRetryDelay = const Duration(seconds: 2);
   static bool _isTokenExpired(Object e) {
     if (e is Map) {
       final data = e['data'];
-      if (data is Map && data['code'] == 'TOKEN_EXPIRED') return true;
-      if (e['code'] == 'TOKEN_EXPIRED') return true;
+      if (data is Map && _tokenCodes.contains(data['code'])) return true;
+      if (_tokenCodes.contains(e['code'])) return true;
     }
-    return e.toString().contains('TOKEN_EXPIRED');
+    final s = e.toString();
+    return _tokenCodes.any(s.contains);
   }
 
   void _handleConnect() {
+    _tokenRetries = 0;
     Perf.finish('socket_connect');
     _pausedTimer?.cancel();
     final wasDown = _downSince;
@@ -151,6 +168,7 @@ class SocketService extends GetxService {
     _wantConnected = false;
     _pausedTimer?.cancel();
     _bgTimer?.cancel();
+    _tokenTimer?.cancel();
     _t?.dispose();
     _t = null;
     _downSince = null;

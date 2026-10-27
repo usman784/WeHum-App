@@ -20,6 +20,7 @@ import '../../../core/services/access_service.dart';
 import '../../../core/services/account_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/download_service.dart';
+import '../../../core/services/logger.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/onboarding_store.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -59,13 +60,31 @@ class YouController extends GetxController {
   /// The forgiving streak (null when the server has the streaks flag off).
   StreakInfo? get streak => week.value?.streak;
   bool get challengesOn => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature('challenges');
+  bool get heartRateOn => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature('heartRate');
 
-  Future<void> signOut() async {
-    signingOut.value = true;
+  Future<void> signOut() => runSignOut(signingOut);
+}
+
+/// Sign out, then back to the start screen whatever happens (the session is cleared locally anyway). Shared by You and Settings.
+Future<void> runSignOut(RxBool busy) async {
+  busy.value = true;
+  try {
     await Get.find<AccountService>().signOut();
-    signingOut.value = false;
+  } catch (e) {
+    logd('you', 'sign-out step failed: $e');
+  } finally {
+    busy.value = false;
     Get.offAllNamed(AppRoutes.splash);
   }
+}
+
+/// Settings (top-right gear): the preferences list and Sign out.
+class SettingsController extends GetxController {
+  late final AccessService access = Get.find();
+  final signingOut = false.obs;
+  bool get challengesOn => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature('challenges');
+  bool get heartRateOn => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature('heartRate');
+  Future<void> signOut() => runSignOut(signingOut);
 }
 
 /// 55 Your progress: week dots, Week/Month/Year/Lifetime tabs, cached so it works offline. No streaks.

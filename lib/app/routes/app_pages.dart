@@ -6,6 +6,7 @@ import '../../core/widgets/states.dart';
 import '../../features/account/views/account_pages.dart';
 import '../../features/byo/byo_pages.dart';
 import '../../features/complete/complete_pages.dart';
+import '../../features/heart/heart_page.dart';
 import '../../features/library/views/detail_pages.dart';
 import '../../features/library/views/library_pages.dart';
 import '../../features/library/views/session_pages.dart';
@@ -97,6 +98,8 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.reminders, page: () => const RemindersPage()),
     GetPage(name: AppRoutes.downloads, page: () => const DownloadsPage()),
     GetPage(name: AppRoutes.privacyData, page: () => const PrivacyPage()),
+    GetPage(name: AppRoutes.heartRate, page: () => const HeartRatePage()),
+    GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
     GetPage(name: AppRoutes.helpAbout, page: () => const HelpPage()),
     GetPage(name: AppRoutes.manageMembership, page: () => const ManageMembershipPage()),
     GetPage(name: AppRoutes.trialEnding, page: () => const TrialEndingPage()),

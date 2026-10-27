@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- LOCAL DEMO ONLY (debug builds): lets the player stream test audio from a backend on this Mac over http. -->
+    <application android:usesCleartextTraffic="true" tools:replace="android:usesCleartextTraffic" xmlns:tools="http://schemas.android.com/tools"/>
 </manifest>

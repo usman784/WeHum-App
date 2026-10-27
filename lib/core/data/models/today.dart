@@ -26,11 +26,14 @@ class GroupFocus {
 class GroupInfo {
   const GroupInfo({
     required this.date, required this.startsAt, required this.endsAt, required this.lobbyOpensAt, required this.lengthMin, this.reminderMin = 10, required this.state, this.waiting = 0, this.sessionId, this.title,
-    this.cadence = 'daily', this.intentions = const [], this.focus, this.doorsOpenSec = 60, this.waitingByBelt = const Belts(), this.intentionCounts = const {}, this.myIntention,
+    this.cadence = 'daily', this.kind = 'group', this.intentions = const [], this.focus, this.doorsOpenSec = 60, this.waitingByBelt = const Belts(), this.intentionCounts = const {}, this.myIntention,
   });
   /// The slot id: the date for the daily sit, `2026-10-12T08` (UTC hour) for an hourly sit. Use it as the lobby id.
   final String date;
   final String cadence;
+  /// `group` (a sit through the day) or `global` (the weekly Global meditation, slot id `G2026-10-18`).
+  final String kind;
+  bool get isGlobal => kind == 'global';
   final List<String> intentions;
   final GroupFocus? focus;
   final int doorsOpenSec;
@@ -46,7 +49,7 @@ class GroupInfo {
         date: j['date'] as String, startsAt: DateTime.parse(j['startsAt'] as String).toUtc(), endsAt: DateTime.parse(j['endsAt'] as String).toUtc(),
         lobbyOpensAt: DateTime.parse(j['lobbyOpensAt'] as String).toUtc(), lengthMin: asInt(j['lengthMin']), reminderMin: asInt(j['reminderMin'], 10),
         state: GroupPhase.values.firstWhere((p) => p.name == j['state'], orElse: () => GroupPhase.scheduled), waiting: asInt(j['waiting']), sessionId: asStr(j['sessionId']), title: asStr(j['title']),
-        cadence: asStr(j['cadence']) ?? 'daily', intentions: [for (final i in ((j['intentions'] as List?) ?? const [])) '$i'], doorsOpenSec: asInt(j['doorsOpenSec'], 60),
+        cadence: asStr(j['cadence']) ?? 'daily', kind: asStr(j['kind']) ?? 'group', intentions: [for (final i in ((j['intentions'] as List?) ?? const [])) '$i'], doorsOpenSec: asInt(j['doorsOpenSec'], 60),
         focus: j['focus'] is Map && asStr(asJson(j['focus'])['title']) != null
             ? GroupFocus(title: asStr(asJson(j['focus'])['title'])!, summary: asStr(asJson(j['focus'])['summary']) ?? '', quote: asStr(asJson(j['focus'])['quote']) ?? '', attribution: asStr(asJson(j['focus'])['attribution']) ?? '')
             : null,
@@ -89,13 +92,15 @@ class DailyMessageRef {
 /// `GET /v1/today`.
 class TodayData {
   const TodayData({
-    required this.date, this.motd, this.live, this.group, this.freePick, this.program, this.progress = const WeekProgress(), this.dailyMessage,
+    required this.date, this.motd, this.live, this.group, this.global, this.freePick, this.program, this.progress = const WeekProgress(), this.dailyMessage,
     this.streak, this.belts = const Belts(), this.silenceNow = 0, this.continueLast,
   });
   final String date;
   final MotdInfo? motd;
   final LiveLine? live;
   final GroupInfo? group;
+  /// The next Global meditation (once a week), or null when it is switched off.
+  final GroupInfo? global;
   final FreePick? freePick;
   final ProgramCard? program;
   final WeekProgress progress;
@@ -117,6 +122,7 @@ class TodayData {
       motd: j['motd'] is Map ? MotdInfo.fromJson(asJson(j['motd'])) : null,
       live: l == null ? null : LiveLine(total: asInt(l['total']), countries: asInt(l['countries']), quiet: l['quiet'] == true, meditatedToday: asInt(l['meditatedToday'])),
       group: j['group'] is Map ? GroupInfo.fromJson(asJson(j['group'])) : null,
+      global: j['global'] is Map ? GroupInfo.fromJson(asJson(j['global'])) : null,
       freePick: f == null ? null : FreePick(sessionId: f['sessionId'] as String, title: f['title'] as String, youtubeId: asStr(f['youtubeId']), durationSec: (f['durationSec'] as num?)?.toInt()),
       program: p == null ? null : ProgramCard(id: p['id'] as String, title: p['title'] as String, day: asInt(p['day'], 1), days: asInt(p['days'], 1), unlockAt: asDate(p['unlockAt'])),
       progress: WeekProgress(minutes: asInt(w['minutesWeek']), meditations: asInt(w['meditationsWeek']), daysThisWeek: (w['daysThisWeek'] as List?) ?? const []),

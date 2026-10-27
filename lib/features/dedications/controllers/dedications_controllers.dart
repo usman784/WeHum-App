@@ -20,27 +20,30 @@ const dedicationSuggestions = ['For my family', 'For someone who is unwell', 'Fo
 
 enum PostOutcome { posted, pending, accountRequired, premiumRequired, limit, links, failed }
 
-/// 47 Write a dedication (only from the finished meditation, with its `meditationId`).
+/// 47 Write a dedication: after the finished meditation (with its `meditationId`), or at any time from the details and
+/// the player (`meditationId` null: posted to the session).
 class DedicationComposerController extends GetxController {
-  DedicationComposerController({required this.meditationId, required this.sessionId, required this.leftToday});
-  final String meditationId, sessionId;
+  DedicationComposerController({this.meditationId, required this.sessionId, this.leftToday});
+  final String? meditationId;
+  final String sessionId;
   final text = ''.obs;
   /// "Location display": show city and country, or just "Worldwide" (the default).
   final showPlace = false.obs;
-  final int leftToday;
+  /// Null until the server has told us (details/player): the limit is then only checked by the server.
+  final int? leftToday;
   final busy = false.obs;
   final error = RxnString();
   final showHelp = false.obs;
-  late final left = leftToday.obs;
+  late final left = RxnInt(leftToday);
 
   int get count => text.value.trim().length;
-  bool get valid => count > 0 && count <= 200 && !hasLink(text.value) && left.value > 0;
+  bool get valid => count > 0 && count <= 200 && !hasLink(text.value) && (left.value ?? 1) > 0;
 
   String? get inlineError {
     if (error.value != null) return error.value;
     if (count > 200) return 'At most 200 characters';
     if (hasLink(text.value)) return 'Text only, no links';
-    if (left.value <= 0) return 'You’ve used today’s dedications. Come back tomorrow.';
+    if ((left.value ?? 1) <= 0) return 'You’ve used today’s dedications. Come back tomorrow.';
     return null;
   }
 
@@ -51,10 +54,10 @@ class DedicationComposerController extends GetxController {
     busy.value = true;
     error.value = null;
     try {
-      final r = await Get.find<CommunityRepository>().post(meditationId: meditationId, text: text.value.trim(), showPlace: showPlace.value);
+      final r = await Get.find<CommunityRepository>().post(meditationId: meditationId, sessionId: meditationId == null ? sessionId : null, text: text.value.trim(), showPlace: showPlace.value);
       left.value = r.leftToday;
       showHelp.value = r.showHelp;
-      Get.find<AnalyticsService>().track('dedication_post', {'session_id': sessionId});
+      Get.find<AnalyticsService>().track('dedication_post', {'session_id': sessionId, 'from': meditationId == null ? 'session' : 'complete'});
       return r.status == 'visible' ? PostOutcome.posted : PostOutcome.pending;
     } on ApiException catch (e) {
       switch (e.code) {

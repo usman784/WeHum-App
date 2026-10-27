@@ -52,9 +52,16 @@
 			<string>mailto</string>
 			<string>message</string>
 			<string>https</string>
+			<string>instagram-stories</string>
 		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>NSHealthShareUsageDescription</key>
+		<string>WeHum reads your heart rate from Apple Health only for the time of a meditation, to show how your body settled. Only the average and the change are saved to your account.</string>
+		<key>NSHealthUpdateUsageDescription</key>
+		<string>WeHum only reads heart rate and heart rate variability to show changes during meditation. It does not save or change data in Apple Health.</string>
+		<key>NSBluetoothAlwaysUsageDescription</key>
+		<string>WeHum connects to your heart-rate sensor (a chest strap, or a watch or band that broadcasts heart rate) to show your heart rate during a meditation.</string>
 		<key>NSCalendarsUsageDescription</key>
 		<string>WeHum adds the group meditation to your calendar when you tap Add to calendar.</string>
 		<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
@@ -93,6 +100,7 @@
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>
+			<string>bluetooth-central</string>
 			<string>remote-notification</string>
 		</array>
 		<key>UILaunchStoryboardName</key>

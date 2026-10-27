@@ -117,7 +117,8 @@ class HeroActions extends StatelessWidget {
                     child: Row(children: [
                       const Icon(Icons.groups_2_rounded, color: Colors.white, size: 20),
                       const SizedBox(width: 8),
-                      Expanded(child: Text('Wait in the lobby', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600))),
+                      // maxLines 2: with a large system font the label wraps instead of being cut off
+                      Expanded(child: Text('Wait in the lobby', maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600))),
                       const SizedBox(width: 8),
                       Text(g.live ? '${g.time} · started' : '${g.time} · ${g.countdown}', style: AppText.caption.copyWith(color: Colors.white70, fontFeatures: AppText.tabular)),
                       const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 18),

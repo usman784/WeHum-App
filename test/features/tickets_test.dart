@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:meditation/app/app_controller.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/errors/error_code.dart';
 import 'package:meditation/core/services/account_service.dart';
@@ -112,9 +113,23 @@ void main() {
   group('notifications', () {
     test('a link to the meditation of the day opens it; the daily message link opens that day', () {
       expect(DeepLinks.parse('wehum://motd').route, AppRoutes.motdRoom);
+      expect(DeepLinks.parse('wehum://global'), const LinkTarget(AppRoutes.groupMeditationLobby, {'kind': 'global'})); // the weekly Global meditation's own lobby
       expect(DeepLinks.parse('wehum://message/2026-10-12'), const LinkTarget(AppRoutes.dailyMessage, {'date': '2026-10-12'}));
       expect(DeepLinks.parse(null).route, AppRoutes.todayMember);
     });
+
+    for (final member in [false, true]) {
+      testWidgets('tapping the reminder (wehum://motd) while the app is open on Today lands in the Meditation of the Day room (member: $member)', (t) async {
+        final e = await open(t, AppRoutes.todayMember, member: member);
+        Get.find<AppController>().markRouted();
+        Get.find<AppController>().openLink('wehum://motd', notificationId: 'n1');
+        await settle(t);
+        expect(Get.currentRoute, AppRoutes.motdRoom);
+        expect(find.text('Meditation of the Day'), findsWidgets);
+        await t.pumpWidget(const SizedBox());
+        await e.dispose();
+      });
+    }
 
     testWidgets('the inbox is emptied on sign-out, so the bell never shows what the previous person had', (t) async {
       final e = await open(t, AppRoutes.todayMember);

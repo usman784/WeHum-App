@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'brand_mark.dart';
-import 'user_avatar.dart';
-import '../services/config_service.dart';
-import '../services/onboarding_store.dart';
 import 'package:get/get.dart';
 import '../../app/routes/app_routes.dart';
 import '../theme/app_colors.dart';
@@ -34,12 +31,32 @@ class SosPill extends StatelessWidget {
   }
 }
 
-/// Tab header: logo + SoS + bell (unread dot) + avatar.
+/// The top-right Settings button: a gear that opens Settings directly (the You tab is already in the bottom bar).
+class SettingsButton extends StatelessWidget {
+  const SettingsButton({super.key, this.size = Sizes.touch, this.onTap});
+  final double size;
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Semantics(
+      button: true, label: 'Settings',
+      child: GestureDetector(
+        key: const Key('open-settings'),
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap ?? () => Get.toNamed(AppRoutes.settings),
+        // the circle can be smaller than the tap area (48 pt minimum)
+        child: SizedBox(width: Sizes.touch, height: Sizes.touch, child: Center(child: Container(width: size, height: size, decoration: BoxDecoration(color: c.surface, shape: BoxShape.circle, border: Border.all(color: c.border)), child: Icon(Icons.settings_outlined, size: size * .5, color: c.textPrimary)))),
+      ),
+    );
+  }
+}
+
+/// Tab header: logo + SoS + bell (unread dot) + settings.
 class TabHeader extends StatelessWidget {
-  const TabHeader({super.key, this.initials = '', this.unread = 0, this.onBell, this.onAvatar});
-  final String initials;
+  const TabHeader({super.key, this.unread = 0, this.onBell, this.onSettings});
   final int unread;
-  final VoidCallback? onBell, onAvatar;
+  final VoidCallback? onBell, onSettings;
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -64,25 +81,13 @@ class TabHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Semantics(
-          button: true, label: 'Profile',
-          child: GestureDetector(
-            onTap: onAvatar ?? () => Get.toNamed(AppRoutes.you),
-            child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: initials, size: Sizes.touch, fontSize: 15)),
-          ),
-        ),
+        SettingsButton(onTap: onSettings),
       ]),
     ));
   }
 }
 
-String _initialOf() {
-  var n = Get.isRegistered<OnboardingStore>() ? Get.find<OnboardingStore>().nameRx.value : '';
-  if (n.isEmpty && Get.isRegistered<ConfigService>()) n = Get.find<ConfigService>().current.value?.me?.firstName ?? '';
-  return n.isEmpty ? '' : n.substring(0, 1).toUpperCase();
-}
-
-/// Header of the Stitch sub screens: back arrow, centered title, the SoS pill and the profile photo (64 px high).
+/// Header of the Stitch sub screens: back arrow, centered title, the SoS pill and the Settings button (64 px high).
 class StitchHeader extends StatelessWidget {
   const StitchHeader({super.key, required this.title, this.onBack, this.sos = true});
   final String title;
@@ -103,10 +108,7 @@ class StitchHeader extends StatelessWidget {
             Expanded(child: Text(title, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary))),
             if (sos) const SosPill(),
             const SizedBox(width: 8),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.you),
-              child: SizedBox(width: 48, height: 48, child: Center(child: Obx(() => UserAvatar(url: Get.isRegistered<ConfigService>() ? Get.find<ConfigService>().current.value?.me?.avatarUrl : null, initial: _initialOf(), size: 32, fontSize: 13)))),
-            ),
+            const SettingsButton(size: 40),
             const SizedBox(width: 10),
           ]),
         ),

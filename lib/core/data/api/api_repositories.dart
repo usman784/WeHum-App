@@ -16,7 +16,7 @@ class TodayApi extends ApiBase implements TodayRepository {
   @override
   Future<MotdInfo> motd(String date) async => MotdInfo.fromJson(await getJson('/v1/motd/$date'));
   @override
-  Future<GroupInfo> groupNext() async => GroupInfo.fromJson(await getJson('/v1/group/next'));
+  Future<GroupInfo> groupNext({String kind = 'group'}) async => GroupInfo.fromJson(await getJson('/v1/group/next', query: {'kind': kind}));
   @override
   Future<DailyMessage> dailyMessage(String date) async => DailyMessage.fromJson(await getJson('/v1/daily-messages/$date'));
   @override
@@ -197,8 +197,8 @@ class CommunityApi extends ApiBase implements CommunityRepository {
   }
 
   @override
-  Future<PostResult> post({required String meditationId, required String text, bool showPlace = false}) async {
-    final j = await call('POST', '/v1/dedications', body: {'meditationId': meditationId, 'text': text, 'locationMode': showPlace ? 'city' : 'worldwide'});
+  Future<PostResult> post({String? meditationId, String? sessionId, required String text, bool showPlace = false}) async {
+    final j = await call('POST', '/v1/dedications', body: {if (meditationId != null) 'meditationId': meditationId, if (sessionId != null) 'sessionId': sessionId, 'text': text, 'locationMode': showPlace ? 'city' : 'worldwide'});
     return PostResult(id: j['id'] as String, status: (j['status'] ?? 'visible') as String, showHelp: j['showHelp'] == true, leftToday: asInt(j['dedicationsLeftToday']));
   }
 

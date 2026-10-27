@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/data/models/activity.dart';
+import 'package:meditation/core/errors/error_code.dart';
 import 'package:meditation/core/services/notification_service.dart';
 import 'package:meditation/core/theme/theme_controller.dart';
 import 'package:meditation/features/you/controllers/you_controllers.dart';
@@ -53,6 +54,21 @@ void main() {
     await acct.dispose();
   });
 
+  testWidgets('The top-right button is Settings (not the profile): it opens the settings list directly, with Sign out', (t) async {
+    final e = await open(t, AppRoutes.you, profile: const MeProfile(id: 'u', firstName: 'Lena', isGuest: false, entitlement: Entitlement(active: true)));
+    expect(find.bySemanticsLabel('Profile'), findsNothing);
+    await t.tap(find.byKey(const Key('open-settings')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.settings);
+    expect(find.text('Settings'), findsWidgets);
+    expect(find.byKey(const Key('r-reminders')), findsOneWidget);
+    expect(find.byKey(const Key('r-privacy')), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('sign-out')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('sign-out')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('54 Sign out asks first, then signs out on the server, drops the push token and returns to the start', (t) async {
     final e = await open(t, AppRoutes.you, profile: const MeProfile(id: 'u', firstName: 'Lena', isGuest: false, entitlement: Entitlement(active: true)));
     await t.scrollUntilVisible(find.byKey(const Key('sign-out')), 300, scrollable: find.byType(Scrollable).first);
@@ -63,6 +79,22 @@ void main() {
     await settle(t);
     expect(e.authRepo.calls, contains('logout'));
     expect(e.notifications.calls, contains('signedOut'));
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('54 Sign out still finishes when the new guest session cannot be created: the button stops loading and the app goes back to the start', (t) async {
+    final e = await open(t, AppRoutes.you, profile: const MeProfile(id: 'u', firstName: 'Lena', isGuest: false, entitlement: Entitlement(active: true)));
+    e.authRepo.guestError = ApiException(ErrorCode.authRequired, status: 401); // e.g. attestation refused / offline right after the logout
+    final you = Get.find<YouController>(); // the start screen replaces the page (and the controller) afterwards
+    await t.scrollUntilVisible(find.byKey(const Key('sign-out')), 300, scrollable: find.byType(Scrollable).first);
+    await t.tap(find.byKey(const Key('sign-out')));
+    await settle(t);
+    await t.tap(find.byKey(const Key('confirm-sign-out')));
+    await settle(t);
+    expect(e.authRepo.calls, contains('logout'));
+    expect(you.signingOut.value, false);
+    expect(Get.currentRoute, AppRoutes.splash);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

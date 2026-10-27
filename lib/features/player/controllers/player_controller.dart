@@ -14,6 +14,8 @@ import '../../../core/audio/session_recorder.dart';
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/models/activity.dart';
 import '../../../core/errors/error_code.dart';
+import '../../../core/health/heart_service.dart';
+import '../../../core/health/hr_summary.dart';
 import '../../../core/realtime/presence_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -43,10 +45,12 @@ class GetPlayerNav implements PlayerNav {
 
 /// What the completion screen needs (screen 45).
 class CompleteArgs {
-  const CompleteArgs({required this.player, this.record, this.counted = false});
+  const CompleteArgs({required this.player, this.record, this.counted = false, this.hr});
   final PlayerArgs player;
   final MeditationRecord? record;
   final bool counted;
+  /// Heart-rate numbers of this sit (only when the person connected a sensor or Health); shown on the payoff, never uploaded beyond avg/shift.
+  final HrSummary? hr;
 }
 
 /// 42 Audio player. One controller per meditation: loads the source (download first, else a signed URL), starts presence
@@ -63,8 +67,8 @@ class PlayerController extends GetxController {
   PlayerController(this.args, {
     required AudioEngine engine, required MediaRepository media, required PresenceService presence, required SyncService sync, required AnalyticsService analytics,
     LocalMedia? local, ConnectivityService? connectivity, PlayerNav? nav, DateTime Function()? now, Catalog? Function()? catalog, MediaSessionPort? mediaSession,
-    ChimePort? chime, this.stallGrace = const Duration(seconds: 4),
-  })  : _chime = chime ?? const NoChime(), _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog, _session = mediaSession ?? const NoMediaSession();
+    ChimePort? chime, HeartPort? heart, this.stallGrace = const Duration(seconds: 4),
+  })  : _heart = heart ?? const NoHeart(), _chime = chime ?? const NoChime(), _engine = engine, _media = media, _presence = presence, _sync = sync, _analytics = analytics, _local = local ?? const NoLocalMedia(), _connectivity = connectivity, _nav = nav ?? GetPlayerNav(), _now = now, _catalog = catalog, _session = mediaSession ?? const NoMediaSession();
 
   final PlayerArgs args;
   final AudioEngine _engine;
@@ -79,7 +83,13 @@ class PlayerController extends GetxController {
   final Catalog? Function()? _catalog;
   final MediaSessionPort _session;
   final ChimePort _chime;
+  final HeartPort _heart;
   final Duration stallGrace;
+
+  /// Live heart rate for the pill on the player (a Bluetooth sensor only); null shows nothing.
+  Rxn<int> get heartLive => _heart.live;
+  /// A heart-rate source is set up: the player has room for the live pill.
+  bool get heartOn => _heart.enabled;
 
   late final SessionRecorder recorder = SessionRecorder(
       kind: args.kind, sessionId: args.sessionId, recipeId: args.recipe?.id, lengthVariant: motdVariant(args),
@@ -178,6 +188,7 @@ class PlayerController extends GetxController {
         callbacks: MediaCallbacks(play: play, pause: pause, seekBy: skip, stop: endEarly));
       _subs.add(togetherRx.listen((t) => _session.updateInfo(album: t != null && t.people > 1 ? '${t.people} co-sitters active' : null)));
       phase.value = PlayerPhase.ready;
+      _heartOpen = _heart.enabled; unawaited(_heart.begin()); // heart rate: connects in the background, never delays the sit
       unawaited(play()); // never wait for playback itself: a real engine's play() can last as long as the track
       // presence: you are counted live; the ack carries the "together" numbers (not for non-catalog free items)
       await _presence.start(meditationId: recorder.id, sessionId: args.sessionId, kind: args.kind, lengthMin: args.lengthMin, mode: args.mode);
@@ -374,6 +385,20 @@ class PlayerController extends GetxController {
     position.value = to;
   }
 
+  /// Touch or drag on the progress bar: jump to that point (0..1 of the meditation). The clock follows the finger at once; the
+  /// engine is asked when the finger is lifted (or on a tap), so a drag does not flood it with seeks.
+  void scrubTo(double fraction) {
+    final max = duration.value;
+    if (max <= Duration.zero) return;
+    final to = Duration(milliseconds: (max.inMilliseconds * fraction.clamp(0.0, 1.0)).round());
+    position.value = to > max - const Duration(seconds: 1) ? max - const Duration(seconds: 1) : to;
+  }
+
+  Future<void> scrubEnd() async {
+    final to = position.value;
+    await _engine.seek(to);
+  }
+
   Future<void> back15() => skip(const Duration(seconds: -15));
   Future<void> forward15() => skip(const Duration(seconds: 15));
 
@@ -383,9 +408,27 @@ class PlayerController extends GetxController {
       await finish(completed: false);
     } else {
       _analytics.track('meditation_abandon', {'kind': args.kind, 'pct': recorder.pct});
+      _heartCancel();
       await _teardown();
       _nav.back();
     }
+  }
+
+  /// The heart-rate source belongs to this controller from `begin` until it ends or cancels it; a later player must not be cut off by this one closing.
+  bool _heartOpen = false;
+  void _heartCancel() {
+    if (!_heartOpen) return;
+    _heartOpen = false;
+    _heart.cancel();
+  }
+
+  /// The sit's heart-rate numbers folded into the record that goes to the outbox.
+  Future<(MeditationRecord?, HrSummary?)> _withHeart(MeditationRecord? rec) async {
+    if (rec == null) return (null, null);
+    _heartOpen = false;
+    final hr = await _heart.end(rec.startedAt, rec.endedAt);
+    if (hr == null) return (rec, null);
+    return (rec.withHeart(avgBpm: hr.avgBpm, deltaBpm: hr.deltaBpm), hr);
   }
 
   /// Back arrow: stop and return to where the person came from, no payoff screen and no "finished" step.
@@ -394,9 +437,11 @@ class PlayerController extends GetxController {
     if (_finished) return;
     _finished = true;
     final counts = recorder.counts;
-    final rec = counts ? recorder.build(completed: false) : null;
+    final built = counts ? recorder.build(completed: false) : null;
     _analytics.track('meditation_abandon', {'kind': args.kind, 'pct': recorder.pct, 'via': 'back'});
     await _teardown();
+    final (rec, _) = counts ? await _withHeart(built) : (built, null);
+    if (!counts) _heartCancel();
     if (rec != null && args.record) unawaited(_sync.record(rec, waitForServer: false));
     _nav.back();
   }
@@ -406,15 +451,17 @@ class PlayerController extends GetxController {
     if (_finished) return;
     _finished = true;
     phase.value = PlayerPhase.ended;
-    final rec = recorder.build(completed: completed);
+    final built = recorder.build(completed: completed);
     final counts = recorder.counts;
-    _analytics.track(completed ? 'meditation_complete' : 'meditation_abandon', {'kind': args.kind, 'session_id': args.sessionId ?? '', 'duration_sec': rec?.durationSec ?? 0, 'pct': recorder.pct});
+    _analytics.track(completed ? 'meditation_complete' : 'meditation_abandon', {'kind': args.kind, 'session_id': args.sessionId ?? '', 'duration_sec': built?.durationSec ?? 0, 'pct': recorder.pct});
     await _teardown();
+    final (rec, hr) = counts ? await _withHeart(built) : (built, null);
+    if (!counts) _heartCancel();
     if (rec != null && args.record) {
       unawaited(_sync.record(rec, waitForServer: false)); // outbox first; the payoff never waits on the network
     }
     if (counts && args.record) {
-      _nav.toComplete(CompleteArgs(player: args, record: rec, counted: true));
+      _nav.toComplete(CompleteArgs(player: args, record: rec, counted: true, hr: hr));
     } else {
       _nav.back();
     }
@@ -436,6 +483,7 @@ class PlayerController extends GetxController {
     _online?.dispose();
     _stallTimer?.cancel();
     _hapticTimer?.cancel();
+    _heartCancel(); // closes the sensor link if the sit ended some other way
     _chime.dispose();
     for (final s in _subs) {
       s.cancel();

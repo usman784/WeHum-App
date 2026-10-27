@@ -89,3 +89,20 @@ class _VideoDescriptionState extends State<VideoDescription> {
     );
   }
 }
+
+/// The short description written in the CMS for a meditation (catalog `description`), shown under the title in the Meditation of the
+/// Day room and in the player. Renders nothing when there is none, and never opens a web page: only YouTube text has links.
+class SessionAbout extends StatelessWidget {
+  const SessionAbout(this.text, {super.key});
+  final String? text;
+  @override
+  Widget build(BuildContext context) {
+    final t = text?.trim() ?? '';
+    if (t.isEmpty) return const SizedBox.shrink();
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Text(t, key: const Key('session-about'), textAlign: TextAlign.center, style: AppText.body.copyWith(color: c.textBody)),
+    );
+  }
+}

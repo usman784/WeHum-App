@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meditation/core/services/onboarding_store.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/data/models/today.dart';
 import 'package:meditation/core/realtime/socket_events.dart';
 import 'package:meditation/core/services/catalog_service.dart';
+import 'package:meditation/features/library/controllers/library_controllers.dart';
 import 'package:meditation/features/player/player_args.dart';
 import 'package:meditation/features/today/controllers/today_controller.dart';
 
@@ -133,18 +133,14 @@ void main() {
     await e.dispose();
   });
 
-  testWidgets('the avatar initial in the header follows the signed-in person (it used to keep the previous user\'s letter)', (t) async {
+  testWidgets('the header has a Settings gear instead of the profile avatar: no initial is shown, and it opens Settings', (t) async {
     final e = await openToday(t);
-    expect(find.text('M'), findsWidgets); // Marcus
-    final store = Get.find<OnboardingStore>();
-    store.adoptName(userId: 'someone-else', serverName: 'Demo'); // logged in as another person
-    await t.pump();
-    expect(find.text('D'), findsWidgets);
-    expect(find.text('M'), findsNothing);
-    store.adoptName(userId: 'new-guest', serverName: null); // signed out: a new guest with no name
-    await t.pump();
-    expect(find.text('D'), findsNothing);
-    expect(find.text('·'), findsWidgets);
+    expect(find.byKey(const Key('open-settings')), findsOneWidget);
+    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+    expect(find.bySemanticsLabel('Profile'), findsNothing);
+    await t.tap(find.byKey(const Key('open-settings')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.settings);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });
@@ -163,6 +159,22 @@ void main() {
     e.socketServer.serverPushes('entitlement:changed', {'active': false, 'productId': null, 'periodType': null, 'expiresAt': null, 'billingIssue': false});
     await settle(t);
     expect(find.byKey(const Key('try-free')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('24 free Today: Free for you → See all opens the Library with the Free filter on, listing only the free meditations', (t) async {
+    final e = await openToday(t, member: false);
+    await t.scrollUntilVisible(find.byKey(const Key('free-see-all')), 300, scrollable: find.byType(Scrollable).first);
+    await t.tap(find.byKey(const Key('free-see-all')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.library);
+    final lib = Get.find<LibraryController>();
+    expect(lib.filters.value.type, 'free');
+    expect(lib.chipOn('free'), true);
+    expect(find.byKey(const Key('filtered-count')), findsOneWidget);
+    expect(lib.filtered, isNotEmpty);
+    expect(lib.filtered.every((s) => !s.isPremium), true);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

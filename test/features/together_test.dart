@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
+import 'package:meditation/core/services/catalog_service.dart';
+import 'package:meditation/core/services/config_service.dart';
 import 'package:meditation/core/utils/countries.dart';
 import 'package:meditation/features/player/player_args.dart';
 import 'package:meditation/features/together/controllers/together_controllers.dart';
@@ -44,7 +46,7 @@ void main() {
     testWidgets('joins lobby:{date} over the socket, shows counts and regions from lobby:state, leaves on pop', (t) async {
       final e = await openLobby(t);
       expect(e.socketServer.sentData('lobby:join'), isNotEmpty);
-      expect(find.text('SYNCHRONISED DAILY SIT · ${Get.find<LobbyController>().startLabel}'), findsOneWidget);
+      expect(find.text('GROUP MEDITATION · ${Get.find<LobbyController>().startLabel}'), findsOneWidget);
       e.socketServer.serverPushes('lobby:state', {
         'date': Get.find<LobbyController>().date, 'waiting': 312, 'countries': 29, 'regions': [{'r': 'Europe', 'n': 148}, {'r': 'Americas', 'n': 102}, {'r': 'Asia-Pacific', 'n': 62}], 'startsAt': DateTime.now().toUtc().add(const Duration(minutes: 2)).toIso8601String(),
       });
@@ -84,6 +86,32 @@ void main() {
       // a second event does not open a second player
       e.socketServer.serverPushes('group:start', {'date': date, 'startsAt': DateTime.now().toUtc().toIso8601String(), 'sessionId': 's-motd', 'lengthMin': 30, 'mediaKey': 'k'});
       await afterPush(t);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('the Global meditation starts the same synchronised player, marked as the Global sit, with its own length', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      e.today.groupStartsIn = const Duration(minutes: 1);
+      e.socketServer.acks['lobby:join'] = (_) => {'ok': true, 'data': {'startsAt': DateTime.now().toUtc().add(const Duration(minutes: 1)).toIso8601String(), 'waiting': 5}};
+      await e.socket.connect();
+      e.socketServer.serverConnects();
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      Get.toNamed(AppRoutes.groupMeditationLobby, arguments: {'kind': 'global'});
+      await settle(t);
+      final lobby = Get.find<LobbyController>();
+      expect(lobby.date, startsWith('G'));
+      e.socketServer.serverPushes('group:start', {'date': lobby.date, 'startsAt': DateTime.now().toUtc().toIso8601String(), 'sessionId': 's-motd', 'lengthMin': 30, 'mediaKey': 'k'});
+      await afterPush(t);
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.playerPresenceRing);
+      final a = Get.arguments as PlayerArgs;
+      expect(a.global, true);
+      expect(a.mode, 'group');
+      expect(a.title, 'Global meditation');
+      expect(find.text('GLOBAL SIT'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });
@@ -192,6 +220,87 @@ void main() {
   });
 
   group('52 together + 23 room', () {
+    testWidgets('together has two different cards: the group meditation (through the day) and the Global meditation (once a week)', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      await e.socket.connect();
+      e.socketServer.serverConnects();
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      expect(find.byKey(const Key('next-group')), findsOneWidget);
+      expect(find.textContaining('GROUP MEDITATION'), findsOneWidget);
+      expect(find.byKey(const Key('next-global')), findsOneWidget);
+      expect(find.textContaining('GLOBAL MEDITATION'), findsWidgets);
+      expect(find.textContaining('Once a week'), findsOneWidget);
+      expect(find.textContaining(RegExp(r'^in \d+ days?')), findsOneWidget); // days away: days and hours, not ticking seconds
+      // the Global card has its own lobby: the group card is not touched
+      await t.ensureVisible(find.byKey(const Key('go-global-lobby')));
+      await t.tap(find.byKey(const Key('go-global-lobby')));
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.groupMeditationLobby);
+      expect((Get.arguments as Map)['kind'], 'global');
+      expect(Get.find<LobbyController>().group.value!.isGlobal, true);
+      expect(Get.find<LobbyController>().isGlobal, true);
+      expect(find.textContaining('GLOBAL MEDITATION'), findsWidgets);
+      await t.scrollUntilVisible(find.text('60 minutes before it starts.'), 200, scrollable: find.byType(Scrollable).first); // the Global reminder is the Global setting, not the group's 10
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('a free person opening the Global lobby sees the Global meditation is for members', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: false, onboardingDone: true);
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      Get.toNamed(AppRoutes.groupMeditationLobby, arguments: {'kind': 'global'});
+      await settle(t);
+      expect(find.text('Global meditation is for members'), findsOneWidget);
+      expect(find.text('Group meditation is for members'), findsNothing);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('a change in the CMS group settings reaches an open Together screen at once (config:changed), no reopening', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      expect(find.byKey(const Key('next-global')), findsOneWidget);
+      e.today.globalOn = false; // the owner switches the Global meditation off in the CMS
+      await Get.find<ConfigService>().refresh(); // what the app does when the server pushes config:changed
+      await settle(t);
+      expect(find.byKey(const Key('next-global')), findsNothing);
+      e.today.globalOn = true; // and on again
+      await Get.find<ConfigService>().refresh();
+      await settle(t);
+      expect(find.byKey(const Key('next-global')), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('the Global card shows the name set in the CMS', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      e.today.globalTitle = 'Sunday Circle';
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      expect(find.text('SUNDAY CIRCLE'), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('no Global card when the Global meditation is switched off', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      e.today.globalOn = false;
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      expect(find.byKey(const Key('next-group')), findsOneWidget);
+      expect(find.byKey(const Key('next-global')), findsNothing);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
     testWidgets('together shows the next group, the lobby count and goes to the lobby', (t) async {
       phone(t);
       final e = await TestEnv.create(member: true, onboardingDone: true);
@@ -207,6 +316,18 @@ void main() {
       await t.tap(find.byKey(const Key('go-lobby')));
       await settle(t);
       expect(Get.currentRoute, AppRoutes.groupMeditationLobby);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('MOTD room: the short description written in the CMS is shown', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      await Get.find<CatalogService>().load(); // the app loads the catalog at start
+      await t.pumpWidget(e.app(initial: AppRoutes.motdRoom));
+      await settle(t);
+      expect(find.byKey(const Key('session-about')), findsOneWidget);
+      expect(find.text('A grounding meditation for busy days.'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });

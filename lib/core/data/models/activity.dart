@@ -64,6 +64,10 @@ class MeditationRecord {
   final int durationSec;
   final bool completed, offline;
 
+  MeditationRecord withHeart({int? avgBpm, int? deltaBpm}) => MeditationRecord(
+        id: id, sessionId: sessionId, recipeId: recipeId, kind: kind, lengthVariant: lengthVariant, startedAt: startedAt, endedAt: endedAt, durationSec: durationSec,
+        completed: completed, offline: offline, hrDeltaBpm: deltaBpm ?? hrDeltaBpm, hrAvgBpm: avgBpm ?? hrAvgBpm);
+
   Json toJson() => {
         'id': id, if (sessionId != null) 'sessionId': sessionId, if (recipeId != null) 'recipeId': recipeId, 'kind': kind,
         if (lengthVariant != null) 'lengthVariant': lengthVariant, 'startedAt': startedAt.toUtc().toIso8601String(), 'endedAt': endedAt.toUtc().toIso8601String(),

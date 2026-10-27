@@ -210,24 +210,29 @@ class LiveStrip extends StatelessWidget {
 }
 
 /// "Global presence heatmap": a stylised world with glowing belts, then the three belt counts.
+/// [onExplore] null: no "Explore map" (inside a meditation, leaving for the map would abandon it).
+/// [quiet]: few people are sitting, so no small numbers as if it were a crowd: the map stays, the counts become a calm line.
 class HeatmapCard extends StatelessWidget {
-  const HeatmapCard({super.key, required this.belts, required this.onExplore});
+  const HeatmapCard({super.key, required this.belts, this.onExplore, this.quiet = false});
   final Belts belts;
-  final VoidCallback onExplore;
+  final VoidCallback? onExplore;
+  final bool quiet;
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final max = [belts.americas, belts.emea, belts.apac, 1].reduce((a, b) => a > b ? a : b);
     return AppCard(
-      key: const Key('presence-card'), onTap: onExplore, semanticLabel: 'Global presence, explore the map', padding: const EdgeInsets.all(18),
+      key: const Key('presence-card'), onTap: onExplore, semanticLabel: onExplore == null ? 'Global presence' : 'Global presence, explore the map', padding: const EdgeInsets.all(18),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           PulseDot(color: c.success, size: 4),
           const SizedBox(width: 4),
           Expanded(child: Text('GLOBAL PRESENCE HEATMAP', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
-          Text('EXPLORE MAP', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
-          const SizedBox(width: 4),
-          Icon(Icons.arrow_forward_rounded, size: 14, color: c.emberText),
+          if (onExplore != null) ...[
+            Text('EXPLORE MAP', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5)),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_forward_rounded, size: 14, color: c.emberText),
+          ],
         ]),
         const SizedBox(height: 14),
         ClipRRect(
@@ -238,7 +243,10 @@ class HeatmapCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        BeltCounts(belts: belts),
+        if (quiet)
+          Text('It’s quiet right now. Everyone who sits adds to the field.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textSecondary))
+        else
+          BeltCounts(belts: belts),
       ]),
     );
   }

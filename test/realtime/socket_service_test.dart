@@ -85,6 +85,36 @@ void main() {
       expect(t.connectCalls, before + 1);
     });
 
+    test('connect_error AUTH_REQUIRED (connected before the access token was there) gets a token and reconnects, so live updates never stay off', () async {
+      final t = FakeTransport();
+      var refreshed = 0;
+      final s = svc(t, refresh: () async => ++refreshed > 0);
+      await s.connect();
+      final before = t.connectCalls;
+      t.onConnectError!({'message': 'AUTH_REQUIRED', 'data': {'code': 'AUTH_REQUIRED'}});
+      await flush();
+      expect(refreshed, 1);
+      expect(t.connectCalls, before + 1);
+      // a server that keeps refusing: no endless refresh loop
+      for (var i = 0; i < 5; i++) {
+        t.onConnectError!({'message': 'AUTH_REQUIRED', 'data': {'code': 'AUTH_REQUIRED'}});
+        await flush();
+      }
+      expect(refreshed, 3);
+    });
+
+    test('AUTH_REQUIRED before the first session exists (no refresh token yet): it tries again shortly, so the socket comes up once the session is there', () async {
+      SocketService.tokenRetryDelay = const Duration(milliseconds: 10);
+      addTearDown(() => SocketService.tokenRetryDelay = const Duration(seconds: 2));
+      final t = FakeTransport();
+      final s = svc(t, refresh: () async => false); // nothing to refresh yet
+      await s.connect();
+      final before = t.connectCalls;
+      t.onConnectError!({'message': 'AUTH_REQUIRED', 'data': {'code': 'AUTH_REQUIRED'}});
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      expect(t.connectCalls, before + 1);
+    });
+
     test('auth:expiring refreshes and emits auth:refresh with the new token', () async {
       final t = FakeTransport();
       final s = svc(t, refresh: () async => true)..attachTokenSource(() async => 'new-access-token');

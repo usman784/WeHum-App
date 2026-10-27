@@ -4,11 +4,13 @@ import '../../core/data/models/activity.dart';
 class PlayerArgs {
   const PlayerArgs({
     required this.kind, required this.title, this.subtitle, this.sessionId, this.coverUrl, this.date, this.lengthMin, this.target, this.durationSec,
-    this.startAt = Duration.zero, this.mode = 'solo', this.recipe, this.programId, this.programDay, this.isVideo = false, this.youtubeId, this.live = false, this.record = true,
+    this.startAt = Duration.zero, this.mode = 'solo', this.recipe, this.programId, this.programDay, this.isVideo = false, this.youtubeId, this.live = false, this.global = false, this.record = true,
   });
 
   /// motd | group | solo | silence | custom | program | sos | free  (the backend meditation `kind`)
   final String kind;
+  /// The sit is the weekly Global meditation (kind stays `group`: it is the same synchronised player).
+  final bool global;
   final String title;
   final String? subtitle, sessionId, coverUrl, date, programId, youtubeId;
   final int? lengthMin, durationSec, programDay;

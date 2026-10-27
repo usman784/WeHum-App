@@ -59,6 +59,19 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('31 library: the quick filter for free meditations is called "Free" (not "Free back-catalogue") and lists only free ones', (t) async {
+    final e = await open(t, AppRoutes.library, member: false);
+    expect(find.text('Free back-catalogue'), findsNothing);
+    expect(find.descendant(of: find.byKey(const Key('chip-free')), matching: find.text('Free')), findsOneWidget);
+    await t.tap(find.byKey(const Key('chip-free')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    expect(find.byKey(const Key('filtered-count')), findsOneWidget);
+    expect(find.text('FREE FOR YOU'), findsWidgets);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('33 filters: the button counts matching meditations live; applying filters lists them; reset clears', (t) async {
     final e = await open(t, AppRoutes.library);
     await t.tap(find.byKey(const Key('filter-btn')));
@@ -176,6 +189,39 @@ void main() {
       await t.tap(find.byKey(const Key('session-play')));
       await settle(t);
       expect(Get.currentRoute, AppRoutes.membershipPaywall);
+      await t.pumpWidget(const SizedBox());
+      await f.dispose();
+    });
+
+    testWidgets('dedications are always there; a member writes one at any time (posted to the session, no meditation)', (t) async {
+      final e = await open(t, AppRoutes.library);
+      e.access.isGuest.value = false; // a member with an account (a guest member is asked for a name first)
+      Get.toNamed('/session/s-sleep', arguments: {'id': 's-sleep'});
+      await settle(t);
+      await t.scrollUntilVisible(find.byKey(const Key('dedication-write')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.byKey(const Key('dedications-panel')), findsOneWidget);
+      expect(find.textContaining('For my mother, who is unwell.'), findsOneWidget);
+      await t.tap(find.byKey(const Key('dedication-write')));
+      await settle(t);
+      await t.enterText(find.byKey(const Key('dedication-field')), 'For my brother');
+      await t.pump();
+      await t.tap(find.byKey(const Key('post-dedication')));
+      await settle(t);
+      expect(e.community.lastPost, (meditationId: null, sessionId: 's-sleep', text: 'For my brother'));
+      expect(find.text('Thank you. Your dedication is posted.'), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+
+      // a free listener reads them too; writing opens the paywall
+      final f = await open(t, AppRoutes.library, member: false);
+      Get.toNamed('/session/s-sleep', arguments: {'id': 's-sleep'});
+      await settle(t);
+      await t.scrollUntilVisible(find.byKey(const Key('dedication-write')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('Members can write dedications. Anyone can read them.'), findsOneWidget);
+      await t.tap(find.byKey(const Key('dedication-write')));
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.membershipPaywall);
+      expect(f.community.lastPost, isNull);
       await t.pumpWidget(const SizedBox());
       await f.dispose();
     });
