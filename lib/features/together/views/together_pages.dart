@@ -328,6 +328,15 @@ class TogetherPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   _GlobalCard(g: ctrl.globalSit.value!, ctrl: ctrl),
                 ],
+                const SizedBox(height: 16),
+                // World vibration, as in the earlier Together tab (client request); tap for the world map
+                GestureDetector(
+                  key: const Key('together-vibration'), behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.worldMapWorldVibration),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('WORLD VIBRATION', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5)),
+                    Row(children: [Expanded(child: VibrationBar(value: ctrl.vibration)), const SizedBox(width: 10), Text(ctrl.vibrationWord, style: AppText.bodySmall.copyWith(color: c.textSecondary))]),
+                  ]),
+                ),
                 const SizedBox(height: 14),
                 Row(children: [
                   Expanded(child: Text('SELF-PACED SANCTUARY', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),

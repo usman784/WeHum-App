@@ -320,6 +320,25 @@ void main() {
       await e.dispose();
     });
 
+    testWidgets('together shows the world vibration (as in the earlier Together tab); it follows live:agg and opens the world map', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true);
+      await e.socket.connect();
+      e.socketServer.serverConnects();
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      e.socketServer.serverPushes('live:agg', {'total': 412, 'countries': 37, 'top': [], 'quiet': false, 'meditatedToday': 1280, 'vibration': 70, 'at': 1});
+      await afterPush(t);
+      await t.scrollUntilVisible(find.byKey(const Key('together-vibration')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('WORLD VIBRATION'), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('together-vibration')), matching: find.text('Strong and rising')), findsOneWidget);
+      await t.tap(find.byKey(const Key('together-vibration')));
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.worldMapWorldVibration);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
     testWidgets('MOTD room: the short description written in the CMS is shown', (t) async {
       phone(t);
       final e = await TestEnv.create(member: true, onboardingDone: true);
