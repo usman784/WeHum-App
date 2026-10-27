@@ -21,9 +21,9 @@ Future<void> settle(WidgetTester t) async {
   await t.pump(const Duration(milliseconds: 600));
 }
 
-Future<TestEnv> open(WidgetTester t, String route, {bool member = true}) async {
+Future<TestEnv> open(WidgetTester t, String route, {bool member = true, bool v1 = false}) async {
   phone(t);
-  final e = await TestEnv.create(member: member, onboardingDone: true);
+  final e = await TestEnv.create(member: member, onboardingDone: true, v1: v1);
   await Get.find<CatalogService>().load();
   await t.pumpWidget(e.app(initial: route));
   await settle(t);
@@ -48,6 +48,33 @@ void main() {
     await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('From Raphael’s online library'), findsOneWidget);
     expect(find.text('FREE FOR YOU'), findsNothing); // no free label for members
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('31 library (v1, free): title, 4 tiles (premium / coming soon), Programs coming soon; challenge and program screens are teasers', (t) async {
+    final e = await open(t, AppRoutes.library, member: false, v1: true);
+    expect(find.text('Library'), findsWidgets);
+    for (final k in ['tile-silence', 'tile-byo', 'tile-challenges', 'tile-breath']) {
+      expect(find.byKey(Key(k)), findsOneWidget);
+    }
+    expect(find.descendant(of: find.byKey(const Key('tile-silence')), matching: find.text('PREMIUM')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tile-byo')), matching: find.text('PREMIUM')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tile-challenges')), matching: find.text('COMING SOON')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tile-breath')), matching: find.text('COMING SOON')), findsOneWidget);
+    await t.tap(find.byKey(const Key('tile-byo')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.membershipPaywall); // premium for free people
+    Get.back();
+    await settle(t);
+    await t.scrollUntilVisible(find.byKey(const Key('programs-row')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.descendant(of: find.byKey(const Key('programs-row')), matching: find.text('COMING SOON')), findsOneWidget);
+    await t.tap(find.byKey(const Key('programs-row')));
+    await settle(t);
+    expect(find.text('Programs are coming'), findsOneWidget);
+    Get.toNamed(AppRoutes.challenges);
+    await settle(t);
+    expect(find.text('Challenges are coming'), findsOneWidget);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

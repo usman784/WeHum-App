@@ -8,6 +8,7 @@ import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/data/models/stitch.dart';
 import '../../../core/services/access_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/services/download_service.dart';
@@ -40,6 +41,9 @@ class LibraryController extends GetxController {
   final summary = Rxn<LibrarySummary>();
 
   Catalog? get c => catalog.catalog.value;
+
+  /// Server flag (CMS) for a coming-soon feature; always off for what v1 keeps as coming soon.
+  bool featureOn(String key) => Get.isRegistered<ConfigService>() && Get.find<ConfigService>().feature(key);
 
   @override
   void onInit() {

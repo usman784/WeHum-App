@@ -12,7 +12,14 @@ class ConfigService extends GetxService {
 
   final current = Rxn<Bootstrap>();
 
-  bool feature(String key) => current.value?.feature(key) ?? false;
+  /// Built and kept in the code, but shown as "Coming soon" in v1 whatever the CMS flag says (client decision).
+  /// Remove a key to ship it; tests clear this set to keep covering the real screens.
+  static final Set<String> comingSoonInV1 = {'challenges', 'programs'};
+
+  /// False for anything still coming soon in this version (programs have no server flag, only this switch).
+  static bool shipped(String key) => !comingSoonInV1.contains(key);
+
+  bool feature(String key) => shipped(key) && (current.value?.feature(key) ?? false);
 
   Future<Bootstrap> refresh() async {
     final b = await _repo.bootstrap();

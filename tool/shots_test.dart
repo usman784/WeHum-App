@@ -44,7 +44,7 @@ void main() {
       phone(t);
       t.view.physicalSize = Size(1170, double.parse(Platform.environment['SHOT_H'] ?? '4800')); // tall: the whole page in one picture
       await t.runAsync(loadIcons);
-      final env = await TestEnv.create(member: true, onboardingDone: true, prefs: const {'first_name': 'Alex'});
+      final env = await TestEnv.create(member: true, onboardingDone: true, prefs: const {'first_name': 'Alex'}, v1: true);
       await t.pumpWidget(env.app(initial: e.value.isEmpty ? AppRoutes.todayMember : e.value));
       if (e.value.isEmpty) {
         for (var i = 0; i < 6; i++) {

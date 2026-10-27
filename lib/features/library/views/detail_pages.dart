@@ -6,6 +6,7 @@ import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/catalog_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -16,6 +17,7 @@ import '../../../core/widgets/states.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../controllers/library_controllers.dart';
 import 'library_pages.dart';
+import '../../soon/soon_pages.dart' show SoonTeaser;
 
 /// 34 Search: local, debounced 300 ms, recent searches.
 class SearchPage extends StatelessWidget {
@@ -72,6 +74,7 @@ class ProgramsPage extends StatelessWidget {
   const ProgramsPage({super.key});
   @override
   Widget build(BuildContext context) {
+    if (!ConfigService.shipped('programs')) return const AppScaffold(title: 'Programs', body: _ProgramsSoon());
     final c = context.colors;
     final ctrl = Get.put(ProgramsController());
     return AppScaffold(
@@ -124,6 +127,7 @@ class ProgramDetailPage extends StatelessWidget {
   const ProgramDetailPage({super.key});
   @override
   Widget build(BuildContext context) {
+    if (!ConfigService.shipped('programs')) return const AppScaffold(title: 'Program', body: _ProgramsSoon()); // also covers old deep links
     final id = ((Get.arguments as Map?)?['id'] ?? Get.parameters['id'] ?? '') as String;
     final ctrl = Get.put(ProgramDetailController(id), tag: id);
     final c = context.colors;
@@ -230,4 +234,10 @@ class _TeacherPageState extends State<TeacherPage> {
       ),
     );
   }
+}
+
+class _ProgramsSoon extends StatelessWidget {
+  const _ProgramsSoon();
+  @override
+  Widget build(BuildContext context) => const Center(child: SoonTeaser(icon: Icons.route_outlined, title: 'Programs are coming', body: 'Multi-day practices, one meditation a day.'));
 }

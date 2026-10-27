@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
-import '../../../core/realtime/live_service.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/services/access_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -13,10 +13,10 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/controls.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/states.dart';
-import '../../../core/widgets/stitch.dart';
 import '../../../core/widgets/surfaces.dart';
 import '../../today/views/today_pages.dart' show tabHeader;
 import '../../../core/widgets/flex_scroll.dart';
+import '../../today/views/today_widgets.dart' show openPaywall;
 import '../controllers/library_controllers.dart';
 
 IconData themeIcon(String? key) => switch (key) {
@@ -71,14 +71,8 @@ class LibraryPage extends StatelessWidget {
               final member = ctrl.access.isMember;
               final active = ctrl.filters.value.active;
               final list = ctrl.filtered;
-              final total = cat.sessions.length;
-              final live = Get.find<LiveService>().agg.value?.total ?? ctrl.summary.value?.sittingNow ?? 0;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, 24), children: staggered([
                 Text('Library', style: AppText.heroTitle.copyWith(color: c.textPrimary)),
-                const SizedBox(height: 4),
-                Text(
-                  '$total meditations${live > 0 ? ' · ${groupedInt(live)} meditating live' : ''}',
-                  key: const Key('library-counts'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),
                 const SizedBox(height: 12),
                 Row(children: [
                   Expanded(
@@ -104,6 +98,23 @@ class LibraryPage extends StatelessWidget {
                   for (final s in list) SessionRow(s: s, onTap: () => ctrl.open(s), showFree: !member, downloaded: ctrl.downloadedIds.contains(s.id)),
                   if (list.isEmpty) const EmptyState(title: 'No meditations match', body: 'Try changing or resetting the filters.', icon: Icons.filter_alt_off_rounded),
                 ] else ...[
+                  AdaptiveGrid(
+                    baseExtent: 100,
+                    children: [
+                      _Tile(key: const Key('tile-silence'), icon: Icons.nightlight_round, title: 'Silence Room', badge: member ? null : BadgeKind.premium, onTap: ctrl.goSilence),
+                      _Tile(key: const Key('tile-byo'), icon: Icons.tune_rounded, title: 'Build your own', badge: member ? null : BadgeKind.premium, onTap: () => member ? Get.toNamed(AppRoutes.buildYourOwn) : openPaywall('lock')),
+                      _Tile(key: const Key('tile-challenges'), icon: Icons.emoji_events_outlined, title: 'Challenges', badge: ctrl.featureOn('challenges') ? null : BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.challenges)),
+                      _Tile(key: const Key('tile-breath'), icon: Icons.air_rounded, title: 'Breathwork', badge: ctrl.featureOn('breathwork') ? null : BadgeKind.comingSoon, onTap: () => Get.toNamed(AppRoutes.breathwork)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Programs', key: const Key('programs-title'), style: AppText.title.copyWith(color: c.textPrimary)),
+                  const SizedBox(height: 8),
+                  AppCard(
+                    key: const Key('programs-row'), onTap: () => Get.toNamed(AppRoutes.allPrograms),
+                    child: ListRow(title: 'Start a program', subtitle: 'Multi-day practices, one meditation a day', leading: const IconTile(Icons.route_outlined), trailing: ConfigService.shipped('programs') ? null : const AppBadge(BadgeKind.comingSoon)),
+                  ),
+                  const SizedBox(height: 20),
                   Text('Themes', key: const Key('themes-title'), style: AppText.title.copyWith(color: c.textPrimary)),
                   const SizedBox(height: 8),
                   AdaptiveGrid(
@@ -114,7 +125,8 @@ class LibraryPage extends StatelessWidget {
                           key: Key('theme-${t.id}'), onTap: () => Get.toNamed('/theme/${t.id}', arguments: {'id': t.id}),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                             IconTile(themeIcon(t.iconKey), size: 40),
-                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), Text(ctrl.catalog.themeLine(t), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))]),
+                            // name, then the count and the length range on their own lines so nothing is cut
+                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)), for (final part in ctrl.catalog.themeLine(t).split(' · ')) Text(part, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))]),
                           ]),
                         ),
                     ],
@@ -142,6 +154,25 @@ class LibraryPage extends StatelessWidget {
               ]));
             }),
           )),
+    );
+  }
+}
+
+class _Tile extends StatelessWidget {
+  const _Tile({super.key, required this.icon, required this.title, required this.onTap, this.badge});
+  final IconData icon;
+  final String title;
+  final BadgeKind? badge;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AppCard(
+      onTap: onTap,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Row(children: [Icon(icon, color: c.emberText), const SizedBox(width: 6), Expanded(child: Align(alignment: Alignment.centerRight, child: badge == null ? const SizedBox.shrink() : AppBadge(badge!)))]),
+        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
+      ]),
     );
   }
 }

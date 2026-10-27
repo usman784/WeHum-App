@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/motion.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/data/models/stitch.dart';
 import '../../../core/data/models/today.dart';
@@ -59,7 +60,7 @@ class TodayPage extends StatelessWidget {
                   if (d?.dailyMessage != null) ...[const SizedBox(height: 12), _NoteCard(m: d!.dailyMessage!)],
                   const SizedBox(height: 12),
                   if (streak != null) _StreakCard(streak: streak, minutes: d?.progress.minutes ?? 0) else _ProgressCard(p: d?.progress ?? const WeekProgress()),
-                  if (d?.program != null) ...[const SizedBox(height: 12), _ProgramCard(card: d!.program)],
+                  if (d?.program != null && ConfigService.shipped('programs')) ...[const SizedBox(height: 12), _ProgramCard(card: d!.program)],
                   const SizedBox(height: 22),
                   Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [Expanded(child: Text('Quick accelerators', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20))), Text('ON DEMAND', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))]),
                   const SizedBox(height: 10),

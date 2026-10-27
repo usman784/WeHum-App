@@ -146,7 +146,9 @@ class TestEnv {
   late MockAuthRepository authRepo;
   late FakeSocialAuth social;
 
-  static Future<TestEnv> create({bool member = false, bool onboardingDone = false, Map<String, Object?> prefs = const {}}) async {
+  static Future<TestEnv> create({bool member = false, bool onboardingDone = false, Map<String, Object?> prefs = const {}, bool v1 = false}) async {
+    // the suite covers the built screens; `v1: true` checks what this version ships as coming soon
+    ConfigService.comingSoonInV1..clear()..addAll(v1 ? const {'challenges', 'programs'} : const <String>{});
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     await loadAppFonts();
     Get.reset();
