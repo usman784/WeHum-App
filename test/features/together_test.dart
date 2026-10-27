@@ -330,6 +330,8 @@ void main() {
       e.socketServer.serverPushes('live:agg', {'total': 412, 'countries': 37, 'top': [], 'quiet': false, 'meditatedToday': 1280, 'vibration': 70, 'at': 1});
       await afterPush(t);
       await t.scrollUntilVisible(find.byKey(const Key('together-vibration')), 200, scrollable: find.byType(Scrollable).first);
+      await Scrollable.ensureVisible(t.element(find.byKey(const Key('together-vibration'))), alignment: .5); // middle of the screen, clear of the bottom nav
+      await t.pump();
       expect(find.text('WORLD VIBRATION'), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('together-vibration')), matching: find.text('Strong and rising')), findsOneWidget);
       await t.tap(find.byKey(const Key('together-vibration')));

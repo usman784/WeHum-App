@@ -150,7 +150,7 @@ class _Footer extends StatelessWidget {
               Row(children: [
                 Expanded(child: OutlineButton('Save', key: const Key('byo-save'), loading: ctrl.busy.value, onPressed: () => _askName(context, ctrl))),
                 const SizedBox(width: 10),
-                Expanded(flex: 2, child: PrimaryButton('Build & meditate now', key: const Key('byo-build'), icon: Icons.play_arrow_rounded, onPressed: ctrl.build)),
+                Expanded(flex: 2, child: PrimaryButton('Build & meditate now', key: const Key('byo-build'), onPressed: ctrl.build)),
               ]),
             ])),
       ),

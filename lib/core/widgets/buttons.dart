@@ -27,7 +27,8 @@ class _BtnBase extends StatelessWidget {
             if (icon != null) ...[Icon(icon, size: 20, color: fg), const SizedBox(width: 8)],
             Flexible(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Text(label, textAlign: TextAlign.center, style: AppText.button.copyWith(color: fg)),
+                // one line, scaled down when narrow (two buttons side by side, small phones, large text): every button keeps the same height
+                FittedBox(fit: BoxFit.scaleDown, child: Text(label, maxLines: 1, softWrap: false, textAlign: TextAlign.center, style: AppText.button.copyWith(color: fg))),
                 if (sub != null) Text(sub!, textAlign: TextAlign.center, style: AppText.micro.copyWith(color: fg.withValues(alpha: .8), fontWeight: FontWeight.w500)),
               ]),
             ),

@@ -317,7 +317,7 @@ class TogetherPage extends StatelessWidget {
                       PrimaryButton(g.state == GroupPhase.live ? 'Join the meditation now' : 'Go to the lobby', key: const Key('go-lobby'), onPressed: () => Get.toNamed(AppRoutes.groupMeditationLobby)),
                       const SizedBox(height: 8),
                       Row(children: [
-                        Expanded(child: OutlineButton('Meditation details', key: const Key('next-sit'), onPressed: () => Get.toNamed(AppRoutes.nextSit))),
+                        Expanded(child: OutlineButton('Details', key: const Key('next-sit'), onPressed: () => Get.toNamed(AppRoutes.nextSit))),
                         const SizedBox(width: 10),
                         Expanded(child: OutlineButton(ctrl.reminder.value ? 'Reminder on' : 'Notify me', key: const Key('together-remind'), onPressed: ctrl.toggleReminder)),
                       ]),
@@ -537,7 +537,7 @@ class LobbyPage extends StatelessWidget {
                   PrimaryButton('You’re in the lobby', key: const Key('wait-lobby'), icon: Icons.lock_outline_rounded, onPressed: () {}),
                   const SizedBox(height: 10),
                   Row(children: [
-                    Expanded(child: OutlineButton('Add to calendar', icon: Icons.event_outlined, onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group meditation', description: g.title ?? 'Meditation of the Day', startDate: startsAt.toLocal(), endDate: startsAt.toLocal().add(Duration(minutes: g.lengthMin)))))),
+                    Expanded(child: OutlineButton('Add to calendar', onPressed: () => Add2Calendar.addEvent2Cal(Event(title: 'WeHum group meditation', description: g.title ?? 'Meditation of the Day', startDate: startsAt.toLocal(), endDate: startsAt.toLocal().add(Duration(minutes: g.lengthMin)))))),
                     const SizedBox(width: 10),
                     Expanded(child: OutlineButton('Leave the lobby', key: const Key('leave-lobby'), onPressed: () {
                       ctrl.leave();
