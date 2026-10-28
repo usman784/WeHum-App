@@ -139,7 +139,7 @@ class YouPage extends StatelessWidget {
           // ── settings & offline
           const _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
           PreferenceRows(access: ctrl.access, challengesOn: ctrl.challengesOn, heartRateOn: ctrl.heartRateOn),
-          if (!guest || p != null) SignOutButton(busy: ctrl.signingOut.value, onConfirmed: ctrl.signOut),
+          if (!guest) SignOutButton(busy: ctrl.signingOut.value, onConfirmed: ctrl.signOut), // nothing to sign out of before an account
         ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
       }),
     );
@@ -200,8 +200,7 @@ class SettingsPage extends StatelessWidget {
       title: 'Settings',
       body: Obx(() => ListView(padding: const EdgeInsets.all(Gap.gutter), children: [
             PreferenceRows(access: ctrl.access, challengesOn: ctrl.challengesOn, heartRateOn: ctrl.heartRateOn),
-            const SizedBox(height: 14),
-            SignOutButton(busy: ctrl.signingOut.value, onConfirmed: ctrl.signOut),
+            if (!ctrl.access.isGuest.value) ...[const SizedBox(height: 14), SignOutButton(busy: ctrl.signingOut.value, onConfirmed: ctrl.signOut)],
           ])),
     );
   }

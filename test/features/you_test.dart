@@ -48,6 +48,8 @@ void main() {
     expect(find.text('CURRENT'), findsNothing);
     expect(find.text('WEEKLY CADENCE (MINUTES)'), findsNothing);
     expect(find.text('Lifetime volume & practice depth'), findsNothing);
+    await t.scrollUntilVisible(find.byKey(const Key('r-help')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const Key('sign-out')), findsNothing); // nothing to sign out of
     expect(Get.find<YouController>().week.value, isNull); // not even asked for
     expect(Get.find<YouController>().lifetime.value, isNull);
     Get.toNamed(AppRoutes.yourProgress); // a link to the progress page
