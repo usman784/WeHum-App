@@ -51,6 +51,10 @@ class YouController extends GetxController {
       profile.value = await _me.me();
       access.setFromProfile(profile.value!);
     } catch (_) {}
+    if (access.isGuest.value) {
+      week.value = lifetime.value = null; // no progress before an account
+      return;
+    }
     try {
       week.value = await _me.progress(Period.week);
       lifetime.value = await _me.progress(Period.all);

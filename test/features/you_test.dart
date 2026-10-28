@@ -38,11 +38,33 @@ Future<void> tapSave(WidgetTester t) async {
 }
 
 void main() {
-  testWidgets('54 You: name, plan, stats, rows with COMING SOON badges; guests get the Save progress card', (t) async {
+  testWidgets('54 You as a guest: the Save progress card, and no progress or metrics at all', (t) async {
     final e = await open(t, AppRoutes.you);
+    expect(find.byKey(const Key('guest-card')), findsOneWidget); // the mock profile is a guest
+    expect(find.byKey(const Key('guest-progress-note')), findsOneWidget);
+    for (final k in ['streak-block', 'week-chart', 'week-minutes', 'hr-shift', 'r-milestones']) {
+      expect(find.byKey(Key(k)), findsNothing, reason: k);
+    }
+    expect(find.text('CURRENT'), findsNothing);
+    expect(find.text('WEEKLY CADENCE (MINUTES)'), findsNothing);
+    expect(find.text('Lifetime volume & practice depth'), findsNothing);
+    expect(Get.find<YouController>().week.value, isNull); // not even asked for
+    expect(Get.find<YouController>().lifetime.value, isNull);
+    Get.toNamed(AppRoutes.yourProgress); // a link to the progress page
+    await settle(t);
+    expect(find.byKey(const Key('account-only')), findsOneWidget);
+    Get.offAllNamed(AppRoutes.milestones);
+    await settle(t);
+    expect(find.byKey(const Key('account-only')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('54 You: name, plan, stats, rows with COMING SOON badges (an account)', (t) async {
+    final e = await open(t, AppRoutes.you, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
     expect(find.byKey(const Key('you-name')), findsOneWidget);
     expect(find.text('Marcus'), findsWidgets);
-    expect(find.byKey(const Key('guest-card')), findsOneWidget); // the mock profile is a guest
+    expect(find.byKey(const Key('guest-card')), findsNothing);
     expect(find.byKey(const Key('streak-block')), findsOneWidget);
     expect(find.text('CURRENT'), findsOneWidget);
     expect(find.text('WEEKLY CADENCE (MINUTES)'), findsOneWidget);
@@ -116,7 +138,7 @@ void main() {
   });
 
   testWidgets('55 progress: week dots, tabs switch period, data cached for offline', (t) async {
-    final e = await open(t, AppRoutes.yourProgress);
+    final e = await open(t, AppRoutes.yourProgress, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
     expect(find.byKey(const Key('days-big')), findsOneWidget);
     expect(find.text('4'), findsWidgets);
     expect(find.text('MINUTES'), findsOneWidget);

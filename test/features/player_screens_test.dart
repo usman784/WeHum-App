@@ -249,6 +249,25 @@ void main() {
     });
   });
 
+  testWidgets('45 a guest sees this meditation only: no week, total or streak, and a note to create an account', (t) async {
+    phone(t);
+    t.view.physicalSize = const Size(1170, 4800); // the whole payoff is built
+    final e = await TestEnv.create(onboardingDone: true); // the mock session is a guest
+    final rec = MeditationRecord(id: 'm-g', kind: 'motd', sessionId: sid, startedAt: DateTime.utc(2026, 10, 7, 8), endedAt: DateTime.utc(2026, 10, 7, 8, 5), durationSec: 300, completed: true);
+    await t.pumpWidget(e.app());
+    await settle(t);
+    Get.toNamed(AppRoutes.meditationCompletePayoff, arguments: CompleteArgs(player: motd(), record: rec, counted: true));
+    await settle(t);
+    await settle(t);
+    expect(find.text('DURATION'), findsOneWidget);
+    expect(find.byKey(const Key('complete-guest-note')), findsOneWidget);
+    expect(find.text('THIS WEEK'), findsNothing);
+    expect(find.text('TOTAL MIN'), findsNothing);
+    expect(find.byKey(const Key('complete-streak')), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('45 free listener sees the locked dedication card (Members can write dedications)', (t) async {
     phone(t);
     final e = await TestEnv.create(onboardingDone: true);

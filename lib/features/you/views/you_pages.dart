@@ -89,17 +89,17 @@ class YouPage extends StatelessWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Save your progress', style: AppText.navTitle.copyWith(color: c.textPrimary)),
                 const SizedBox(height: 4),
-                Text('Keep your minutes safe and use ${brandName()} on another phone.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                Text('Create an account to see your meditations, streaks and minutes. What you meditate now is kept for you.', key: const Key('guest-progress-note'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                 const SizedBox(height: 12),
                 Row(children: [Expanded(child: PrimaryButton('Save progress', onPressed: () => Get.toNamed(ctrl.access.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser))), const SizedBox(width: 10), Expanded(child: OutlineButton('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn)))]),
               ]),
             ),
-          // ── streak
-          if (ctrl.streak != null) ...[
+          // ── progress and metrics: accounts only (a guest's meditations are kept and appear once they sign up)
+          if (!guest && ctrl.streak != null) ...[
             const _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
             _StreakBlock(streak: ctrl.streak!),
           ],
-          AppCard(
+          if (!guest) AppCard(
             key: const Key('week-chart'), onTap: () => Get.toNamed(AppRoutes.yourProgress), padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
@@ -112,18 +112,18 @@ class YouPage extends StatelessWidget {
             ]),
           ),
           // ── lifetime
-          const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
-          Row(children: [
+          if (!guest) const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
+          if (!guest) Row(children: [
             Expanded(child: _Metric('MEDITATIONS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
           ]),
-          Row(children: [
+          if (!guest) Row(children: [
             Expanded(child: _Metric('GROUP MEDITATIONS', '${l?.together ?? life?.together ?? 0}', l == null ? 'Meditated live with others' : 'Meditated live with others (${l.togetherPct}%)', Icons.groups_2_outlined)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per meditation', Icons.donut_large_rounded)),
           ]),
-          if (l?.hrShiftBpm != null)
+          if (!guest && l?.hrShiftBpm != null)
             AppCard(
               key: const Key('hr-shift'),
               child: Row(children: [
@@ -163,7 +163,7 @@ class PreferenceRows extends StatelessWidget {
             ('r-notifications', 'Notifications', 'Messages from Raphael and group meditations', AppRoutes.notifications, null),
             if (heartRateOn) ('r-heart', 'Heart rate', 'Watch, band or chest strap', AppRoutes.heartRate, null),
             ('r-challenges', 'Challenges', 'Cohort sprints with a grace day', AppRoutes.challenges, !challengesOn),
-            ('r-milestones', 'Milestones', 'Badges for first meditation, streaks, minutes and group meditations', AppRoutes.milestones, true),
+            if (!access.isGuest.value) ('r-milestones', 'Milestones', 'Badges for first meditation, streaks, minutes and group meditations', AppRoutes.milestones, true),
             ('r-breath', 'Breathwork', 'Guided breathing lessons', AppRoutes.breathwork, true),
             ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
             ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),

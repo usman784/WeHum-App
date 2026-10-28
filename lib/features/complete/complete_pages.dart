@@ -92,13 +92,19 @@ class CompletePage extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 14),
-                  Row(children: [
-                    Expanded(child: _Stat(value: '${ctrl.minutes}:00', label: 'DURATION')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _Stat(value: '${ctrl.daysThisWeek} ${ctrl.daysThisWeek == 1 ? 'day' : 'days'}', label: 'THIS WEEK')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _Stat(value: '${ctrl.totalMinutes}', label: 'TOTAL MIN')),
-                  ]),
+                  if (ctrl.access.isGuest.value) ...[
+                    // a guest sees this meditation only; their progress is kept and appears once they sign up
+                    _Stat(value: '${ctrl.minutes}:00', label: 'DURATION'),
+                    const SizedBox(height: 10),
+                    Text('Create an account to keep track of your meditations, streaks and minutes.', key: const Key('complete-guest-note'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+                  ] else
+                    Row(children: [
+                      Expanded(child: _Stat(value: '${ctrl.minutes}:00', label: 'DURATION')),
+                      const SizedBox(width: 8),
+                      Expanded(child: _Stat(value: '${ctrl.daysThisWeek} ${ctrl.daysThisWeek == 1 ? 'day' : 'days'}', label: 'THIS WEEK')),
+                      const SizedBox(width: 8),
+                      Expanded(child: _Stat(value: '${ctrl.totalMinutes}', label: 'TOTAL MIN')),
+                    ]),
                 ]),
               ),
               if (st != null)

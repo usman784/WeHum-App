@@ -59,7 +59,8 @@ class TodayPage extends StatelessWidget {
                   if (!belts.isEmpty) ...[const SizedBox(height: 16), HeatmapCard(belts: belts, onExplore: () => Get.toNamed(AppRoutes.worldMapWorldVibration))],
                   if (d?.dailyMessage != null) ...[const SizedBox(height: 12), _NoteCard(m: d!.dailyMessage!)],
                   const SizedBox(height: 12),
-                  if (streak != null) _StreakCard(streak: streak, minutes: d?.progress.minutes ?? 0) else _ProgressCard(p: d?.progress ?? const WeekProgress()),
+                  if (ctrl.access.isGuest.value) const SizedBox.shrink() // no progress before an account
+                  else if (streak != null) _StreakCard(streak: streak, minutes: d?.progress.minutes ?? 0) else _ProgressCard(p: d?.progress ?? const WeekProgress()),
                   if (d?.program != null && ConfigService.shipped('programs')) ...[const SizedBox(height: 12), _ProgramCard(card: d!.program)],
                   const SizedBox(height: 22),
                   Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [Expanded(child: Text('Quick accelerators', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20))), Text('ON DEMAND', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))]),

@@ -69,7 +69,7 @@ class CompleteController extends GetxController {
 
   /// A busy room (the heat-map variant) or a quiet one (the compact summary).
   bool get busy => (result?.togetherPeople ?? live.agg.value?.total ?? 0) > 1;
-  StreakInfo? get streak => result?.streak;
+  StreakInfo? get streak => access.isGuest.value ? null : result?.streak;
   bool get streakExtended => result?.streakExtended ?? false;
   int get finishers => result?.finishers ?? 0;
   /// People sitting now by belt: the live numbers (they keep moving while this screen is open), else the ones the server sent with the result.
@@ -136,6 +136,7 @@ class CompleteController extends GetxController {
   }
 
   Future<void> _loadStats() async {
+    if (access.isGuest.value) return; // no progress before an account
     final me = Get.find<MeRepository>();
     try {
       progress.value = await me.progress(Period.week);
@@ -159,7 +160,7 @@ String groupNumberOf(int v) => v.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d
 
 /// Shared by 45 and 46 for the stats shown on the card.
 extension CompleteStats on CompleteController {
-  int get daysThisWeek => progress.value?.daysThisWeek.where((d) => d).length ?? 0;
+  int get daysThisWeek => access.isGuest.value ? 0 : progress.value?.daysThisWeek.where((d) => d).length ?? 0;
   int get totalMinutes => lifetime.value?.minutes ?? minutes;
   String firstDedication() => '';
 }

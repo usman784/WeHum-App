@@ -23,9 +23,10 @@ Future<void> settle(WidgetTester t) async {
   await t.pump(const Duration(milliseconds: 600));
 }
 
-Future<TestEnv> openToday(WidgetTester t, {bool member = true, Map<String, Object?> prefs = const {'first_name': 'Marcus'}}) async {
+Future<TestEnv> openToday(WidgetTester t, {bool member = true, Map<String, Object?> prefs = const {'first_name': 'Marcus'}, bool account = false}) async {
   phone(t);
   final e = await TestEnv.create(member: member, onboardingDone: true, prefs: prefs);
+  if (account) e.access.isGuest.value = false;
   await Get.find<CatalogService>().load();
   await t.pumpWidget(e.app(initial: member ? AppRoutes.todayMember : AppRoutes.todayFree));
   await settle(t);
@@ -51,8 +52,17 @@ void main() {
     });
   });
 
-  testWidgets('22 member Today: greeting, hero, lengths, program, presence, note, streak, accelerators', (t) async {
+  testWidgets('Today as a guest: no streak or progress card (test 22 shows it for an account)', (t) async {
     final e = await openToday(t);
+    expect(find.byKey(const Key('greeting')), findsOneWidget);
+    expect(find.byKey(const Key('streak-card')), findsNothing);
+    expect(find.byKey(const Key('progress-card')), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('22 member Today: greeting, hero, lengths, program, presence, note, streak, accelerators', (t) async {
+    final e = await openToday(t, account: true);
     expect(find.byKey(const Key('greeting')), findsOneWidget);
     expect(find.textContaining('Marcus'), findsWidgets);
     expect(find.text('Steady Under Pressure'), findsOneWidget);

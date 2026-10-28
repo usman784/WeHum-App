@@ -168,7 +168,7 @@ void main() {
     });
 
     testWidgets('Your progress: Together is called Group meditations and says what it counts', (t) async {
-      final e = await open(t, AppRoutes.yourProgress);
+      final e = await open(t, AppRoutes.yourProgress, account: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
       expect(find.text('GROUP MEDITATIONS'), findsOneWidget);
       expect(find.text('Meditated live with others'), findsOneWidget);
       expect(find.text('TOGETHER'), findsNothing);

@@ -94,7 +94,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.crisisDirectory, page: () => const CrisisDirectoryPage()),
     GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next meditation', child: NextSitPage())),
     GetPage(name: AppRoutes.you, page: () => const YouPage(), transition: Transition.noTransition, transitionDuration: Duration.zero), // bottom-nav tabs switch without a slide
-    GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),
+    GetPage(name: AppRoutes.yourProgress, page: () => const AccountOnly(title: 'Your progress', body: AccountOnly.progressBody, child: ProgressPage())),
     GetPage(name: AppRoutes.editProfile, page: () => const AccountOnly(title: 'Edit profile', child: EditProfilePage())),
     GetPage(name: AppRoutes.reminders, page: () => const RemindersPage()),
     GetPage(name: AppRoutes.downloads, page: () => const DownloadsPage()),
@@ -114,7 +114,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.gratitude, page: () => const GratitudePage()),
     GetPage(name: AppRoutes.breathwork, page: () => const BreathworkPage()),
     GetPage(name: AppRoutes.breathPattern, page: () => const BreathPatternPage()),
-    GetPage(name: AppRoutes.milestones, page: () => const MilestonesPage()),
+    GetPage(name: AppRoutes.milestones, page: () => const AccountOnly(title: 'Milestones', body: AccountOnly.progressBody, child: MilestonesPage())),
     GetPage(name: AppRoutes.intent, page: () => const IntentPage()),
     GetPage(name: AppRoutes.maintenance, page: () => const MaintenancePage()),
     GetPage(name: AppRoutes.notFound, page: () => const NotFoundPage()),
@@ -137,16 +137,18 @@ class MembersOnly extends StatelessWidget {
 /// Screens that change a person's public identity (photo, username, bio): accounts only. A guest who lands here (deep
 /// link, stale route) is asked to save their progress first; the screen opens by itself once they have an account.
 class AccountOnly extends StatelessWidget {
-  const AccountOnly({super.key, required this.title, required this.child});
-  final String title;
+  const AccountOnly({super.key, required this.title, required this.child, this.body = profileBody});
+  final String title, body;
   final Widget child;
+  static const profileBody = 'Your photo, name, username and bio belong to an account. Save your progress or log in to edit them.';
+  static const progressBody = 'Your meditations, streaks and minutes are kept with an account. Save your progress or log in to see them.';
   @override
   Widget build(BuildContext context) => Obx(() {
         final a = Get.find<AccessService>();
         if (!a.isGuest.value) return child;
         return AppScaffold(title: title, body: EmptyState(
           key: const Key('account-only'), icon: Icons.person_outline_rounded, title: 'Create an account first',
-          body: 'Your photo, name, username and bio belong to an account. Save your progress or log in to edit them.',
+          body: body,
           ctaLabel: 'Save progress', onCta: () => Get.offNamed<void>(a.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser),
         ));
       });
