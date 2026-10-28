@@ -17,7 +17,8 @@ const splashLogo = 128.0;
 const splashLogoAsset = 'assets/brand/logo_splash.png';
 
 /// 01 Splash: starts as the native launch screen (the bundled logo, never one from the network), then the logo
-/// rises gently and "WeHum by Raphael Reiter" fades in; it stays at least [SplashController.minShow] and fades out
+/// stays exactly where the launch screen drew it (iOS removes its launch screen a little later than our first frame,
+/// so a moving logo would show twice) while "WeHum by Raphael Reiter" fades in below; it stays at least [SplashController.minShow] and fades out
 /// before the first screen. Failure → retry (the cached app still opens when a session exists).
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -36,8 +37,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     if (_started) return;
     _started = true;
     // the native launch screen stays until the logo is decoded, so the first Flutter frame already shows it
-    precacheImage(const AssetImage(splashLogoAsset), context).whenComplete(() {
+    precacheImage(const AssetImage(splashLogoAsset), context).whenComplete(() async {
       LaunchScreen.release();
+      // the name fades in once our first frame is on screen and the launch screen has had time to go
+      await WidgetsBinding.instance.waitUntilFirstFrameRasterized;
+      await Future<void>.delayed(const Duration(milliseconds: 300));
       if (mounted) _intro.forward();
     });
   }
@@ -50,29 +54,30 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final rise = CurvedAnimation(parent: _intro, curve: const Interval(.15, .75, curve: Curves.easeInOutCubic));
-    final text = CurvedAnimation(parent: _intro, curve: const Interval(.45, 1, curve: Curves.easeOut));
+    final text = CurvedAnimation(parent: _intro, curve: Curves.easeOut);
     return Scaffold(
       backgroundColor: splashBg,
       body: Obx(() => AnimatedOpacity(
-            opacity: ctrl.leaving.value ? 0 : 1, duration: SplashController.fadeOut, curve: Curves.easeIn,
-            child: Center(
-              child: AnimatedBuilder(
-                animation: _intro,
-                builder: (context, _) {
-                  final failed = ctrl.failure.value;
-                  return Column(mainAxisSize: MainAxisSize.min, children: [
-                    // the logo starts exactly where the native splash drew it, then moves up to make room for the name
-                    Transform.translate(
-                      offset: Offset(0, 74 * (1 - rise.value)),
-                      child: Transform.scale(scale: 1 - .25 * rise.value, child: Image.asset(splashLogoAsset, width: splashLogo, height: splashLogo, gaplessPlayback: true)),
-                    ),
-                    Opacity(
+            opacity: ctrl.leaving.value ? 0 : 1,
+            duration: SplashController.fadeOut,
+            curve: Curves.easeIn,
+            child: AnimatedBuilder(
+              animation: _intro,
+              builder: (context, _) {
+                final failed = ctrl.failure.value;
+                return Stack(fit: StackFit.expand, children: [
+                  // exactly where (and as big as) the launch screen draws it: the hand-over cannot be seen
+                  Center(child: Image.asset(splashLogoAsset, width: splashLogo, height: splashLogo, gaplessPlayback: true)),
+                  // the name below the logo; its own layout never moves the logo
+                  Positioned(
+                    top: MediaQuery.sizeOf(context).height / 2 + splashLogo / 2 + 20,
+                    left: 0,
+                    right: 0,
+                    child: Opacity(
                       opacity: text.value,
                       child: Transform.translate(
                         offset: Offset(0, 12 * (1 - text.value)),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          const SizedBox(height: 8),
                           Text(brandName(), style: AppText.display.copyWith(color: Colors.white)),
                           const SizedBox(height: 4),
                           Text('by Raphael Reiter', style: AppText.bodyLarge.copyWith(color: const Color(0xFFA1A1AA))),
@@ -82,7 +87,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                             child: failed == null
                                 ? null
                                 : Column(children: [
-                                    Text(failed == ErrorCode.network || failed == ErrorCode.timeout ? "You're offline" : 'Something went wrong', style: AppText.body.copyWith(color: const Color(0xFFA1A1AA))),
+                                    Text(failed == ErrorCode.network || failed == ErrorCode.timeout ? "You're offline" : 'Something went wrong',
+                                        style: AppText.body.copyWith(color: const Color(0xFFA1A1AA))),
                                     const SizedBox(height: 12),
                                     Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: OutlineButton('Try again', key: const Key('splash-retry'), onPressed: ctrl.start)),
                                   ]),
@@ -90,9 +96,9 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                         ]),
                       ),
                     ),
-                  ]);
-                },
-              ),
+                  ),
+                ]);
+              },
             ),
           )),
     );
