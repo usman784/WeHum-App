@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -16,13 +19,22 @@ Future<void> settle(WidgetTester t) async {
   await t.pump(const Duration(milliseconds: 600));
 }
 
-Future<TestEnv> open(WidgetTester t, String route, {bool member = true, MeProfile? profile}) async {
+Future<TestEnv> open(WidgetTester t, String route, {bool member = true, MeProfile? profile, bool account = false}) async {
   phone(t);
   final e = await TestEnv.create(member: member, onboardingDone: true, prefs: const {'first_name': 'Marcus'});
   if (profile != null) e.me.profile = profile;
+  if (account) e.access.isGuest.value = false;
   await t.pumpWidget(e.app(initial: route));
   await settle(t);
   return e;
+}
+
+/// Scrolls to Save and taps it once the layout is still (the username chips grow in with an animation).
+Future<void> tapSave(WidgetTester t) async {
+  await t.pump(const Duration(milliseconds: 300));
+  await t.scrollUntilVisible(find.byKey(const Key('profile-save')), 200, scrollable: find.byType(Scrollable).first);
+  await t.pump(const Duration(milliseconds: 300));
+  await t.tap(find.byKey(const Key('profile-save')));
 }
 
 void main() {
@@ -116,16 +128,87 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('56 edit profile is for accounts only: a guest sees no Edit link and the screen asks for an account', (t) async {
+    final e = await open(t, AppRoutes.you);
+    expect(find.byKey(const Key('guest-card')), findsOneWidget);
+    expect(find.byKey(const Key('you-edit')), findsNothing);
+    Get.toNamed(AppRoutes.editProfile); // a deep link or a stale route
+    await settle(t);
+    expect(find.byKey(const Key('account-only')), findsOneWidget);
+    expect(find.byKey(const Key('profile-save')), findsNothing);
+    expect(find.byKey(const Key('profile-photo')), findsNothing);
+    e.access.isGuest.value = false; // signed up meanwhile: the screen opens by itself
+    await settle(t);
+    expect(find.byKey(const Key('profile-save')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('54 → 56 → 54: back from Edit profile, the You tab shows the new name at once', (t) async {
+    final e = await open(t, AppRoutes.you, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    await t.tap(find.byKey(const Key('you-edit')));
+    await settle(t);
+    await t.enterText(find.byKey(const Key('profile-first')), 'Aurelia');
+    await tapSave(t);
+    await settle(t);
+    Get.back<void>();
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.you);
+    expect(find.text('Aurelia'), findsWidgets);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('56 edit profile: an account without a username sees suggestions, no green tick, and must pick one', (t) async {
+    final e = await open(t, AppRoutes.editProfile, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', email: 'm@example.com', isGuest: false));
+    expect(find.byKey(const Key('username-ok')), findsNothing);
+    expect(find.textContaining('Please enter'), findsNothing); // no field errors before Save
+    expect(find.byWidgetPredicate((w) => w is ActionChip), findsWidgets);
+    await tapSave(t);
+    await settle(t);
+    expect(find.byKey(const Key('profile-error')), findsOneWidget);
+    expect(find.textContaining('Pick a username'), findsOneWidget);
+    expect(e.me.profile.username, isNull);
+    await t.dragUntilVisible(find.byWidgetPredicate((w) => w is ActionChip).first, find.byType(Scrollable).first, const Offset(0, 200));
+    await t.pump(const Duration(milliseconds: 300));
+    await t.tap(find.byWidgetPredicate((w) => w is ActionChip).first);
+    await t.pump(const Duration(milliseconds: 600));
+    await t.pump();
+    expect(find.byKey(const Key('username-ok')), findsOneWidget);
+    await tapSave(t);
+    await settle(t);
+    expect(e.me.profile.username, isNotNull);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('56 edit profile: photos of any size or format are sent as JPEG/PNG under the server limit', (t) async {
+    await t.runAsync(() async {
+      final small = Uint8List.fromList([0xff, 0xd8, 0xff, 0xe0, ...List.filled(5000, 1)]);
+      expect((await EditProfileController.fitPhoto(small)).$2, 'image/jpeg'); // already fine: sent as is
+      // a noisy 900×900 PNG (several MB) is redrawn smaller until it fits
+      final rec = ui.PictureRecorder();
+      final canvas = ui.Canvas(rec);
+      final rnd = math.Random(1);
+      for (var i = 0; i < 9000; i++) {
+        canvas.drawRect(ui.Rect.fromLTWH(rnd.nextDouble() * 900, rnd.nextDouble() * 900, 9, 9), ui.Paint()..color = ui.Color(0xff000000 | rnd.nextInt(0xffffff)));
+      }
+      final img = await rec.endRecording().toImage(900, 900);
+      final big = (await img.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+      final (bytes, type) = await EditProfileController.fitPhoto(big);
+      expect(type, 'image/png');
+      expect(bytes.length, lessThanOrEqualTo(EditProfileController.maxPhotoBytes));
+    });
+  });
+
   testWidgets('56 edit profile: validation, save to the server, theme applied at once', (t) async {
-    final e = await open(t, AppRoutes.editProfile);
+    final e = await open(t, AppRoutes.editProfile, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
     await t.enterText(find.byKey(const Key('profile-first')), '  ');
-    await t.ensureVisible(find.byKey(const Key('profile-save')));
-    await t.tap(find.byKey(const Key('profile-save')));
+    await tapSave(t);
     await t.pump();
     expect(find.text('Please enter your first name'), findsOneWidget);
     await t.enterText(find.byKey(const Key('profile-first')), 'Anne-Marie');
-    await t.ensureVisible(find.byKey(const Key('profile-save')));
-    await t.tap(find.byKey(const Key('profile-save')));
+    await tapSave(t);
     await settle(t);
     expect(e.me.profile.firstName, 'Anne-Marie');
     await t.tap(find.text('Light'));
@@ -137,14 +220,13 @@ void main() {
   });
 
   testWidgets('56 edit profile: last name, username once per 7 days, the e-mail is shown but locked, photo sheet', (t) async {
-    final e = await open(t, AppRoutes.editProfile, profile: MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', email: 'm@example.com', isGuest: false, providers: const ['google'], usernameNextChangeAt: DateTime.now().add(const Duration(days: 3))));
+    final e = await open(t, AppRoutes.editProfile, profile: MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', email: 'm@example.com', isGuest: false, providers: const ['google'], usernameNextChangeAt: DateTime.now().add(const Duration(days: 3))), account: true);
     expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
     expect(find.text('m@example.com'), findsOneWidget);
     expect(find.textContaining('You can change your username again on'), findsOneWidget);
     expect((t.widget(find.byKey(const Key('profile-username'))) as TextFormField).enabled, isFalse);
     await t.enterText(find.byKey(const Key('profile-last')), 'Aurelius');
-    await t.ensureVisible(find.byKey(const Key('profile-save')));
-    await t.tap(find.byKey(const Key('profile-save')));
+    await tapSave(t);
     await settle(t);
     expect(e.me.profile.lastName, 'Aurelius');
     expect(e.me.profile.username, 'marcus.sits'); // locked: unchanged
@@ -157,21 +239,20 @@ void main() {
   });
 
   testWidgets('56 edit profile: a free username can be changed; a taken one is refused', (t) async {
-    final e = await open(t, AppRoutes.editProfile, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    final e = await open(t, AppRoutes.editProfile, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false), account: true);
+    expect(find.byWidgetPredicate((w) => w is ActionChip), findsNothing); // a saved username: no suggestion chips until it is edited
     final f = find.byKey(const Key('profile-username'));
     await t.enterText(f, 'raphael');
     await t.pump(const Duration(milliseconds: 600));
     await t.pump();
     expect(find.text('That username is taken'), findsOneWidget);
-    await t.ensureVisible(find.byKey(const Key('profile-save')));
-    await t.tap(find.byKey(const Key('profile-save')));
+    await tapSave(t);
     await settle(t);
     expect(e.me.profile.username, 'marcus.sits');
     await t.enterText(f, 'marcus_calm');
     await t.pump(const Duration(milliseconds: 600));
     await t.pump();
-    await t.ensureVisible(find.byKey(const Key('profile-save')));
-    await t.tap(find.byKey(const Key('profile-save')));
+    await tapSave(t);
     await settle(t);
     expect(e.me.profile.username, 'marcus_calm');
     expect(e.me.profile.usernameNextChangeAt, isNotNull);

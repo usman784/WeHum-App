@@ -67,7 +67,7 @@ class YouPage extends StatelessWidget {
                     Text(label, key: const Key('you-plan'), style: AppText.overline.copyWith(color: c.emberText, fontSize: 10)),
                   ])),
                 ])),
-                TextLink('Edit', onPressed: () => Get.toNamed(AppRoutes.editProfile)),
+                if (!guest) TextLink('Edit', key: const Key('you-edit'), onPressed: () async { await Get.toNamed<void>(AppRoutes.editProfile); await ctrl.load(); }), // guests save their progress first (card below); back from editing shows the new photo and name
               ]),
               if (live > 0) ...[
                 const SizedBox(height: 14),
@@ -429,16 +429,17 @@ class EditProfilePage extends StatelessWidget {
             )),
             const SizedBox(height: 6),
             Center(child: TextLink('Change photo', onPressed: () => _photoSheet(context, ctrl))),
+            if (ctrl.photoError.value != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(ctrl.photoError.value!, key: const Key('profile-photo-error'), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.dangerText))),
             const SizedBox(height: 14),
             TextFormField(key: const Key('profile-first'), controller: ctrl.firstField, onChanged: (v) {
               ctrl.first.value = v;
               ctrl.saved.value = false;
-            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'First name', error: ctrl.error.value != null && ctrl.firstError != null ? ctrl.error.value : null)),
+            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'First name', error: ctrl.triedSave.value ? ctrl.firstError : null)),
             const SizedBox(height: 14),
             TextFormField(key: const Key('profile-last'), controller: ctrl.lastField, onChanged: (v) {
               ctrl.last.value = v;
               ctrl.saved.value = false;
-            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'Last name (optional)', error: ctrl.lastError)),
+            }, textCapitalization: TextCapitalization.words, style: AppText.bodyLarge.copyWith(color: c.textPrimary), decoration: _dec(c, 'Last name (optional)', error: ctrl.triedSave.value ? ctrl.lastError : null)),
             const SizedBox(height: 14),
             TextFormField(
               key: const Key('profile-bio'), controller: ctrl.bioField, maxLength: 200, maxLines: 4, minLines: 2, textCapitalization: TextCapitalization.sentences,
@@ -471,7 +472,7 @@ class EditProfilePage extends StatelessWidget {
             Text('THEME', style: AppText.overline.copyWith(color: c.textTertiary)),
             const SizedBox(height: 8),
             SegmentedControl<String>(options: const ['dark', 'light', 'system'], value: ctrl.theme.value, onChanged: ctrl.setTheme, labelOf: (v) => '${v[0].toUpperCase()}${v.substring(1)}'),
-            if (ctrl.error.value != null && ctrl.firstError == null) Padding(padding: const EdgeInsets.only(top: 14), child: Text(ctrl.error.value!, key: const Key('profile-error'), style: AppText.bodySmall.copyWith(color: c.dangerText))),
+            if (ctrl.error.value != null) Padding(padding: const EdgeInsets.only(top: 14), child: Text(ctrl.error.value!, key: const Key('profile-error'), style: AppText.bodySmall.copyWith(color: c.dangerText))),
             const SizedBox(height: 24),
             PrimaryButton(ctrl.saved.value ? 'Saved' : 'Save', key: const Key('profile-save'), loading: ctrl.busy.value, onPressed: ctrl.save),
           ])),

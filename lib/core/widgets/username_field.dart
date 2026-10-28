@@ -38,8 +38,8 @@ class UsernameFieldState extends State<UsernameField> {
   @override
   void initState() {
     super.initState();
-    if (widget.initial.isEmpty && widget.autoFill) {
-      _loadSuggestions();
+    if (widget.initial.isEmpty) {
+      _loadSuggestions(); // sign-up fills in the first one; an account without a username sees them as chips
     } else {
       _ok = true; // what is saved is fine until the person edits it
     }
@@ -51,6 +51,7 @@ class UsernameFieldState extends State<UsernameField> {
     if (widget.initial != oldWidget.initial && _text.text != widget.initial) {
       _text.text = widget.initial;
       _ok = widget.initial.isNotEmpty ? true : null;
+      if (widget.initial.isNotEmpty && !widget.autoFill) _suggestions = const []; // the saved name arrived: no chips until it is edited
     }
     if (widget.autoFill && widget.initial.isEmpty && widget.seed != oldWidget.seed && widget.seed.trim().length >= 2 && (_text.text.isEmpty || _text.text == _auto)) {
       _reseed?.cancel();
@@ -71,7 +72,7 @@ class UsernameFieldState extends State<UsernameField> {
   Future<void> _loadSuggestions({bool force = false}) async {
     try {
       final s = await _me.suggestUsernames(widget.seed.isEmpty ? 'sitter' : widget.seed);
-      if (!mounted) return;
+      if (!mounted || (!widget.autoFill && _text.text.isNotEmpty)) return; // the saved name arrived meanwhile
       setState(() => _suggestions = s);
       if (widget.autoFill && (force || _text.text.isEmpty) && s.isNotEmpty) {
         _auto = s.first;

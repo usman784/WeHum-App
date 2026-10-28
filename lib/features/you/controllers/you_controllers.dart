@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart' show TextEditingController, ThemeMode;
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart' show ImagePicker, ImageSource;
@@ -146,7 +148,8 @@ class ProgressController extends GetxController {
   String get chartTitle => switch (period.value) { Period.week => 'Minutes per day', Period.month => 'Minutes per week', Period.year => 'Minutes per month', Period.all => 'Minutes per month' };
 }
 
-/// 56 Edit profile: photo, first and last name, username (once every 7 days). The e-mail is shown, never edited.
+/// 56 Edit profile (accounts only): photo, first and last name, short bio, username (one per person, changed once every
+/// 7 days). The e-mail is shown, never edited.
 class EditProfileController extends GetxController {
   late final MeRepository _me = Get.find();
   final first = ''.obs, last = ''.obs, username = ''.obs, bio = ''.obs;
@@ -160,7 +163,12 @@ class EditProfileController extends GetxController {
   final busy = false.obs;
   final photoBusy = false.obs;
   final error = RxnString();
+  final photoError = RxnString();
+  /// Field errors show only after the first Save, not while the profile is still loading.
+  final triedSave = false.obs;
   final saved = false.obs;
+  /// The server takes photos up to 700 KB; the app stays below that.
+  static const maxPhotoBytes = 600 * 1024;
   static final _ok = RegExp(r"^[\p{L}\p{M}' .-]+$", unicode: true);
 
   /// The fields' text. Filled from the phone at once and from the server when it answers (an `initialValue` would
@@ -228,40 +236,76 @@ class EditProfileController extends GetxController {
 
   String? get emailNote => email.value == null ? null : (provider.value == 'apple' ? 'Signed in with Apple. Never shown to other people. It cannot be changed.' : (provider.value == 'google' ? 'Signed in with Google. Never shown to other people. It cannot be changed.' : 'Never shown to other people. It cannot be changed.'));
 
-  /// Opens the library or the camera; the picture is cut to about 512 px before it is sent.
+  /// Opens the library or the camera; the picture is cut to about 512 px before it is sent, whatever its original size.
   Future<void> pickPhoto(ImageSource source) async {
+    photoError.value = null;
     try {
-      final f = await ImagePicker().pickImage(source: source, maxWidth: 512, maxHeight: 512, imageQuality: 85);
+      final f = await ImagePicker().pickImage(source: source, maxWidth: 512, maxHeight: 512, imageQuality: 80);
       if (f == null) return;
       photoBusy.value = true;
-      final bytes = await f.readAsBytes();
-      final type = f.path.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      final (bytes, type) = await fitPhoto(await f.readAsBytes());
       final p = await _me.setAvatar(bytes, type);
       avatarUrl.value = p.avatarUrl;
       await Get.find<ConfigService>().refresh();
     } catch (e) {
-      error.value = ApiClient.map(e).code == ErrorCode.network ? 'You’re offline. Try again when you’re back.' : 'Couldn’t update the photo. Please try again.';
+      photoError.value = _photoMessage(e, 'Couldn’t update the photo. Please try again.');
     } finally {
       photoBusy.value = false;
     }
   }
 
+  /// What the server takes: a JPEG or PNG under [maxPhotoBytes]. Anything else (HEIC, a very large PNG) is redrawn
+  /// smaller as PNG until it fits.
+  static Future<(Uint8List, String)> fitPhoto(Uint8List bytes) async {
+    final jpeg = bytes.length > 3 && bytes[0] == 0xff && bytes[1] == 0xd8;
+    final png = bytes.length > 8 && bytes[0] == 0x89 && bytes[1] == 0x50;
+    if ((jpeg || png) && bytes.length <= maxPhotoBytes) return (bytes, jpeg ? 'image/jpeg' : 'image/png');
+    for (final width in const [512, 384, 256]) {
+      final codec = await ui.instantiateImageCodec(bytes, targetWidth: width);
+      final frame = await codec.getNextFrame();
+      final data = await frame.image.toByteData(format: ui.ImageByteFormat.png);
+      frame.image.dispose();
+      codec.dispose();
+      if (data != null && data.lengthInBytes <= maxPhotoBytes) return (data.buffer.asUint8List(), 'image/png');
+    }
+    throw const FormatException('The photo is too large');
+  }
+
+  String _photoMessage(Object e, String fallback) {
+    if (e is FormatException) return 'That photo is too large. Please pick another one.';
+    final err = ApiClient.map(e);
+    return switch (err.code) {
+      ErrorCode.network || ErrorCode.timeout => 'You’re offline. Try again when you’re back.',
+      ErrorCode.accountRequired => 'Create an account to change your photo.',
+      ErrorCode.validationFailed when (err.message ?? '').isNotEmpty => err.message!,
+      _ => fallback,
+    };
+  }
+
   Future<void> removePhoto() async {
+    photoError.value = null;
     photoBusy.value = true;
     try {
       final p = await _me.removeAvatar();
       avatarUrl.value = p.avatarUrl;
       await Get.find<ConfigService>().refresh();
-    } catch (_) {
-      error.value = 'Couldn’t remove the photo. Please try again.';
+    } catch (e) {
+      photoError.value = _photoMessage(e, 'Couldn’t remove the photo. Please try again.');
     } finally {
       photoBusy.value = false;
     }
   }
 
   Future<bool> save() async {
-    if (firstError != null || lastError != null || bio.value.trim().length > 200) {
-      error.value = firstError ?? lastError ?? 'The bio can be 200 characters at most';
+    triedSave.value = true;
+    error.value = null;
+    if (firstError != null || lastError != null) return false; // shown on the field
+    if (bio.value.trim().length > 200) {
+      error.value = 'The bio can be 200 characters at most';
+      return false;
+    }
+    if (savedUsername.value.isEmpty && username.value.isEmpty) {
+      error.value = 'Pick a username. It is how other people will find you.';
       return false;
     }
     final changingUsername = !usernameLocked && username.value.isNotEmpty && username.value != savedUsername.value;

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import '../../core/services/access_service.dart';
@@ -94,7 +95,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next meditation', child: NextSitPage())),
     GetPage(name: AppRoutes.you, page: () => const YouPage(), transition: Transition.noTransition, transitionDuration: Duration.zero), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.yourProgress, page: () => const ProgressPage()),
-    GetPage(name: AppRoutes.editProfile, page: () => const EditProfilePage()),
+    GetPage(name: AppRoutes.editProfile, page: () => const AccountOnly(title: 'Edit profile', child: EditProfilePage())),
     GetPage(name: AppRoutes.reminders, page: () => const RemindersPage()),
     GetPage(name: AppRoutes.downloads, page: () => const DownloadsPage()),
     GetPage(name: AppRoutes.privacyData, page: () => const PrivacyPage()),
@@ -131,6 +132,24 @@ class MembersOnly extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Obx(() => Get.find<AccessService>().isMember ? child : AppScaffold(title: title, body: const MembersOnlyState()));
+}
+
+/// Screens that change a person's public identity (photo, username, bio): accounts only. A guest who lands here (deep
+/// link, stale route) is asked to save their progress first; the screen opens by itself once they have an account.
+class AccountOnly extends StatelessWidget {
+  const AccountOnly({super.key, required this.title, required this.child});
+  final String title;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Obx(() {
+        final a = Get.find<AccessService>();
+        if (!a.isGuest.value) return child;
+        return AppScaffold(title: title, body: EmptyState(
+          key: const Key('account-only'), icon: Icons.person_outline_rounded, title: 'Create an account first',
+          body: 'Your photo, name, username and bio belong to an account. Save your progress or log in to edit them.',
+          ctaLabel: 'Save progress', onCta: () => Get.offNamed<void>(a.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser),
+        ));
+      });
 }
 
 /// Both Today routes show the screen that fits the plan right now, and switch live when the membership changes

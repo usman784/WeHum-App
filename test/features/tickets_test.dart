@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/app_controller.dart';
 import 'package:meditation/app/routes/app_routes.dart';
+import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/errors/error_code.dart';
 import 'package:meditation/core/services/account_service.dart';
 import 'package:meditation/core/services/deep_links.dart';
@@ -19,9 +20,13 @@ Future<void> settle(WidgetTester t) async {
   await t.pump(const Duration(milliseconds: 600));
 }
 
-Future<TestEnv> open(WidgetTester t, String route, {bool member = true, bool onboardingDone = true}) async {
+Future<TestEnv> open(WidgetTester t, String route, {bool member = true, bool onboardingDone = true, MeProfile? account}) async {
   phone(t);
   final e = await TestEnv.create(member: member, onboardingDone: onboardingDone, prefs: const {'first_name': 'Marcus'});
+  if (account != null) {
+    e.me.profile = account;
+    e.access.isGuest.value = false;
+  }
   await t.pumpWidget(e.app(initial: route));
   await settle(t);
   return e;
@@ -192,7 +197,7 @@ void main() {
 
   group('profile', () {
     testWidgets('edit profile: a short bio is saved, limited to 200 characters, and can be cleared', (t) async {
-      final e = await open(t, AppRoutes.editProfile);
+      final e = await open(t, AppRoutes.editProfile, account: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
       final bio = find.byKey(const Key('profile-bio'));
       await t.ensureVisible(bio);
       expect(t.widget<TextField>(find.descendant(of: bio, matching: find.byType(TextField))).maxLength, 200);

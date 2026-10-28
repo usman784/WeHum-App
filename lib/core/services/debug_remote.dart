@@ -15,6 +15,7 @@ import '../../app/app_controller.dart';
 ///   `link wehum://group n1`    → the push-tap router (link, optional notification id)
 ///   `tap Build_it`             → presses the Text that reads "Build it"
 ///   `back`                     → Get.back()
+///   `scroll 600`               → scrolls the topmost list down by 600 px (negative: up)
 /// Never started in profile/release builds.
 String file2text(String s) => s.replaceAll('_', ' ');
 
@@ -61,6 +62,20 @@ abstract final class DebugRemote {
     Future.delayed(const Duration(milliseconds: 80), () => b.handlePointerEvent(PointerUpEvent(position: at!, pointer: id)));
   }
 
+  static void _scroll(double by) {
+    ScrollPosition? pos; // the tallest vertical list on screen (text fields have their own small scrollables)
+    void visit(Element e) {
+      if (e is StatefulElement && e.state is ScrollableState) {
+        final p = (e.state as ScrollableState).position;
+        if (p.axis == Axis.vertical && p.hasViewportDimension && p.viewportDimension >= (pos?.viewportDimension ?? 0)) pos = p;
+      }
+      e.visitChildren(visit);
+    }
+    WidgetsBinding.instance.rootElement?.visitChildren(visit);
+    if (pos == null) return debugPrint('[debug] scroll: no list on screen');
+    pos!.jumpTo((pos!.pixels + by).clamp(pos!.minScrollExtent, pos!.maxScrollExtent));
+  }
+
   static Timer? _timer;
 
   static Future<void> start() async {
@@ -73,6 +88,7 @@ abstract final class DebugRemote {
       if (parts.isEmpty || parts.first.isEmpty) return;
       if (parts.first == 'back') return Get.back<void>();
       if (parts.first.startsWith('type')) return _type(file2text(parts.skip(1).join(' ')), int.tryParse(parts.first.split('@').last) ?? 0);
+      if (parts.first == 'scroll') return _scroll(double.tryParse(parts.length > 1 ? parts[1] : '') ?? 600);
       if (parts.first == 'tap') return _tap(file2text(parts.skip(1).join(' ')));
       if (parts.first == 'link' && parts.length > 1) return Get.find<AppController>().openLink(parts[1], notificationId: parts.length > 2 ? parts[2] : null); // same path as a tapped push
       final off = parts.first == 'off';
