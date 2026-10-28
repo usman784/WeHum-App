@@ -32,6 +32,7 @@ import 'package:meditation/core/services/auth_service.dart';
 import 'package:meditation/core/services/social_auth_service.dart';
 import 'package:meditation/core/services/catalog_service.dart';
 import 'package:meditation/core/services/config_service.dart';
+import 'package:meditation/features/onboarding/controllers/onboarding_controllers.dart';
 import 'package:meditation/core/services/connectivity_service.dart';
 import 'package:meditation/core/services/inbox_service.dart';
 import 'package:meditation/core/services/crash_service.dart';
@@ -148,6 +149,7 @@ class TestEnv {
 
   static Future<TestEnv> create({bool member = false, bool onboardingDone = false, Map<String, Object?> prefs = const {}, bool v1 = false}) async {
     // the suite covers the built screens; `v1: true` checks what this version ships as coming soon
+    SplashController.minShow = Duration.zero; // splash tests that need the hold set it themselves
     ConfigService.comingSoonInV1..clear()..addAll(v1 ? const {'challenges', 'programs'} : const <String>{});
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     await loadAppFonts();

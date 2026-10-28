@@ -12,6 +12,7 @@ import 'core/services/debug_remote.dart';
 import 'core/audio/media_session.dart';
 import 'core/config/env.dart';
 import 'core/data/local/app_database.dart';
+import 'core/services/launch_screen.dart';
 import 'core/services/perf_service.dart';
 import 'core/services/crash_service.dart';
 
@@ -20,7 +21,9 @@ import 'core/services/crash_service.dart';
 Future<void> bootstrap() async {
   appStartWatch.start();
   Future<void> run() async {
+    // the native launch screen stays up until the splash logo is decoded (SplashPage removes it), so no blank frame in between
     WidgetsFlutterBinding.ensureInitialized();
+    LaunchScreen.hold();
     await GetStorage.init();
     // the local database and the downloads folder are needed by services created in InitialBinding
     Get.put<AppDatabase>(await AppDatabase.open(), permanent: true);

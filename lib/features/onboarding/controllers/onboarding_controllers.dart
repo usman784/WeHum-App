@@ -21,6 +21,13 @@ import '../../../core/services/purchase_service.dart';
 /// 01 Splash: session + bootstrap in parallel, then decide the first screen (spec §12 row 1).
 class SplashController extends GetxController {
   final failure = Rxn<ErrorCode>();
+  /// True while the splash fades out, just before the first screen.
+  final leaving = false.obs;
+
+  /// The splash stays at least this long so people can see it, even when startup is quicker (tests set it to zero).
+  static Duration minShow = const Duration(milliseconds: 2400);
+  static const fadeOut = Duration(milliseconds: 350);
+  final _shown = Stopwatch()..start();
 
   @override
   void onReady() {
@@ -41,6 +48,11 @@ class SplashController extends GetxController {
       failure.value = ApiClient.map(e).code;
       return;
     }
+    Get.find<PerfService>().results['cold_start'] = appStartWatch.elapsed; // target < 2.0 s on a mid Android (startup only, not the hold below)
+    final rest = minShow - _shown.elapsed;
+    if (rest > Duration.zero) await Future<void>.delayed(rest);
+    leaving.value = true;
+    if (minShow > Duration.zero) await Future<void>.delayed(fadeOut);
     final b = app.lastBootstrap;
     if (b != null && b.updateRequired) {
       Get.offAllNamed(AppRoutes.updateRequired);
@@ -49,7 +61,6 @@ class SplashController extends GetxController {
     } else {
       Get.find<AnalyticsService>().track('app_open', {'source': 'cold'});
       Get.offAllNamed(firstRoute(onboardingDone: Get.find<OnboardingStore>().done, member: Get.find<AccessService>().isMember));
-      Get.find<PerfService>().results['cold_start'] = appStartWatch.elapsed; // target < 2.0 s on a mid Android
       app.markRouted();
       app.promptUpdate();
     }

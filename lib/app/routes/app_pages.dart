@@ -44,7 +44,7 @@ class _BackToToday extends StatelessWidget {
 abstract final class AppPages {
   static final pages = <GetPage<dynamic>>[
     GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
-    GetPage(name: AppRoutes.intro1Welcome, page: () => const IntroPage(1)),
+    GetPage(name: AppRoutes.intro1Welcome, page: () => const IntroPage(1), transition: Transition.fadeIn, transitionDuration: const Duration(milliseconds: 400)), // opened from the splash: fade, no slide
     GetPage(name: AppRoutes.intro2NeverAlone, page: () => const IntroPage(2)),
     GetPage(name: AppRoutes.intro3EveryDay, page: () => const IntroPage(3)),
     GetPage(name: AppRoutes.intro4TrainingNotTherapy, page: () => const IntroPage(4)),
