@@ -43,6 +43,7 @@ class YouPage extends StatelessWidget {
       body: Obx(() {
         final p = ctrl.profile.value;
         final guest = ctrl.access.isGuest.value;
+        final waiting = !guest && !ctrl.loaded.value; // first visit: placeholders where the cards will be, so nothing jumps when they arrive
         final live = Get.isRegistered<LiveService>() ? (Get.find<LiveService>().agg.value?.total ?? 0) : 0;
         final life = ctrl.lifetime.value;
         final l = life?.lifetime;
@@ -95,11 +96,19 @@ class YouPage extends StatelessWidget {
               ]),
             ),
           // ── progress and metrics: accounts only (a guest's meditations are kept and appear once they sign up)
-          if (!guest && ctrl.streak != null) ...[
+          if (waiting) ...[
+            const _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
+            const Skeleton(key: Key('you-loading'), height: 194, radius: Radii.card),
+            const Skeleton(height: 172, radius: Radii.card),
+            const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
+            const Row(children: [Expanded(child: Skeleton(height: 90, radius: Radii.card)), SizedBox(width: 10), Expanded(child: Skeleton(height: 90, radius: Radii.card))]),
+            const Row(children: [Expanded(child: Skeleton(height: 106, radius: Radii.card)), SizedBox(width: 10), Expanded(child: Skeleton(height: 106, radius: Radii.card))]),
+          ],
+          if (!waiting && !guest && ctrl.streak != null) ...[
             const _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
             _StreakBlock(streak: ctrl.streak!),
           ],
-          if (!guest) AppCard(
+          if (!waiting && !guest) AppCard(
             key: const Key('week-chart'), onTap: () => Get.toNamed(AppRoutes.yourProgress), padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
@@ -112,18 +121,18 @@ class YouPage extends StatelessWidget {
             ]),
           ),
           // ── lifetime
-          if (!guest) const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
-          if (!guest) Row(children: [
+          if (!waiting && !guest) const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
+          if (!waiting && !guest) Row(children: [
             Expanded(child: _Metric('MEDITATIONS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
           ]),
-          if (!guest) Row(children: [
+          if (!waiting && !guest) Row(children: [
             Expanded(child: _Metric('GROUP MEDITATIONS', '${l?.together ?? life?.together ?? 0}', l == null ? 'Meditated live with others' : 'Meditated live with others (${l.togetherPct}%)', Icons.groups_2_outlined)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per meditation', Icons.donut_large_rounded)),
           ]),
-          if (!guest && l?.hrShiftBpm != null)
+          if (!waiting && !guest && l?.hrShiftBpm != null)
             AppCard(
               key: const Key('hr-shift'),
               child: Row(children: [

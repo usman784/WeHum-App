@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -5,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
+import 'package:meditation/core/data/contracts/repositories.dart';
+import 'package:meditation/core/data/mock/mock_repositories.dart';
 import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/errors/error_code.dart';
 import 'package:meditation/core/services/notification_service.dart';
@@ -12,6 +15,16 @@ import 'package:meditation/core/theme/theme_controller.dart';
 import 'package:meditation/features/you/controllers/you_controllers.dart';
 
 import '../support/test_env.dart';
+
+/// Holds the progress answers until [gate] completes, to see the page while it waits.
+class _GatedMe extends MockMeRepository {
+  final gate = Completer<void>();
+  @override
+  Future<ProgressData> progress(Period p) async {
+    await gate.future;
+    return super.progress(p);
+  }
+}
 
 Future<void> settle(WidgetTester t) async {
   await t.pump();
@@ -58,6 +71,36 @@ void main() {
     Get.offAllNamed(AppRoutes.milestones);
     await settle(t);
     expect(find.byKey(const Key('account-only')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('54 You loading: placeholders where the streak and week cards go, nothing jumps when they arrive, and a revisit shows the last data at once', (t) async {
+    phone(t);
+    final e = await TestEnv.create(member: true, onboardingDone: true, prefs: const {'first_name': 'Marcus'});
+    final me = _GatedMe()..profile = const MeProfile(id: 'u-loading', firstName: 'Marcus', isGuest: false);
+    Get.replace<MeRepository>(me);
+    e.access.isGuest.value = false;
+    await t.pumpWidget(e.app(initial: AppRoutes.you));
+    await settle(t); // entrance animations done, progress still on its way
+    // before the progress answer: placeholders, and no week chart sitting where the streak block will be
+    expect(find.byKey(const Key('you-loading')), findsOneWidget);
+    expect(find.byKey(const Key('week-chart')), findsNothing);
+    expect(find.text('Practice ritual & forgiving streaks'), findsOneWidget);
+    final placeholderTop = t.getTopLeft(find.byKey(const Key('you-loading'))).dy;
+    me.gate.complete();
+    await settle(t);
+    expect(find.byKey(const Key('you-loading')), findsNothing);
+    expect(t.getTopLeft(find.byKey(const Key('streak-block'))).dy, placeholderTop); // the streak block lands where its placeholder was
+    expect(t.getTopLeft(find.byKey(const Key('week-chart'))).dy, greaterThan(t.getTopLeft(find.byKey(const Key('streak-block'))).dy));
+
+    Get.offAllNamed(AppRoutes.library); // the bottom nav rebuilds the page and its controller
+    await settle(t);
+    Get.offAllNamed(AppRoutes.you);
+    await t.pump();
+    expect(find.byKey(const Key('you-loading')), findsNothing); // last answers shown straight away
+    expect(find.byKey(const Key('streak-block')), findsOneWidget);
+    await settle(t);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });

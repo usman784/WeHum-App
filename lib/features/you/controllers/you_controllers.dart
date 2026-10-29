@@ -36,9 +36,27 @@ class YouController extends GetxController {
   final week = Rxn<ProgressData>();
   final lifetime = Rxn<ProgressData>();
   final signingOut = false.obs;
+  /// False until the first progress answer (or failure): the page shows placeholders in the same places meanwhile,
+  /// so the streak block does not pop in above the week chart and push everything down.
+  final loaded = false.obs;
+
+  /// The last answers, kept across tab switches (the bottom nav rebuilds this controller every time), for the same user only.
+  static ({String userId, MeProfile? profile, ProgressData? week, ProgressData? lifetime})? _last;
 
   String get name => profile.value?.firstName ?? Get.find<OnboardingStore>().name;
   String get initials => name.isEmpty ? '' : name.substring(0, 1).toUpperCase();
+
+  @override
+  void onInit() {
+    super.onInit();
+    final last = _last;
+    if (last != null && last.userId == access.userId && !access.isGuest.value) {
+      profile.value = last.profile;
+      week.value = last.week;
+      lifetime.value = last.lifetime;
+      loaded.value = true; // shown at once, refreshed quietly below
+    }
+  }
 
   @override
   void onReady() {
@@ -53,12 +71,22 @@ class YouController extends GetxController {
     } catch (_) {}
     if (access.isGuest.value) {
       week.value = lifetime.value = null; // no progress before an account
+      _last = null;
+      loaded.value = true;
       return;
     }
+    final id = access.userId;
+    ProgressData? w, all;
     try {
-      week.value = await _me.progress(Period.week);
-      lifetime.value = await _me.progress(Period.all);
+      (w, all) = await (_me.progress(Period.week), _me.progress(Period.all)).wait;
+    } on ParallelWaitError<(ProgressData?, ProgressData?), (AsyncError?, AsyncError?)> catch (e) {
+      (w, all) = e.values; // keep whichever answer did arrive
     } catch (_) {}
+    if (isClosed || access.userId != id || access.isGuest.value) return; // signed out or switched account meanwhile: not this user's data
+    if (w != null) week.value = w;
+    if (all != null) lifetime.value = all;
+    loaded.value = true;
+    if (id != null) _last = (userId: id, profile: profile.value, week: week.value, lifetime: lifetime.value);
   }
 
   int get daysThisWeek => week.value?.daysThisWeek.where((d) => d).length ?? 0;

@@ -10,6 +10,8 @@ class AccessService extends GetxService {
   final sdkPremium = false.obs;
   final isGuest = true.obs;
   final hasAccount = false.obs;
+  /// The user id from the last profile (null before the first one), so per-user caches can tell a new user apart.
+  String? userId;
 
   bool get isMember => entitlement.value.active || sdkPremium.value;
   bool get serverMember => entitlement.value.active;
@@ -20,6 +22,7 @@ class AccessService extends GetxService {
   String get plan => isGuest.value ? (isMember ? 'guest_member' : 'guest_free') : (isTrial ? 'trial' : (isMember ? 'member' : 'free'));
 
   void setFromProfile(MeProfile p) {
+    userId = p.id;
     entitlement.value = p.entitlement;
     isGuest.value = p.isGuest;
     hasAccount.value = !p.isGuest;
