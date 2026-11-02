@@ -50,7 +50,8 @@ class CompletePage extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: SafeArea(
-          child: Obx(() {
+          child: Column(children: [
+            Expanded(child: Obx(() {
             final busy = ctrl.busy;
             final st = ctrl.streak;
             final hr = ctrl.hrDelta;
@@ -66,6 +67,7 @@ class CompletePage extends StatelessWidget {
                 Text('You meditated ${ctrl.minutes} ${ctrl.minutes == 1 ? 'minute' : 'minutes'}.', key: const Key('complete-title'), textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 if (ctrl.togetherLine != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(ctrl.togetherLine!, key: const Key('complete-together'), textAlign: TextAlign.center, style: AppText.bodyLarge.copyWith(color: c.textSecondary))),
               ]),
+              _SharePreview(ctrl: ctrl),
               AppCard(
                 padding: const EdgeInsets.all(16),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -157,17 +159,82 @@ class CompletePage extends StatelessWidget {
                 ),
               _DedicateCard(ctrl: ctrl),
               if (ctrl.player.sessionId != null) OutlineButton('Read today’s dedications', key: const Key('read-dedications'), onPressed: ctrl.readDedications),
-              Column(children: [
+            ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
+            })),
+            // always in view, never below the fold
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Gap.gutterOnboarding, 8, Gap.gutterOnboarding, 12),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
                 PrimaryButton('Share your meditation', key: const Key('share-sit'), icon: Icons.ios_share_rounded, onPressed: ctrl.share),
                 const SizedBox(height: 10),
                 SecondaryButton('Done', key: const Key('complete-done'), onPressed: ctrl.done),
               ]),
-            ].map((w) => Padding(padding: const EdgeInsets.only(bottom: 14), child: w)).toList()));
-          }),
+            ),
+          ]),
         ),
       ),
     );
   }
+}
+
+/// The swipeable preview of the card people can post, one page per look. The picked look carries over to the share screen.
+class _SharePreview extends StatelessWidget {
+  const _SharePreview({required this.ctrl});
+  final CompleteController ctrl;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Obx(() {
+      final styles = ctrl.styles;
+      final (people, countries) = ctrl.together;
+      final i = styles.indexOf(ctrl.style.value).clamp(0, styles.length - 1);
+      return Column(key: const Key('share-preview'), children: [
+        LayoutBuilder(builder: (_, box) {
+          final w = box.maxWidth * .78;
+          return SizedBox(
+            height: w,
+            child: PageView.builder(
+              key: ValueKey(styles.length), controller: PageController(viewportFraction: .8, initialPage: i),
+              itemCount: styles.length, onPageChanged: (n) => ctrl.style.value = styles[n],
+              itemBuilder: (_, n) => Center(child: SizedBox(width: w, height: w, child: FittedBox(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: ShareCard(
+                    style: styles[n], story: false, minutes: ctrl.minutes, title: ctrl.player.title, date: DateTime.now(),
+                    togetherPeople: people, togetherCountries: countries, hot: ctrl.hot, daysThisWeek: ctrl.daysThisWeek,
+                    streakDay: ctrl.streak?.current, hrDelta: ctrl.hrDelta, dedication: ctrl.lastDedication,
+                  ),
+                ),
+              ))),
+            ),
+          );
+        }),
+        const SizedBox(height: 10),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          for (var n = 0; n < styles.length; n++)
+            Container(margin: const EdgeInsets.symmetric(horizontal: 3), width: n == i ? 16 : 6, height: 6, decoration: BoxDecoration(color: n == i ? c.ember : c.track, borderRadius: BorderRadius.circular(3))),
+        ]),
+        const SizedBox(height: 6),
+        Text('${styles[i].label} · swipe for more looks', style: AppText.caption.copyWith(color: c.textSecondary)),
+      ]);
+    });
+  }
+}
+
+/// Look picker on the share screen.
+class _StyleChips extends StatelessWidget {
+  const _StyleChips({required this.styles, required this.value, required this.onChanged});
+  final List<ShareStyle> styles;
+  final ShareStyle value;
+  final ValueChanged<ShareStyle> onChanged;
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        height: 40,
+        child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), children: [
+          for (final s in styles)
+            Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(key: Key('style-${s.name}'), label: Text(s.label), selected: s == value, onSelected: (_) => onChanged(s))),
+        ]),
+      );
 }
 
 class _CheckRingPainter extends CustomPainter {
@@ -428,14 +495,7 @@ class _SharePageState extends State<SharePage> {
   late final InstagramShare instagram = Get.isRegistered<InstagramShare>() ? Get.find<InstagramShare>() : InstagramShare();
   late final AnalyticsService analytics = Get.find();
 
-  /// People who meditated together and their countries: the server's answer first, else the last live numbers; 0 when quiet.
-  (int, int) get together {
-    final r = complete.result;
-    if (r != null && r.togetherPeople > 1) return (r.togetherPeople, r.togetherCountries);
-    final a = complete.live.agg.value;
-    if (a != null && !a.quiet && a.total > 1 && !complete.live.paused) return (a.total, a.countries);
-    return (0, 0);
-  }
+  (int, int) get together => complete.together;
 
   /// 1080×1920 (9:16) or 1080×1080 (1:1) PNG bytes (spec §13).
   Future<Uint8List> render() async {
@@ -452,7 +512,7 @@ class _SharePageState extends State<SharePage> {
     return f;
   }
 
-  Map<String, Object> get _props => {'format': format, 'include_dedication': showDedication && complete.lastDedication != null};
+  Map<String, Object> get _props => {'format': format, 'style': complete.style.value.name, 'include_dedication': showDedication && complete.lastDedication != null};
 
   /// One tap into the Instagram story composer; the share sheet when Instagram can't be opened.
   Future<void> shareInstagram() async {
@@ -513,7 +573,9 @@ class _SharePageState extends State<SharePage> {
       title: 'Share your meditation',
       body: Column(children: [
         Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: SegmentedControl<String>(options: const ['9x16', '1x1'], value: format, onChanged: (v) => setState(() => format = v), labelOf: (v) => v == '9x16' ? 'Story' : 'Post')),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
+        Obx(() => _StyleChips(styles: complete.styles, value: complete.style.value, onChanged: (v) => complete.style.value = v)),
+        const SizedBox(height: 8),
         Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: Gap.gutter), child: Center(
           child: FittedBox( // a narrow phone shrinks the preview; the saved image is still 1080 wide
             fit: BoxFit.scaleDown,
@@ -526,7 +588,7 @@ class _SharePageState extends State<SharePage> {
                   child: Obx(() {
                     final (people, countries) = together;
                     return ShareCard(
-                      story: story, minutes: complete.minutes, title: complete.player.title, date: DateTime.now(),
+                      style: complete.style.value, story: story, minutes: complete.minutes, title: complete.player.title, date: DateTime.now(),
                       togetherPeople: people, togetherCountries: countries, hot: complete.hot, daysThisWeek: complete.daysThisWeek,
                       streakDay: complete.streak?.current, hrDelta: includeHr ? complete.hrDelta : null,
                       dedication: showDedication ? complete.lastDedication : null,

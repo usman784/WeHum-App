@@ -148,4 +148,33 @@ void main() {
     await e.dispose();
     debugDefaultTargetPlatformOverride = null;
   });
+
+  testWidgets('45 the Share button is in view on a normal phone without scrolling, with a swipeable preview of the card', (t) async {
+    phone(t);
+    final tmp = Directory.systemTemp.createTempSync('wehum-share');
+    final m = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    m.setMockMethodCallHandler(_paths, (c) async => tmp.path);
+    final e = await TestEnv.create(member: true, onboardingDone: true);
+    final rec = MeditationRecord(id: 'm-2', kind: 'motd', sessionId: sid, startedAt: DateTime.utc(2026, 10, 22, 8), endedAt: DateTime.utc(2026, 10, 22, 8, 5), durationSec: 300, completed: true);
+    await t.pumpWidget(e.app());
+    await settle(t);
+    Get.toNamed(AppRoutes.meditationCompletePayoff, arguments: CompleteArgs(
+        player: const PlayerArgs(kind: 'motd', mode: 'solo', title: 'Steady Under Pressure', sessionId: sid), record: rec, counted: true));
+    await settle(t);
+    final screen = t.view.physicalSize / t.view.devicePixelRatio;
+    final share = t.getRect(find.byKey(const Key('share-sit')));
+    expect(share.bottom <= screen.height && share.top >= 0, isTrue, reason: 'Share must be on screen at once');
+    expect(find.byKey(const Key('share-preview')), findsOneWidget);
+    expect(find.textContaining('Night'), findsOneWidget);
+    await t.drag(find.byType(PageView), const Offset(-300, 0));
+    await settle(t);
+    expect(find.textContaining('Dawn'), findsOneWidget);
+    await t.tap(find.byKey(const Key('share-sit')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.shareYourMeditation);
+    expect(find.byKey(const Key('style-dawn')), findsOneWidget); // the picked look carries over
+    expect(find.byKey(const Key('style-world')), findsNothing); // no shared moment: no World look
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
 }

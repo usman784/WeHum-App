@@ -14,6 +14,7 @@ import '../../core/utils/uuid7.dart';
 import '../player/controllers/player_controller.dart';
 import '../player/player_args.dart';
 import '../dedications/controllers/dedications_controllers.dart';
+import 'share_card.dart' show ShareStyle;
 
 enum DedicateAccess { allowed, needsAccount, needsMembership }
 
@@ -31,7 +32,11 @@ class CompleteController extends GetxController {
   final kudosSent = false.obs;
   final kudosBusy = false.obs;
   /// The text the person just dedicated (shown on the share card when they allow it).
-  String? lastDedication;
+  final _dedication = Rxn<String>();
+  String? get lastDedication => _dedication.value;
+  set lastDedication(String? v) => _dedication.value = v;
+  /// The look picked on the summary; the share screen opens on the same one.
+  final style = ShareStyle.night.obs;
 
   PlayerArgs get player => args.player;
   String get meditationId => args.record?.id ?? uuid7();
@@ -47,6 +52,18 @@ class CompleteController extends GetxController {
     if (a != null && !a.quiet && a.total > 1 && !live.paused) return 'You meditated with ${groupNumberOf(a.total)} people across ${a.countries} countries.';
     return null;
   }
+
+  /// People who meditated together and their countries: the server's answer first, else the last live numbers; (0, 0) when quiet.
+  (int, int) get together {
+    final r = result;
+    if (r != null && r.togetherPeople > 1) return (r.togetherPeople, r.togetherCountries);
+    final a = live.agg.value;
+    if (a != null && !a.quiet && a.total > 1 && !live.paused) return (a.total, a.countries);
+    return (0, 0);
+  }
+
+  /// The looks on offer: the World map only for a real shared moment.
+  List<ShareStyle> get styles => ShareStyle.available(together: together.$1 > 1 && hot.isNotEmpty);
 
   /// Who may dedicate: members with an account, only for a counted meditation of a catalog session.
   DedicateAccess get dedicate => access.isGuest.value && access.isMember

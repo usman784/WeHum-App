@@ -4,15 +4,25 @@ import '../../core/theme/app_text.dart';
 import '../../core/widgets/painters.dart';
 import '../../core/widgets/stitch.dart';
 
+/// The looks a person can pick for the image. [world] needs a real shared moment (people + countries), so it is only
+/// offered then (see [ShareStyle.available]); it stays last so the other positions never move.
+enum ShareStyle {
+  night('Night'), dawn('Dawn'), stats('Stats'), world('World');
+  const ShareStyle(this.label);
+  final String label;
+  static List<ShareStyle> available({required bool together}) => [night, dawn, stats, if (together) world];
+}
+
 /// The image people post after a meditation (46): 9:16 story (360×640 → 1080×1920) or 1:1 post (360×360 → 1080×1080).
 /// Night sky with ember and teal aurora glows, the minutes as the hero number inside a glowing ring, honest "together"
 /// numbers only when it was a shared moment, glass stat chips and the dedication as a quote. Brand colours are fixed
 /// (the image looks the same in light and dark mode).
 class ShareCard extends StatelessWidget {
   const ShareCard({
-    super.key, required this.story, required this.minutes, required this.title, required this.date,
+    super.key, this.style = ShareStyle.night, required this.story, required this.minutes, required this.title, required this.date,
     this.togetherPeople = 0, this.togetherCountries = 0, this.hot = const {}, this.daysThisWeek = 0, this.streakDay, this.hrDelta, this.dedication,
   });
+  final ShareStyle style;
   final bool story;
   final int minutes;
   final String title;
@@ -30,19 +40,32 @@ class ShareCard extends StatelessWidget {
 
   bool get _together => togetherPeople > 1;
 
+  bool get _light => style == ShareStyle.dawn;
+  Color get _ink => _light ? const Color(0xFF2A1A12) : Colors.white;
+  Color get _inkSoft => _light ? const Color(0xFF6B5547) : Colors.white70;
+
   @override
   Widget build(BuildContext context) {
     final h = story ? 640.0 : 360.0;
+    final body = switch (style) {
+      ShareStyle.night => story ? _storyBody() : _postBody(),
+      ShareStyle.dawn => _dawnBody(),
+      ShareStyle.stats => _statsBody(),
+      ShareStyle.world => _worldBody(),
+    };
     return SizedBox(
       width: 360, height: h,
       child: ClipRect(
         child: Stack(children: [
-          const Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF0E2B2C), Color(0xFF0A0C0D), Color(0xFF1C100B)], stops: [0, .55, 1])))),
-          Positioned.fill(child: CustomPaint(painter: _SkyPainter(story: story))),
-          Positioned(top: story ? -90 : -110, right: -110, child: const _Glow(color: ember, size: 300, alpha: .42)),
-          Positioned(bottom: story ? 40 : -150, left: -130, child: const _Glow(color: teal, size: 320, alpha: .30)),
-          if (story) const Positioned(top: 250, left: 80, child: _Glow(color: mint, size: 200, alpha: .10)),
-          Positioned.fill(child: Padding(padding: EdgeInsets.fromLTRB(24, story ? 26 : 18, 24, story ? 24 : 16), child: story ? _storyBody() : _postBody())),
+          Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+              colors: _light ? const [Color(0xFFFFF6EE), Color(0xFFFFE3D0), Color(0xFFFFC9A8)] : const [Color(0xFF0E2B2C), Color(0xFF0A0C0D), Color(0xFF1C100B)],
+              stops: _light ? const [0, .5, 1] : const [0, .55, 1])))),
+          if (!_light) Positioned.fill(child: CustomPaint(painter: _SkyPainter(story: story))),
+          Positioned(top: story ? -90 : -110, right: -110, child: _Glow(color: ember, size: 300, alpha: _light ? .30 : .42)),
+          Positioned(bottom: story ? 40 : -150, left: -130, child: _Glow(color: _light ? amber : teal, size: 320, alpha: _light ? .35 : .30)),
+          if (story && !_light) const Positioned(top: 250, left: 80, child: _Glow(color: mint, size: 200, alpha: .10)),
+          Positioned.fill(child: Padding(padding: EdgeInsets.fromLTRB(24, story ? 26 : 18, 24, story ? 24 : 16), child: body)),
         ]),
       ),
     );
@@ -51,7 +74,7 @@ class ShareCard extends StatelessWidget {
   Widget _header() => Row(children: [
         const BrandLogo(size: 24),
         const SizedBox(width: 8),
-        Text('WeHum', style: AppText.navTitle.copyWith(color: Colors.white, fontSize: 16, letterSpacing: .2)),
+        Text('WeHum', style: AppText.navTitle.copyWith(color: _ink, fontSize: 16, letterSpacing: .2)),
         const Spacer(),
         _Glass(
           radius: 99, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -66,14 +89,14 @@ class ShareCard extends StatelessWidget {
   Widget _ring(double size) => SizedBox(
         width: size, height: size,
         child: CustomPaint(
-          painter: _RingPainter(),
+          painter: _RingPainter(light: _light),
           child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
             ShaderMask(
-              shaderCallback: (r) => const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.white, Color(0xFFFFD9C7)]).createShader(r),
+              shaderCallback: (r) => LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: _light ? const [Color(0xFF2A1A12), Color(0xFF8A4A2B)] : const [Colors.white, Color(0xFFFFD9C7)]).createShader(r),
               child: Text('$minutes', key: const Key('share-minutes'), style: AppText.display.copyWith(color: Colors.white, fontSize: size * .36, height: 1, fontWeight: FontWeight.w700, fontFeatures: AppText.tabular)),
             ),
             const SizedBox(height: 2),
-            Text(minutes == 1 ? 'MINUTE' : 'MINUTES', style: AppText.overline.copyWith(color: amber, fontSize: size * .058, letterSpacing: 2.4)),
+            Text(minutes == 1 ? 'MINUTE' : 'MINUTES', style: AppText.overline.copyWith(color: _light ? const Color(0xFFC2511F) : amber, fontSize: size * .058, letterSpacing: 2.4)),
           ])),
         ),
       );
@@ -116,10 +139,10 @@ class ShareCard extends StatelessWidget {
 
   Widget _footer() => Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text('Meditate with me', style: AppText.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
-          Text('wehum.app', style: AppText.caption.copyWith(color: amber, letterSpacing: .4)),
+          Text('Meditate with me', style: AppText.bodySmall.copyWith(color: _ink, fontWeight: FontWeight.w600)),
+          Text('wehum.app', style: AppText.caption.copyWith(color: _light ? const Color(0xFFC2511F) : amber, letterSpacing: .4)),
         ])),
-        Text(_date(date), style: AppText.caption.copyWith(color: Colors.white54, fontFeatures: AppText.tabular)),
+        Text(_date(date), style: AppText.caption.copyWith(color: _light ? _inkSoft : Colors.white54, fontFeatures: AppText.tabular)),
       ]);
 
   Widget _storyBody() {
@@ -166,6 +189,79 @@ class ShareCard extends StatelessWidget {
       _footer(),
     ]);
   }
+
+  String get _countriesText => '$togetherCountries ${togetherCountries == 1 ? 'country' : 'countries'}';
+
+  /// Light, warm card: dark ink on a dawn gradient. Plain lines instead of glass chips.
+  Widget _dawnBody() {
+    final line = <String>[
+      if (_together) 'Together with ${groupedInt(togetherPeople)} people · $_countriesText',
+      if (streakDay != null && streakDay! > 1) 'Day $streakDay of my streak',
+      if (hrDelta != null) 'Calm shift ${hrDelta! > 0 ? '+' : ''}$hrDelta bpm',
+    ];
+    return Column(crossAxisAlignment: story ? CrossAxisAlignment.center : CrossAxisAlignment.start, children: [
+      _header(),
+      const Spacer(flex: 2),
+      Center(child: _ring(story ? 200 : 128)),
+      SizedBox(height: story ? 22 : 12),
+      Text('I meditated today.', textAlign: TextAlign.center, style: AppText.heroTitle.copyWith(color: _ink, fontSize: story ? 30 : 22, height: 1.1)),
+      const SizedBox(height: 6),
+      Text(title, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.bodyLarge.copyWith(color: _inkSoft, fontSize: story ? null : 14)),
+      const SizedBox(height: 10),
+      for (final l in line.take(story ? 3 : 1))
+        Padding(padding: const EdgeInsets.only(top: 4), child: Text(l, key: l.startsWith('Together') ? const Key('share-together') : null, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: _ink, fontWeight: FontWeight.w600))),
+      if (dedication != null && story) Padding(padding: const EdgeInsets.only(top: 16), child: Text('“$dedication”', key: const Key('share-dedication'), textAlign: TextAlign.center, maxLines: 3, overflow: TextOverflow.ellipsis, style: AppText.body.copyWith(color: _inkSoft, fontStyle: FontStyle.italic))),
+      const Spacer(flex: 2),
+      _footer(),
+    ]);
+  }
+
+  /// Strava-like: the numbers are the card. Big left-aligned values with small labels, two per row.
+  Widget _statsBody() {
+    final cells = <(String, String)>[
+      ('MINUTES', '$minutes'),
+      if (_together) ('MEDITATED WITH', groupedInt(togetherPeople)),
+      if (_together) ('COUNTRIES', '$togetherCountries'),
+      if (streakDay != null && streakDay! > 1) ('STREAK', '$streakDay days'),
+      if (daysThisWeek > 0) ('THIS WEEK', '$daysThisWeek ${daysThisWeek == 1 ? 'day' : 'days'}'),
+      if (hrDelta != null) ('CALM SHIFT', '${hrDelta! > 0 ? '+' : ''}$hrDelta bpm'),
+    ].take(story ? 6 : 4).toList();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _header(),
+      SizedBox(height: story ? 36 : 14),
+      Text('I meditated today.', style: AppText.heroTitle.copyWith(color: Colors.white, fontSize: story ? 28 : 22, height: 1.1)),
+      const SizedBox(height: 4),
+      Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.bodyLarge.copyWith(color: Colors.white70, fontSize: story ? null : 14)),
+      const Spacer(),
+      Wrap(spacing: 12, runSpacing: story ? 22 : 12, children: [
+        for (var i = 0; i < cells.length; i++)
+          SizedBox(width: 150, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(cells[i].$1, style: AppText.overline.copyWith(color: i == 0 ? amber : Colors.white54, fontSize: 9, letterSpacing: 1.4)),
+            const SizedBox(height: 2),
+            FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(cells[i].$2, key: i == 0 ? const Key('share-minutes') : null, style: AppText.display.copyWith(color: Colors.white, fontSize: i == 0 ? (story ? 54 : 40) : (story ? 34 : 26), height: 1.05, fontWeight: FontWeight.w700, fontFeatures: AppText.tabular))),
+          ])),
+      ]),
+      const Spacer(),
+      if (dedication != null && story) ...[_quote(), const SizedBox(height: 14)],
+      _footer(),
+    ]);
+  }
+
+  /// The map is the hero. Only offered when people really meditated together.
+  Widget _worldBody() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _header(),
+        const Spacer(),
+        Text('I meditated today.', style: AppText.heroTitle.copyWith(color: Colors.white, fontSize: story ? 28 : 22, height: 1.1)),
+        const SizedBox(height: 4),
+        Text('$minutes ${minutes == 1 ? 'minute' : 'minutes'} · $title', maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.bodyLarge.copyWith(color: Colors.white70, fontSize: story ? null : 14)),
+        const SizedBox(height: 14),
+        Opacity(opacity: .95, child: WorldDotMap(hot: hot, height: story ? 230 : 120)),
+        const SizedBox(height: 12),
+        Center(child: _togetherPill()),
+        const Spacer(),
+        if (dedication != null && story) ...[_quote(), const SizedBox(height: 14)],
+        _footer(),
+      ]);
 
   static String _date(DateTime d) {
     const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -223,23 +319,25 @@ class _Glow extends StatelessWidget {
 
 /// The hero ring: a soft track, a glowing ember → amber → mint sweep, and a bright dot where it closes.
 class _RingPainter extends CustomPainter {
+  _RingPainter({this.light = false});
+  final bool light;
   @override
   void paint(Canvas canvas, Size s) {
     final c = s.center(Offset.zero);
     final r = s.width / 2 - 10;
     final rect = Rect.fromCircle(center: c, radius: r);
-    canvas.drawCircle(c, r - 14, Paint()..shader = RadialGradient(colors: [Colors.white.withValues(alpha: .07), Colors.white.withValues(alpha: 0)]).createShader(rect));
-    canvas.drawCircle(c, r, Paint()..style = PaintingStyle.stroke..strokeWidth = 7..color = Colors.white.withValues(alpha: .08));
+    canvas.drawCircle(c, r - 14, Paint()..shader = RadialGradient(colors: [Colors.white.withValues(alpha: light ? .5 : .07), Colors.white.withValues(alpha: 0)]).createShader(rect));
+    canvas.drawCircle(c, r, Paint()..style = PaintingStyle.stroke..strokeWidth = 7..color = (light ? const Color(0xFF2A1A12) : Colors.white).withValues(alpha: light ? .10 : .08));
     const sweep = SweepGradient(startAngle: -math.pi / 2, endAngle: math.pi * 1.5, colors: [ShareCard.ember, ShareCard.amber, ShareCard.mint, ShareCard.ember]);
     canvas.drawCircle(c, r, Paint()..style = PaintingStyle.stroke..strokeWidth = 14..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)..shader = sweep.createShader(rect));
     canvas.drawCircle(c, r, Paint()..style = PaintingStyle.stroke..strokeWidth = 7..strokeCap = StrokeCap.round..shader = sweep.createShader(rect));
     final dot = c + Offset(0, -r);
     canvas.drawCircle(dot, 9, Paint()..color = ShareCard.ember.withValues(alpha: .45)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
-    canvas.drawCircle(dot, 5, Paint()..color = Colors.white);
+    canvas.drawCircle(dot, 5, Paint()..color = light ? const Color(0xFF2A1A12) : Colors.white);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _RingPainter o) => o.light != light;
 }
 
 /// Faint fixed stars (same pattern every time, so the image is stable).

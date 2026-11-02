@@ -276,6 +276,7 @@ void main() {
     await settle(t);
     Get.toNamed(AppRoutes.meditationCompletePayoff, arguments: CompleteArgs(player: motd(), record: rec, counted: true));
     await settle(t);
+    await t.scrollUntilVisible(find.text('Members can write dedications. Anyone can read them.'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Members can write dedications. Anyone can read them.'), findsOneWidget);
     expect(find.byKey(const Key('dedicate-btn')), findsNothing);
     await e.dispose();
@@ -290,6 +291,7 @@ void main() {
     await settle(t);
     Get.toNamed(AppRoutes.meditationCompletePayoff, arguments: CompleteArgs(player: motd(), record: rec, counted: true));
     await settle(t);
+    await t.scrollUntilVisible(find.byKey(const Key('dedicate-gate')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.byKey(const Key('dedicate-gate')), findsOneWidget);
     await e.dispose();
   });
