@@ -39,6 +39,8 @@ import '../../core/services/auth_service.dart';
 import '../../core/services/catalog_service.dart';
 import '../../core/services/config_service.dart';
 import '../../core/services/inbox_service.dart';
+import '../../core/services/favorites_service.dart';
+import '../../core/services/practiced_service.dart';
 import '../../core/services/connectivity_service.dart';
 import '../../core/services/crash_service.dart';
 import '../../core/services/notification_service.dart';
@@ -95,6 +97,7 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
     Get.put<MeditationRepository>(mocks ? MockMeditationRepository() : MeditationApi(api), permanent: true);
+    Get.put<FavoritesRepository>(mocks ? MockFavoritesRepository() : FavoritesApi(api), permanent: true);
     Get.put<MeRepository>(mocks ? MockMeRepository() : MeApi(api), permanent: true);
     Get.put<CommunityRepository>(mocks ? MockCommunityRepository() : CommunityApi(api), permanent: true);
     Get.put<RecipeRepository>(mocks ? MockRecipeRepository() : RecipeApi(api), permanent: true);
@@ -149,7 +152,9 @@ class InitialBinding extends Bindings {
     // the DB opens asynchronously; services that need it are created lazily on first use
     Get.lazyPut<CatalogService>(() => CatalogService(Get.find(), Get.find<AppDatabase>()), fenix: true);
     Get.lazyPut<InboxService>(() => InboxService(Get.find(), Get.find<AppDatabase>()), fenix: true);
-    Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>(), Get.find<CommunityRepository>()), fenix: true);
+    Get.lazyPut<PracticedService>(() => PracticedService(Get.find(), Get.find<AppDatabase>(), access), fenix: true);
+    Get.lazyPut<FavoritesService>(() => FavoritesService(Get.find(), access), fenix: true);
+    Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>(), Get.find<CommunityRepository>(), Get.find<PracticedService>()), fenix: true);
     Get.lazyPut<NotificationService>(
       () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId))
         ..onSignedOutHook = () {
@@ -186,7 +191,11 @@ class InitialBinding extends Bindings {
           access.onSocket(e);
           downloads.purgeIfNotMember(); // downloads belong to the membership
         },
-        onAccountChanged: (_) => Get.find<AppController>().refreshAccount(),
+        onAccountChanged: (_) {
+          Get.find<AppController>().refreshAccount();
+          unawaited(Get.find<PracticedService>().load()); // a progress reset from the CMS clears the marks
+        },
+        onPracticed: (id) => Get.find<PracticedService>().onSocket(id),
       ),
       fenix: true,
     );

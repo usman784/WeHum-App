@@ -337,11 +337,18 @@ class SilenceWhereCard extends StatelessWidget {
     final c = context.colors;
     final hot = {for (final r in rows) r.country: r.n};
     if (compact) {
-      if (rows.isEmpty) return const SizedBox.shrink();
+      // the map is part of the meditation even when nobody else is there yet
+      if (rows.isEmpty) {
+        return Column(key: const Key('silence-where-compact'), mainAxisSize: MainAxisSize.min, children: [
+          WorldDotMap(hot: hot, height: 120),
+          const SizedBox(height: 6),
+          Text('No one else yet. Your meditation lights up your country.', key: const Key('silence-where-line'), textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
+        ]);
+      }
       final shown = rows.take(3).map((r) => '${flagOf(r.country)} ${countryName(r.country)} ${groupedInt(r.n)}'.trim()).join(' · ');
       final more = rows.length > 3 ? ' · +${rows.length - 3}' : '';
       return Column(key: const Key('silence-where-compact'), mainAxisSize: MainAxisSize.min, children: [
-        WorldDotMap(hot: hot, height: 84),
+        WorldDotMap(hot: hot, height: 120),
         const SizedBox(height: 6),
         Text('${live ? 'Meditating now in' : 'Meditated here today in'} $shown$more', key: const Key('silence-where-line'), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
             style: AppText.caption.copyWith(color: c.textTertiary)),

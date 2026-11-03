@@ -13,6 +13,7 @@ class RealtimeCoordinator extends GetxService {
     required this.onInbox,
     required this.onEntitlement,
     this.onAccountChanged,
+    this.onPracticed,
     this.catalogDebounce = const Duration(seconds: 10),
   });
   final SocketService _socket;
@@ -22,6 +23,8 @@ class RealtimeCoordinator extends GetxService {
   final void Function(EntitlementChanged e) onEntitlement;
   /// Something about the account was changed from the CMS (sample data or progress reset): read it again.
   final void Function(String reason)? onAccountChanged;
+  /// A meditation was finished (on any device of this account): its session id.
+  final void Function(String sessionId)? onPracticed;
   final Duration catalogDebounce;
 
   final entitlement = Rxn<EntitlementChanged>();
@@ -42,6 +45,10 @@ class RealtimeCoordinator extends GetxService {
       refreshes++;
       refreshBootstrap();
       onAccountChanged?.call('${j['reason']}');
+    }));
+    subs.add(_socket.on(SocketEvents.practicedChanged, (j) => j).listen((j) {
+      final id = j['sessionId'];
+      if (id is String) onPracticed?.call(id);
     }));
     subs.add(_socket.on(SocketEvents.configChanged, (j) => j).listen((_) {
       refreshes++;

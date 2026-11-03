@@ -7,15 +7,17 @@ import '../data/models/activity.dart';
 import '../data/models/json.dart';
 import '../errors/error_code.dart';
 import '../utils/uuid7.dart';
+import 'practiced_service.dart';
 
 /// Also sends the small community actions queued while offline (`pending_actions`: dedication holds and reports).
 /// Meditations are written to the local outbox first and sent in the background (spec §6.2, §10).
 /// Items carry a uuid v7 id, so a retry after a lost response is harmless (server is idempotent).
 class SyncService extends GetxService {
-  SyncService(this._repo, this._db, [this._community]);
+  SyncService(this._repo, this._db, [this._community, this._practiced]);
   final MeditationRepository _repo;
   final AppDatabase _db;
   final CommunityRepository? _community;
+  final PracticedService? _practiced;
 
   final pending = 0.obs;
   Future<void>? _run;
@@ -27,6 +29,7 @@ class SyncService extends GetxService {
   /// Called when the player finishes (or is ended after ≥ 3 min, spec §13).
   Future<MeditationResult?> record(MeditationRecord m, {bool waitForServer = true}) async {
     await _db.enqueueMeditation(m.id, jsonEncode(m.toJson()));
+    if (m.completed && m.sessionId != null) _practiced?.markLocal(m.sessionId!); // "Practiced" shows at once, even offline
     pending.value = await _db.outboxCount();
     final done = _waiters[m.id] = Completer<MeditationResult?>();
     unawaited(flush());
@@ -100,6 +103,7 @@ class SyncService extends GetxService {
           final res = answers[r.id];
           if (res != null) byId[r.id] = res;
           ok.add(r.id); // created, duplicate or refused by the server: none of them can succeed by retrying
+          if (r.completed && r.sessionId != null) _practiced?.confirm(r.sessionId!, counted: res?.counted ?? false);
           final w = _waiters.remove(r.id);
           if (w != null && !w.isCompleted) w.complete(res);
         }

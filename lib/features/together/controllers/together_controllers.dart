@@ -320,6 +320,8 @@ class TogetherController extends GetxController {
   final gratitudeOn = false.obs;
   /// "Shared intent": the newest dedications across meditations.
   final feed = <FeedItem>[].obs;
+  /// More dedications exist than the first page: "See all" is offered.
+  final feedMore = false.obs;
   final silenceNow = 0.obs;
   /// Durations offered in the Silence Room (from the CMS); the first four are shown on Together.
   final silenceDurations = <int>[].obs;
@@ -360,19 +362,7 @@ class TogetherController extends GetxController {
   int get silenceCount => live.silence.value?.people ?? silenceNow.value;
 
   /// "Holding this with you": toggles and shows the server's count.
-  Future<void> hold(FeedItem it) async {
-    final d = it.dedication;
-    final on = !d.heldByMe;
-    final i = feed.indexWhere((x) => x.dedication.id == d.id);
-    if (i < 0) return;
-    feed[i] = FeedItem(dedication: d.copyWith(heldByMe: on, holdingCount: d.holdingCount + (on ? 1 : -1)), place: it.place, isTeacher: it.isTeacher, sessionId: it.sessionId, sessionTitle: it.sessionTitle);
-    try {
-      final n = await Get.find<CommunityRepository>().hold(d.id, on);
-      feed[i] = FeedItem(dedication: d.copyWith(heldByMe: on, holdingCount: n), place: it.place, isTeacher: it.isTeacher, sessionId: it.sessionId, sessionTitle: it.sessionTitle);
-    } catch (_) {
-      feed[i] = it; // the server said no (offline, a guest): put it back
-    }
-  }
+  Future<void> hold(FeedItem it) => holdIn(feed, it);
 
   Future<void> toggleReminder() async {
     final on = !reminder.value;
@@ -399,7 +389,9 @@ class TogetherController extends GetxController {
         globalSit.value = null; // off, or not reachable: no card
       }
       try {
-        feed.assignAll((await Get.find<CommunityRepository>().feed()).items);
+        final p = await Get.find<CommunityRepository>().feed();
+        feed.assignAll(p.items);
+        feedMore.value = p.nextCursor != null;
       } catch (_) {/* the feed fills in when the connection is back */}
       try {
         final si = await _repo.silence();
@@ -425,6 +417,66 @@ class TogetherController extends GetxController {
   Duration get untilGroup => group.value == null ? Duration.zero : group.value!.startsAt.difference(time.now());
 }
 
+
+/// Toggles "Holding this with you" on one item of [list] at once and settles on the server's count (puts it back when refused).
+Future<void> holdIn(RxList<FeedItem> list, FeedItem it) async {
+  final d = it.dedication;
+  final on = !d.heldByMe;
+  final i = list.indexWhere((x) => x.dedication.id == d.id);
+  if (i < 0) return;
+  FeedItem withCount(int n) => FeedItem(dedication: d.copyWith(heldByMe: on, holdingCount: n), place: it.place, isTeacher: it.isTeacher, sessionId: it.sessionId, sessionTitle: it.sessionTitle);
+  list[i] = withCount(d.holdingCount + (on ? 1 : -1));
+  try {
+    final n = await Get.find<CommunityRepository>().hold(d.id, on);
+    final j = list.indexWhere((x) => x.dedication.id == d.id);
+    if (j >= 0) list[j] = withCount(n);
+  } catch (_) {
+    final j = list.indexWhere((x) => x.dedication.id == d.id);
+    if (j >= 0) list[j] = it; // the server said no (offline, a guest): put it back
+  }
+}
+
+/// Together · "See all": every dedication, newest first, loaded a page at a time.
+class AllDedicationsController extends GetxController {
+  late final CommunityRepository _repo = Get.find();
+  final state = ViewState.loading.obs;
+  final items = <FeedItem>[].obs;
+  final loadingMore = false.obs;
+  String? _cursor;
+
+  bool get hasMore => _cursor != null;
+
+  @override
+  void onInit() {
+    super.onInit();
+    load();
+  }
+
+  Future<void> load() async {
+    state.value = ViewState.loading;
+    try {
+      final p = await _repo.feed();
+      items.assignAll(p.items);
+      _cursor = p.nextCursor;
+      state.value = items.isEmpty ? ViewState.empty : ViewState.content;
+    } catch (e) {
+      state.value = ViewState.fromError(e);
+    }
+  }
+
+  Future<void> more() async {
+    if (_cursor == null || loadingMore.value) return;
+    loadingMore.value = true;
+    try {
+      final p = await _repo.feed(cursor: _cursor);
+      items.addAll(p.items);
+      _cursor = p.nextCursor;
+    } catch (_) {/* the next scroll tries again */}
+    loadingMore.value = false;
+  }
+
+  Future<void> hold(FeedItem it) => holdIn(items, it);
+}
 
 /// Next synchronised sit (Stitch "Next sit in X minutes"): countdown, who is waiting, intention, reminder, calendar.
 class NextSitController extends GetxController {

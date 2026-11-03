@@ -14,10 +14,11 @@ void main() {
     var built = 0, catalog = 0, bootstrap = 0;
     final inbox = <Map<String, dynamic>>[];
     EntitlementChanged? ent;
+    final practiced = <String>[];
     Get.lazyPut<RealtimeCoordinator>(() {
       built++;
       return RealtimeCoordinator(e.socket,
-          refreshBootstrap: () async => bootstrap++, refreshCatalog: () async => catalog++, onInbox: inbox.add, onEntitlement: (x) => ent = x, catalogDebounce: const Duration(milliseconds: 50));
+          refreshBootstrap: () async => bootstrap++, refreshCatalog: () async => catalog++, onInbox: inbox.add, onEntitlement: (x) => ent = x, onPracticed: practiced.add, catalogDebounce: const Duration(milliseconds: 50));
     }, fenix: true);
     expect(built, 0);
 
@@ -38,6 +39,9 @@ void main() {
     e.socketServer.serverPushes('inbox:new', {'item': {'id': 'n1', 'title': 'Hello', 'body': 'From Raphael', 'createdAt': '2026-10-08T06:00:00Z'}}); // the server's shape
     await t.pump();
     expect(inbox.single['id'], 'n1');
+    e.socketServer.serverPushes('practiced:changed', {'sessionId': 's-free1', 'at': '2026-11-03T10:00:00.000Z'});
+    await t.pump();
+    expect(practiced, ['s-free1']);
     await e.dispose();
   });
 }

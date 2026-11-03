@@ -95,8 +95,8 @@ class CatalogService extends GetxService {
     return [for (final id in ids) if (byId[id] != null) byId[id]!];
   }
 
-  /// Filter by length (minutes ranges), teacher, type and theme — all local.
-  List<SessionSummary> filter({String? themeId, Set<int> lengthBuckets = const {}, String? teacherId, String type = 'all', bool downloadedOnly = false, Set<String> downloadedIds = const {}}) {
+  /// Filter by length (minutes ranges), teacher, type, theme and practiced / not yet practiced — all local.
+  List<SessionSummary> filter({String? themeId, Set<int> lengthBuckets = const {}, String? teacherId, String type = 'all', bool downloadedOnly = false, Set<String> downloadedIds = const {}, String practice = 'all', bool Function(String id)? isPracticed}) {
     final c = catalog.value;
     if (c == null) return const [];
     bool lengthOk(SessionSummary s) {
@@ -113,6 +113,7 @@ class CatalogService extends GetxService {
       if (type == 'video' && !s.isVideo) return false;
       if (type == 'free' && s.isPremium) return false;
       if (downloadedOnly && !downloadedIds.contains(s.id)) return false;
+      if (practice != 'all' && isPracticed != null && isPracticed(s.id) != (practice == 'done')) return false; // done = practiced, todo = not yet
       return true;
     }).toList();
   }

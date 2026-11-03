@@ -59,6 +59,8 @@ void main() {
     await t.tapAt(const Offset(200, 300));
     await shot('s08_running_live_countries', 800);
     await t.tap(find.byKey(const Key('silence-end')));
+    await settle(t, 600);
+    await t.tap(find.byKey(const Key('silence-end-confirm')));
     await settle(t, 2000);
   });
 }

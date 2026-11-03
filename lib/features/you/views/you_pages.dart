@@ -28,6 +28,7 @@ import '../../../core/widgets/user_avatar.dart';
 import '../../../core/widgets/username_field.dart';
 import '../../onboarding/views/setup_pages.dart' show TimeWheel;
 import '../../today/views/today_pages.dart' show tabHeader;
+import '../../today/views/today_widgets.dart' show openPaywall;
 import '../controllers/you_controllers.dart';
 
 /// 54 You: the personal dashboard (Stitch): profile, forgiving streak, weekly cadence, lifetime volume, settings and offline.
@@ -123,7 +124,7 @@ class YouPage extends StatelessWidget {
           // ── lifetime
           if (!waiting && !guest) const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
           if (!waiting && !guest) Row(children: [
-            Expanded(child: _Metric('MEDITATIONS', '${l?.sits ?? life?.meditations ?? 0}', null, Icons.self_improvement_rounded)),
+            Expanded(child: _Metric('MEDITATIONS', '${l?.sits ?? life?.meditations ?? 0}', 'See all, with dates', Icons.self_improvement_rounded, key: const Key('metric-meditations'), onTap: () => Get.toNamed(AppRoutes.yourMeditations))),
             const SizedBox(width: 10),
             Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
           ]),
@@ -145,6 +146,16 @@ class YouPage extends StatelessWidget {
                 Text('${l!.hrShiftBpm! > 0 ? '+' : ''}${l.hrShiftBpm} bpm', style: AppText.title.copyWith(color: c.success, fontFeatures: AppText.tabular)),
               ]),
             ),
+          if (!waiting && !guest && ctrl.recent.isNotEmpty) AppCard(
+            key: const Key('recent-practiced'), padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Expanded(child: Text('RECENTLY PRACTICED', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
+                TextLink('See all', key: const Key('recent-see-all'), onPressed: () => Get.toNamed(AppRoutes.yourMeditations)),
+              ]),
+              for (final e in ctrl.recent) HistoryRow(e, showDay: true),
+            ]),
+          ),
           // ── settings & offline
           const _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
           PreferenceRows(access: ctrl.access, challengesOn: ctrl.challengesOn, heartRateOn: ctrl.heartRateOn),
@@ -166,6 +177,7 @@ class PreferenceRows extends StatelessWidget {
         child: Column(children: [
           for (final (key, title, sub, route, badge) in [
             ('r-downloads', 'Downloaded meditations', 'Listen without internet', AppRoutes.downloads, null),
+            ('r-favorites', 'Favourites', 'Your favourite meditations', AppRoutes.favorites, null),
             ('r-reminders', 'Reminders & sounds', 'Daily meditation reminder, bells, group warnings', AppRoutes.reminders, null),
             ('r-membership', 'Membership', access.isMember ? (access.isTrial ? 'Free trial' : 'Active') : 'Free plan', AppRoutes.manageMembership, null),
             ('r-recipes', 'My meditations', 'Your saved blends', AppRoutes.myMeditations, null),
@@ -177,7 +189,11 @@ class PreferenceRows extends StatelessWidget {
             ('r-privacy', 'Data sovereignty & privacy', 'Export your data, anonymous presence', AppRoutes.privacyData, null),
             ('r-help', 'Help & about', 'Contact, terms, version', AppRoutes.helpAbout, null),
           ])
-            ListRow(key: Key(key), title: title, subtitle: sub, trailing: badge == true ? const AppBadge(BadgeKind.comingSoon) : null, onTap: () => Get.toNamed(route)),
+            ListRow(
+              key: Key(key), title: title, subtitle: sub,
+              trailing: badge == true ? const AppBadge(BadgeKind.comingSoon) : ((key == 'r-downloads' || key == 'r-favorites') && !access.isMember ? const AppBadge(BadgeKind.premium) : null),
+              onTap: (key == 'r-downloads' || key == 'r-favorites') && !access.isMember ? () => openPaywall('lock') : () => Get.toNamed(route), // downloads and favourites are premium
+            ),
         ]),
       );
 }
@@ -238,7 +254,8 @@ class _SecHead extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric(this.label, this.value, this.sub, this.icon);
+  const _Metric(this.label, this.value, this.sub, this.icon, {this.onTap, super.key});
+  final VoidCallback? onTap;
   final String label, value;
   final String? sub;
   final IconData icon;
@@ -246,9 +263,10 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     return AppCard(
+      onTap: onTap,
       padding: const EdgeInsets.all(14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))), Icon(icon, size: 16, color: c.textSecondary)]),
+        Row(children: [Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))), Icon(onTap == null ? icon : Icons.chevron_right_rounded, size: 16, color: c.textSecondary)]),
         const SizedBox(height: 10),
         CountUp(value: int.tryParse(value) ?? -1, builder: (_, n) => Text(int.tryParse(value) == null ? value : '$n', style: AppText.display.copyWith(color: c.emberText, fontSize: 30, fontFeatures: AppText.tabular))),
         if (sub != null) Text(sub!, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary)),
@@ -724,6 +742,74 @@ class HelpPage extends StatelessWidget {
         ListRow(title: 'Privacy policy', onTap: () => open(AppLinks.privacy)),
         const SizedBox(height: 24),
         Center(child: Column(children: [Text('${brandName()} by Raphael Reiter', style: AppText.navTitle.copyWith(color: c.textPrimary)), GestureDetector(behavior: HitTestBehavior.opaque, onTap: () async { if (await ctrl.versionTapped() && context.mounted) AppSnack.success(context, 'Test event sent'); }, child: Obx(() => Text(ctrl.version.value, key: const Key('version'), style: AppText.bodySmall.copyWith(color: c.textSecondary)))), const SizedBox(height: 4), Text('Transcendence & Connection', style: AppText.caption.copyWith(color: c.textTertiary))])),
+      ]),
+    );
+  }
+}
+
+/// You → Meditations: all the meditations the person practiced, by day, newest first.
+class MeditationHistoryPage extends StatelessWidget {
+  const MeditationHistoryPage({super.key});
+
+  static String dayLabel(DateTime d, [DateTime? now]) {
+    final n = now ?? DateTime.now();
+    final today = DateTime(n.year, n.month, n.day);
+    final diff = today.difference(d).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return d.year == today.year ? DateFormat('EEEE, MMM d').format(d) : DateFormat('MMM d, y').format(d);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final ctrl = Get.put(MeditationHistoryController());
+    return AppScaffold(
+      title: 'Your meditations',
+      body: Obx(() => StateSwitcher(
+            state: ctrl.state.value, onRetry: ctrl.load,
+            empty: const EmptyState(key: Key('history-empty'), title: 'No meditations yet', body: 'Meditations you finish show up here, with the day you did them.', icon: Icons.self_improvement_rounded),
+            content: () => Obx(() {
+              final days = ctrl.days;
+              return NotificationListener<ScrollNotification>(
+                onNotification: (n) {
+                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) ctrl.more();
+                  return false;
+                },
+                child: ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+                  Text('${ctrl.entries.length}${ctrl.hasMore ? '+' : ''} ${ctrl.entries.length == 1 && !ctrl.hasMore ? 'meditation' : 'meditations'}', key: const Key('history-count'), style: AppText.overline.copyWith(color: c.textTertiary)),
+                  for (final (day, list) in days) ...[
+                    Padding(padding: const EdgeInsets.only(top: 16, bottom: 6), child: Text(dayLabel(day), key: Key('history-day-${DateFormat('yyyy-MM-dd').format(day)}'), style: AppText.navTitle.copyWith(color: c.textPrimary))),
+                    for (final e in list) HistoryRow(e),
+                  ],
+                  if (ctrl.loadingMore.value) const Padding(padding: EdgeInsets.all(16), child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))),
+                ]),
+              );
+            }),
+          )),
+    );
+  }
+}
+
+/// One practiced meditation: title, and the time (history list, grouped by day) or the day and time (You tab).
+class HistoryRow extends StatelessWidget {
+  const HistoryRow(this.e, {super.key, this.showDay = false});
+  final MeditationLogEntry e;
+  final bool showDay;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = e.startedAt.toLocal();
+    final when = showDay ? '${MeditationHistoryPage.dayLabel(DateTime(t.year, t.month, t.day))}, ${DateFormat.jm().format(t)}' : DateFormat.jm().format(t);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(key: Key('history-${e.id}'), children: [
+        IconTile(e.completed ? Icons.check_rounded : Icons.self_improvement_rounded, size: 40),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(e.label, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
+          Text('$when · ${e.minutes} min', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+        ])),
       ]),
     );
   }

@@ -17,6 +17,8 @@ import '../../../core/services/config_service.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/download_service.dart';
+import '../../../core/services/favorites_service.dart';
+import '../../today/views/today_widgets.dart' show openPaywall;
 import '../../../core/services/play_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
@@ -41,6 +43,7 @@ class SessionDetailController extends GetxController {
   late final CatalogService catalog = Get.find();
   late final AccessService access = Get.find();
   late final DownloadService downloads = Get.find();
+  late final FavoritesService favorites = Get.find();
   late final LiveService live = Get.find();
 
   final state = ViewState.loading.obs;
@@ -116,6 +119,22 @@ class SessionDetailController extends GetxController {
     launchSession(x);
   }
 
+  bool get favorited => s != null && favorites.isFavorite(s!.id);
+
+  /// The heart: a member favourites or un-favourites; a free user is taken to the membership screen and nothing is saved.
+  Future<void> toggleFavorite() async {
+    final x = s;
+    if (x == null) return;
+    switch (await favorites.toggle(x)) {
+      case FavoriteOutcome.needsMembership:
+        openPaywall('lock');
+      case FavoriteOutcome.failed:
+        Get.snackbar('WeHum', 'Could not update your favourites. Please try again.', snackPosition: SnackPosition.BOTTOM);
+      case FavoriteOutcome.added || FavoriteOutcome.removed:
+        break;
+    }
+  }
+
   Future<void> toggleDownload() async {
     message.value = null;
     if (downloaded || downloading) {
@@ -154,7 +173,7 @@ class SessionDetailPage extends StatelessWidget {
               final d = ctrl.detail.value;
               final member = ctrl.access.isMember;
               return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: staggered([
-                HeroImageCard(image: s.cover?.url, blurHash: s.cover?.blurhash, seed: s.id, height: 220, child: Align(alignment: Alignment.topLeft, child: Row(children: [if (s.isPremium) const AppBadge(BadgeKind.premium), const SizedBox(width: 8), if (!s.isYoutube) AppBadge(s.isVideo ? BadgeKind.video : BadgeKind.audio)]))),
+                HeroImageCard(image: s.cover?.url, blurHash: s.cover?.blurhash, seed: s.id, height: 220, child: Stack(children: [Align(alignment: Alignment.topLeft, child: Row(children: [if (s.isPremium) const AppBadge(BadgeKind.premium), const SizedBox(width: 8), if (!s.isYoutube) AppBadge(s.isVideo ? BadgeKind.video : BadgeKind.audio)])), Align(alignment: Alignment.topRight, child: Material(color: Colors.black38, shape: const CircleBorder(), child: IconButton(key: const Key('session-favorite'), tooltip: ctrl.favorited ? 'Remove from favourites' : 'Add to favourites', icon: Icon(ctrl.favorited ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: ctrl.favorited ? c.emberText : Colors.white), onPressed: ctrl.toggleFavorite)))])),
                 const SizedBox(height: 14),
                 Text(s.title, key: const Key('session-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
                 Text('${d?.teacher?.name ?? 'Raphael'}${d?.theme == null ? '' : ' · ${d!.theme!.name}'} · ${ctrl.motd.value != null ? ctrl.motd.value!.lengths.map((l) => '$l').join(', ') : '${s.minutes}'} min', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),

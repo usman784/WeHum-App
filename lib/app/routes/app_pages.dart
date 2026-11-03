@@ -10,6 +10,7 @@ import '../../features/complete/complete_pages.dart';
 import '../../features/heart/heart_page.dart';
 import '../../features/library/views/detail_pages.dart';
 import '../../features/library/views/library_pages.dart';
+import '../../features/library/views/favorites_page.dart';
 import '../../features/library/views/session_pages.dart';
 import '../../features/membership/views/membership_pages.dart';
 import '../../features/messages/views/messages_pages.dart';
@@ -87,6 +88,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.meditationCompletePayoff, page: () => const CompletePage()),
     GetPage(name: AppRoutes.shareYourMeditation, page: () => Get.arguments is CompleteController ? const SharePage() : const _BackToToday()), // nothing to share without a finished sit
     GetPage(name: AppRoutes.sessionDedications, page: () => const DedicationsPage()),
+    GetPage(name: AppRoutes.allDedications, page: () => const AllDedicationsPage()),
     GetPage(name: AppRoutes.silenceRoomSetup, page: () => const MembersOnly(title: 'Silence Room', child: SilenceSetupPage())),
     GetPage(name: AppRoutes.silenceRoomMeditating, page: () => const MembersOnly(title: 'Silence Room', child: SilenceRunPage())),
     GetPage(name: AppRoutes.together, page: () => const TogetherPage(), transition: Transition.noTransition, transitionDuration: Duration.zero), // bottom-nav tabs switch without a slide
@@ -95,9 +97,11 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.nextSit, page: () => const MembersOnly(title: 'Next meditation', child: NextSitPage())),
     GetPage(name: AppRoutes.you, page: () => const YouPage(), transition: Transition.noTransition, transitionDuration: Duration.zero), // bottom-nav tabs switch without a slide
     GetPage(name: AppRoutes.yourProgress, page: () => const AccountOnly(title: 'Your progress', body: AccountOnly.progressBody, child: ProgressPage())),
+    GetPage(name: AppRoutes.yourMeditations, page: () => const AccountOnly(title: 'Your meditations', body: AccountOnly.progressBody, child: MeditationHistoryPage())),
     GetPage(name: AppRoutes.editProfile, page: () => const AccountOnly(title: 'Edit profile', child: EditProfilePage())),
     GetPage(name: AppRoutes.reminders, page: () => const RemindersPage()),
-    GetPage(name: AppRoutes.downloads, page: () => const DownloadsPage()),
+    GetPage(name: AppRoutes.favorites, page: () => const MembersOnly(title: 'Favourites', child: FavoritesPage())), // members only: a free user gets the membership screen
+    GetPage(name: AppRoutes.downloads, page: () => const MembersOnly(title: 'Downloads', child: DownloadsPage())), // premium: a free user gets the membership screen, never the library
     GetPage(name: AppRoutes.privacyData, page: () => const PrivacyPage()),
     GetPage(name: AppRoutes.heartRate, page: () => const HeartRatePage()),
     GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),

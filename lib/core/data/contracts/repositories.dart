@@ -52,8 +52,18 @@ abstract class MeditationRepository {
   Future<List<MeditationResult>> batch(List<MeditationRecord> items);
   Future<Page<Json>> history({String? cursor});
 
+  /// Ids of the meditations the person has finished at least once (free and premium): the "Practiced" mark and filter.
+  Future<Set<String>> practiced();
+
   /// "Send kudos to all" after finishing a meditation.
   Future<int> kudos(String sessionId);
+}
+
+/// A member's favourite meditations. Every call needs a membership: a free account gets `PREMIUM_REQUIRED`.
+abstract class FavoritesRepository {
+  /// Newest favourite first.
+  Future<List<SessionSummary>> list();
+  Future<void> set(String sessionId, {required bool on});
 }
 
 class DeviceRegistration {

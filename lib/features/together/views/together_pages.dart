@@ -375,6 +375,10 @@ class TogetherPage extends StatelessWidget {
                 Row(children: [
                   Expanded(child: Text('SHARED INTENT', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10.5))),
                   if (g?.sessionId != null) TextLink('By meditation', onPressed: () => Get.toNamed('/dedications/${g!.sessionId}', arguments: {'sessionId': g.sessionId})),
+                  if (ctrl.feed.length > 3 || ctrl.feedMore.value) ...[
+                    const SizedBox(width: 14),
+                    TextLink('See all', key: const Key('feed-see-all'), onPressed: () => Get.toNamed(AppRoutes.allDedications)),
+                  ],
                 ]),
                 const SizedBox(height: 4),
                 Text('Who or what do you dedicate your practice to?', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 20)),
@@ -384,7 +388,8 @@ class TogetherPage extends StatelessWidget {
                 if (ctrl.feed.isEmpty)
                   for (final d in ctrl.dedications.take(2)) DedicationLine(d)
                 else
-                  for (final it in ctrl.feed.take(8)) _FeedCard(key: Key('feed-${it.dedication.id}'), it: it, onHold: () => ctrl.hold(it)),
+                  for (final it in ctrl.feed.take(3)) _FeedCard(key: Key('feed-${it.dedication.id}'), it: it, onHold: () => ctrl.hold(it)),
+
                 const SizedBox(height: 10),
                 Text('Dedicate your meditation during the final reflection. It is shown here, with your first name.', style: AppText.caption.copyWith(color: c.textTertiary)),
                 const SizedBox(height: 12),
@@ -432,6 +437,32 @@ class _FeedCard extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+}
+
+/// Together · See all: every dedication, newest first; more load as you scroll.
+class AllDedicationsPage extends StatelessWidget {
+  const AllDedicationsPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = Get.put(AllDedicationsController());
+    return AppScaffold(
+      title: 'Dedications',
+      body: Obx(() => StateSwitcher(
+            state: ctrl.state.value, onRetry: ctrl.load,
+            empty: const EmptyState(title: 'No dedications yet', body: 'Dedications appear here after a meditation.', icon: Icons.favorite_border_rounded),
+            content: () => NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) ctrl.more();
+                return false;
+              },
+              child: Obx(() => ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, 24), children: [
+                    for (final it in ctrl.items) _FeedCard(key: Key('all-${it.dedication.id}'), it: it, onHold: () => ctrl.hold(it)),
+                    if (ctrl.loadingMore.value) const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                  ])),
+            ),
+          )),
     );
   }
 }

@@ -5,6 +5,7 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/config_service.dart';
+import '../../../core/services/practiced_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -45,6 +46,15 @@ class SessionRow extends StatelessWidget {
               Text(s.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
               const SizedBox(height: 2),
               Text('${s.isVideo ? 'Video' : (s.isYoutube ? 'Online library' : 'Audio')} · ${s.minutes} min', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              if (Get.isRegistered<PracticedService>())
+                Obx(() => Get.find<PracticedService>().isDone(s.id)
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Row(key: Key('practiced-${s.id}'), mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.check_circle_rounded, size: 14, color: c.tealText), const SizedBox(width: 4),
+                          Text('Practiced', style: AppText.caption.copyWith(color: c.tealText, fontWeight: FontWeight.w600)),
+                        ]))
+                    : const SizedBox.shrink()),
             ]),
           ),
           if (downloaded) Padding(padding: const EdgeInsets.only(right: 6), child: Icon(Icons.download_done_rounded, size: 18, color: c.tealText)),
@@ -88,7 +98,7 @@ class LibraryPage extends StatelessWidget {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(children: [
-                    for (final (k, label) in const [('all', 'All'), ('short', 'Under 10 min'), ('mid', '10–20 min'), ('free', 'Free'), ('downloaded', 'Downloaded')])
+                    for (final (k, label) in const [('all', 'All'), ('short', 'Under 10 min'), ('mid', '10–20 min'), ('free', 'Free'), ('practiced', 'Practiced'), ('todo', 'Not yet practiced'), ('downloaded', 'Downloaded')])
                       Padding(padding: const EdgeInsets.only(right: 8), child: _Chip(key: Key('chip-$k'), label: label, selected: ctrl.chipOn(k), onTap: () => ctrl.chip(k))),
                   ]),
                 ),
@@ -139,7 +149,7 @@ class LibraryPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   AppCard(key: const Key('recipes-row'), onTap: () => member ? Get.toNamed(AppRoutes.myMeditations) : openPaywall('lock'), child: ListRow(title: 'My Meditations', trailing: member ? Text('${ctrl.recipeCount.value}', style: AppText.navTitle.copyWith(color: c.textSecondary)) : const AppBadge(BadgeKind.premium))), // members only (saved Build your own mixes)
                   const SizedBox(height: 8),
-                  AppCard(key: const Key('downloads-row'), onTap: () => Get.toNamed(AppRoutes.downloads), child: ListRow(title: 'Downloads', trailing: Obx(() => Text('${ctrl.downloadedIds.length}', style: AppText.navTitle.copyWith(color: c.textSecondary))))),
+                  AppCard(key: const Key('downloads-row'), onTap: () => member ? Get.toNamed(AppRoutes.downloads) : openPaywall('lock'), child: ListRow(title: 'Downloads', trailing: member ? Obx(() => Text('${ctrl.downloadedIds.length}', style: AppText.navTitle.copyWith(color: c.textSecondary))) : const AppBadge(BadgeKind.premium))), // premium only
                   const SizedBox(height: 16),
                   if (cat.teachers.isNotEmpty) ...[
                     Text('TEACHERS', key: const Key('teachers-heading'), style: AppText.overline.copyWith(color: c.textTertiary)),
@@ -221,6 +231,10 @@ Future<void> showFiltersSheet(BuildContext context, LibraryController ctrl) asyn
         Text('TYPE', style: AppText.overline.copyWith(color: c.textTertiary)),
         const SizedBox(height: 8),
         PillGroup<String>(options: const ['all', 'audio', 'video', 'free'], selected: {f.type}, onToggle: (v) => set(() => f = f.copyWith(type: v)), labelOf: (v) => '${v[0].toUpperCase()}${v.substring(1)}'),
+        const SizedBox(height: 16),
+        Text('PRACTICE', style: AppText.overline.copyWith(color: c.textTertiary)),
+        const SizedBox(height: 8),
+        PillGroup<String>(options: const ['all', 'done', 'todo'], selected: {f.practice}, onToggle: (v) => set(() => f = f.copyWith(practice: v)), labelOf: (v) => switch (v) { 'done' => 'Practiced', 'todo' => 'Not yet practiced', _ => 'All' }),
         const SizedBox(height: 16),
         Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Downloaded only', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Meditations that play without internet', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(value: f.downloadedOnly, onChanged: (v) => set(() => f = f.copyWith(downloadedOnly: v)), label: 'Downloaded only')]),
         const SizedBox(height: 16),

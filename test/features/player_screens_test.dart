@@ -27,7 +27,7 @@ const sid = '11111111-1111-4111-8111-111111111111';
 PlayerArgs motd({String kind = 'motd', String mode = 'solo', Duration startAt = Duration.zero, bool live = false}) => PlayerArgs(
     kind: kind, mode: mode, title: 'Steady Under Pressure', subtitle: 'with Raphael', sessionId: sid, date: '2026-10-07', lengthMin: 10, target: const PlayMotd('2026-10-07', 10), durationSec: 600, startAt: startAt, live: live);
 
-Future<TestEnv> openPlayer(WidgetTester t, PlayerArgs args, {bool member = true}) async {
+Future<TestEnv> openPlayer(WidgetTester t, PlayerArgs args, {bool member = true, String route = AppRoutes.playerPresenceRing}) async {
   phone(t);
   t.view.physicalSize = const Size(1170, 5600); // the whole player is built (with the dedications panel)
   final e = await TestEnv.create(member: member, onboardingDone: true);
@@ -37,7 +37,7 @@ Future<TestEnv> openPlayer(WidgetTester t, PlayerArgs args, {bool member = true}
   e.me.profile = MeProfile(id: 'mock-user', firstName: 'Marcus', isGuest: false, entitlement: Entitlement(active: member)); // a member with an account
   await t.pumpWidget(e.app());
   await settle(t);
-  Get.toNamed(AppRoutes.playerPresenceRing, arguments: args);
+  Get.toNamed(route, arguments: args);
   await settle(t);
   return e;
 }
@@ -77,6 +77,20 @@ void main() {
     expect(find.textContaining('INHALE'), findsNothing);
     expect(find.textContaining('EXHALE'), findsNothing);
     expect(find.textContaining('BPM'), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<PlayerController>(tag: sid, force: true);
+    await e.dispose();
+  });
+
+  testWidgets('43 video player: the progress bar can be touched and dragged too', (t) async {
+    final e = await openPlayer(t, motd(), route: AppRoutes.videoPlayer);
+    final bar = find.byKey(const Key('progress-scrub'));
+    await t.scrollUntilVisible(bar, 300, scrollable: find.byType(Scrollable).first);
+    expect(bar, findsOneWidget);
+    final box = t.getRect(bar);
+    await t.tapAt(Offset(box.left + box.width * .5, box.center.dy));
+    await afterPush(t);
+    expect(e.engine.seeks.last.inSeconds, inInclusiveRange(295, 305));
     await t.pumpWidget(const SizedBox());
     Get.delete<PlayerController>(tag: sid, force: true);
     await e.dispose();

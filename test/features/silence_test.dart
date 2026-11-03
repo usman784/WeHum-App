@@ -352,6 +352,43 @@ void main() {
     Get.delete<SilenceController>(force: true);
     await e.dispose();
   });
+  testWidgets('51 End meditation asks "Are you sure you want to end early?": No carries on, Yes ends; the map stays on the run screen', (t) async {
+    phone(t);
+    t.view.physicalSize = const Size(1170, 6000); // the whole setup page is built
+    final e = await TestEnv.create(member: true, onboardingDone: true);
+    await e.socket.connect();
+    e.socketServer.serverConnects();
+    Get.put(SilenceController(bell: FakeBell(), screen: FakeScreen()));
+    await t.pumpWidget(e.app(initial: AppRoutes.silenceRoomSetup));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    await t.tap(find.byKey(const Key('silence-enter')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    for (var i = 0; i < 4; i++) {
+      await t.pump(const Duration(seconds: 1));
+    }
+    expect(find.byKey(const Key('silence-where-compact')), findsOneWidget); // the map is part of the sit, on any phone height
+    await t.tap(find.byKey(const Key('silence-end')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    expect(find.text('Are you sure you want to end early?'), findsOneWidget);
+    await t.tap(find.byKey(const Key('silence-end-keep')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    expect(find.text('Are you sure you want to end early?'), findsNothing);
+    expect(find.byKey(const Key('silence-time')), findsOneWidget); // still meditating
+    await t.tap(find.byKey(const Key('silence-end')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    await t.tap(find.byKey(const Key('silence-end-confirm')));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 600));
+    expect(find.byKey(const Key('silence-time')), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    Get.delete<SilenceController>(force: true);
+    await e.dispose();
+  });
 }
 
 void driftOff() {

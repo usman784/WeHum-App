@@ -76,15 +76,23 @@ class ShareCard extends StatelessWidget {
         const SizedBox(width: 8),
         Text('WeHum', style: AppText.navTitle.copyWith(color: _ink, fontSize: 16, letterSpacing: .2)),
         const Spacer(),
-        _Glass(
-          radius: 99, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Container(width: 6, height: 6, decoration: const BoxDecoration(color: mint, shape: BoxShape.circle, boxShadow: [BoxShadow(color: mint, blurRadius: 6)])),
-            const SizedBox(width: 6),
-            Text('MEDITATION COMPLETE', style: AppText.overline.copyWith(color: Colors.white, fontSize: 9, letterSpacing: 1.1)),
-          ]),
-        ),
+        _headerPill(),
       ]);
+
+  /// "MEDITATION COMPLETE": frosted glass on the dark looks, a soft white pill with dark text on the light one (white text would vanish).
+  Widget _headerPill() {
+    final row = Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 6, height: 6, decoration: const BoxDecoration(color: mint, shape: BoxShape.circle, boxShadow: [BoxShadow(color: mint, blurRadius: 6)])),
+      const SizedBox(width: 6),
+      Text('MEDITATION COMPLETE', style: AppText.overline.copyWith(color: _ink, fontSize: 9, letterSpacing: 1.1)),
+    ]);
+    if (!_light) return _Glass(radius: 99, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), child: row);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: .7), borderRadius: BorderRadius.circular(99), border: Border.all(color: _ink.withValues(alpha: .12), width: .8)),
+      child: row,
+    );
+  }
 
   Widget _ring(double size) => SizedBox(
         width: size, height: size,

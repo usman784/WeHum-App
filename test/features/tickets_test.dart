@@ -3,11 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/app_controller.dart';
 import 'package:meditation/app/routes/app_routes.dart';
-import 'package:meditation/core/data/models/activity.dart';
+import 'package:meditation/core/data/models/activity.dart' as act;
+import 'package:meditation/core/data/models/activity.dart' hide Page;
+import 'package:meditation/core/data/models/content.dart' show Dedication;
+import 'package:meditation/core/data/models/stitch.dart';
 import 'package:meditation/core/errors/error_code.dart';
 import 'package:meditation/core/services/account_service.dart';
 import 'package:meditation/core/services/deep_links.dart';
 import 'package:meditation/core/services/inbox_service.dart';
+import 'package:meditation/core/data/contracts/repositories.dart';
+import 'package:meditation/core/data/mock/mock_repositories.dart';
 import 'package:meditation/core/theme/app_theme.dart';
 import 'package:meditation/core/widgets/video_description.dart';
 import 'package:meditation/features/account/controllers/account_controllers.dart';
@@ -30,6 +35,13 @@ Future<TestEnv> open(WidgetTester t, String route, {bool member = true, bool onb
   await t.pumpWidget(e.app(initial: route));
   await settle(t);
   return e;
+}
+
+/// Seven dedications in two pages (5, then 2), newest first.
+class _ManyDedications extends MockCommunityRepository {
+  FeedItem _item(int i) => FeedItem(dedication: Dedication(id: 'm$i', firstName: 'Person$i', text: 'Dedication number $i.', holdingCount: i, createdAt: DateTime.now().toUtc().subtract(Duration(minutes: i))));
+  @override
+  Future<act.Page<FeedItem>> feed({String? cursor}) async => cursor == null ? act.Page([for (var i = 1; i <= 5; i++) _item(i)], 'c2') : act.Page([_item(6), _item(7)], null);
 }
 
 void main() {
@@ -181,6 +193,27 @@ void main() {
       await t.scrollUntilVisible(find.byKey(const Key('teachers-heading')), 300, scrollable: find.byType(Scrollable).first);
       expect(find.text('TEACHERS'), findsOneWidget);
       expect(find.byKey(const Key('teacher-card')), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('Together: the dedications feed shows 3, "See all" opens every dedication', (t) async {
+      phone(t);
+      final e = await TestEnv.create(member: true, onboardingDone: true, prefs: const {'first_name': 'Marcus'});
+      Get.replace<CommunityRepository>(_ManyDedications());
+      await t.pumpWidget(e.app(initial: AppRoutes.together));
+      await settle(t);
+      await t.scrollUntilVisible(find.byKey(const Key('feed-m3')), 300, scrollable: find.byType(Scrollable).first);
+      expect(find.byKey(const Key('feed-see-all')), findsOneWidget); // a text link on the right of the heading
+      expect(find.byKey(const Key('feed-m1')), findsOneWidget);
+      expect(find.byKey(const Key('feed-m3')), findsOneWidget);
+      expect(find.byKey(const Key('feed-m4')), findsNothing); // only 3 on the tab
+      await t.tap(find.byKey(const Key('feed-see-all')));
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.allDedications);
+      expect(find.byKey(const Key('all-m1')), findsOneWidget);
+      await t.scrollUntilVisible(find.byKey(const Key('all-m7')), 300, scrollable: find.byType(Scrollable).first); // the second page loads on scroll
+      expect(find.byKey(const Key('all-m7')), findsOneWidget);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
     });

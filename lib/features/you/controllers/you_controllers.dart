@@ -25,6 +25,8 @@ import '../../../core/services/download_service.dart';
 import '../../../core/services/logger.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/onboarding_store.dart';
+import '../../../core/services/practiced_service.dart';
+import '../../../core/services/sync_service.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/states.dart';
 
@@ -36,6 +38,9 @@ class YouController extends GetxController {
   final week = Rxn<ProgressData>();
   final lifetime = Rxn<ProgressData>();
   final signingOut = false.obs;
+  /// The last few meditations practiced (newest first) for the "Recently practiced" block.
+  final recent = <MeditationLogEntry>[].obs;
+  final _workers = <Worker>[];
   /// False until the first progress answer (or failure): the page shows placeholders in the same places meanwhile,
   /// so the streak block does not pop in above the week chart and push everything down.
   final loaded = false.obs;
@@ -62,9 +67,30 @@ class YouController extends GetxController {
   void onReady() {
     super.onReady();
     load();
+    // live: a sit recorded on this phone, or finished on another device
+    if (Get.isRegistered<SyncService>()) _workers.add(debounce(Get.find<SyncService>().byId, (_) => loadRecent(), time: const Duration(milliseconds: 400)));
+    if (Get.isRegistered<PracticedService>()) _workers.add(debounce(Get.find<PracticedService>().revision, (_) => loadRecent(), time: const Duration(milliseconds: 400)));
+  }
+
+  @override
+  void onClose() {
+    for (final w in _workers) {
+      w.dispose();
+    }
+    super.onClose();
+  }
+
+  Future<void> loadRecent() async {
+    if (access.isGuest.value || !Get.isRegistered<MeditationRepository>()) return;
+    try {
+      final p = await Get.find<MeditationRepository>().history();
+      if (isClosed) return;
+      recent.assignAll(MeditationHistoryController.counted(p).take(3));
+    } catch (_) {/* the block keeps what it shows */}
   }
 
   Future<void> load() async {
+    unawaited(loadRecent());
     try {
       profile.value = await _me.me();
       access.setFromProfile(profile.value!);
@@ -570,5 +596,83 @@ class PushPreviewController extends GetxController {
       ('Group meditation in 10 minutes', 'Join the lobby and start together.', groupWarningAt.value ?? ''),
       ('Today’s message from Raphael', 'A short note for your day.', store.reminderTime),
     ];
+  }
+}
+
+/// You → Meditations: every meditation the person practiced, newest first, with its date. Pages in as you scroll and
+/// refreshes by itself when a sit is recorded here or finished on another device.
+class MeditationHistoryController extends GetxController {
+  late final MeditationRepository _repo = Get.find();
+  final entries = <MeditationLogEntry>[].obs;
+  final state = ViewState.loading.obs;
+  final loadingMore = false.obs;
+  String? _cursor;
+  bool get hasMore => _cursor != null;
+  final _workers = <Worker>[];
+  int _gen = 0;
+
+  @override
+  void onInit() {
+    super.onInit();
+    load();
+    // live: this phone recorded a sit (SyncService answer) or another device finished one (socket → PracticedService)
+    if (Get.isRegistered<SyncService>()) _workers.add(debounce(Get.find<SyncService>().byId, (_) => load(), time: const Duration(milliseconds: 400)));
+    if (Get.isRegistered<PracticedService>()) _workers.add(debounce(Get.find<PracticedService>().revision, (_) => load(), time: const Duration(milliseconds: 400)));
+  }
+
+  @override
+  void onClose() {
+    for (final w in _workers) {
+      w.dispose();
+    }
+    super.onClose();
+  }
+
+  /// Only sits that counted: the same ones the MEDITATIONS number adds up.
+  static List<MeditationLogEntry> counted(Page<Json> p) => [for (final j in p.items) MeditationLogEntry.fromJson(j)].where((e) => e.counted).toList();
+
+  Future<void> load() async {
+    final gen = ++_gen;
+    if (entries.isEmpty) state.value = ViewState.loading;
+    try {
+      final p = await _repo.history();
+      if (gen != _gen) return;
+      entries.assignAll(counted(p));
+      _cursor = p.nextCursor;
+      state.value = entries.isEmpty && !hasMore ? ViewState.empty : ViewState.content;
+    } catch (e) {
+      if (gen != _gen) return;
+      if (entries.isEmpty) state.value = ViewState.fromError(e); // a list that is already shown stays on a failed refresh
+    }
+  }
+
+  Future<void> more() async {
+    if (_cursor == null || loadingMore.value) return;
+    loadingMore.value = true;
+    final gen = _gen;
+    try {
+      final p = await _repo.history(cursor: _cursor);
+      if (gen != _gen) return;
+      final seen = entries.map((e) => e.id).toSet();
+      entries.addAll(counted(p).where((e) => !seen.contains(e.id)));
+      _cursor = p.nextCursor;
+    } catch (_) {/* the next scroll tries again */} finally {
+      loadingMore.value = false;
+    }
+  }
+
+  /// Entries grouped by local day, newest first: `(day, entries)`.
+  List<(DateTime, List<MeditationLogEntry>)> get days {
+    final out = <(DateTime, List<MeditationLogEntry>)>[];
+    for (final e in entries) {
+      final t = e.startedAt.toLocal();
+      final d = DateTime(t.year, t.month, t.day);
+      if (out.isNotEmpty && out.last.$1 == d) {
+        out.last.$2.add(e);
+      } else {
+        out.add((d, [e]));
+      }
+    }
+    return out;
   }
 }

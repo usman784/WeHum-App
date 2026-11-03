@@ -68,10 +68,9 @@ class TransportControls extends StatelessWidget {
     return Obx(() {
       final playing = ctrl.phase.value == PlayerPhase.playing || ctrl.phase.value == PlayerPhase.buffering;
       return Column(children: [
-        Semantics(
-          label: 'Progress ${mmss(ctrl.position.value)} of ${mmss(ctrl.duration.value)}',
-          child: AppProgressBar(ctrl.progress),
-        ),
+        live
+            ? Semantics(label: 'Progress ${mmss(ctrl.position.value)} of ${mmss(ctrl.duration.value)}', child: AppProgressBar(ctrl.progress))
+            : _ScrubBar(ctrl: ctrl), // touch or drag to move through the meditation (not in a group)
         const SizedBox(height: 8),
         Row(children: [
           Text(mmss(ctrl.position.value), key: const Key('pos'), style: AppText.bodySmall.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular)),

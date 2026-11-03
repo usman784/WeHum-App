@@ -12,19 +12,21 @@ import '../../../core/services/config_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/services/download_service.dart';
+import '../../../core/services/practiced_service.dart';
 import '../../../core/services/play_launcher.dart';
 import '../../../core/widgets/states.dart';
 
 /// Filter choices (sheet 33). Applied locally to the catalog snapshot.
 class LibraryFilters {
-  const LibraryFilters({this.lengths = const {}, this.teacherId, this.type = 'all', this.downloadedOnly = false});
+  const LibraryFilters({this.lengths = const {}, this.teacherId, this.type = 'all', this.downloadedOnly = false, this.practice = 'all'});
   final Set<int> lengths; // buckets: 10 (≤10), 20 (11–20), 30 (21–30), 45 (> 30)
   final String? teacherId;
   final String type; // all | audio | video | free
   final bool downloadedOnly;
-  bool get active => lengths.isNotEmpty || teacherId != null || type != 'all' || downloadedOnly;
-  LibraryFilters copyWith({Set<int>? lengths, Object? teacherId = _keep, String? type, bool? downloadedOnly}) =>
-      LibraryFilters(lengths: lengths ?? this.lengths, teacherId: identical(teacherId, _keep) ? this.teacherId : teacherId as String?, type: type ?? this.type, downloadedOnly: downloadedOnly ?? this.downloadedOnly);
+  final String practice; // all | done (practiced) | todo (not yet practiced)
+  bool get active => lengths.isNotEmpty || teacherId != null || type != 'all' || downloadedOnly || practice != 'all';
+  LibraryFilters copyWith({Set<int>? lengths, Object? teacherId = _keep, String? type, bool? downloadedOnly, String? practice}) =>
+      LibraryFilters(lengths: lengths ?? this.lengths, teacherId: identical(teacherId, _keep) ? this.teacherId : teacherId as String?, type: type ?? this.type, downloadedOnly: downloadedOnly ?? this.downloadedOnly, practice: practice ?? this.practice);
   static const _keep = Object();
 }
 
@@ -33,6 +35,7 @@ class LibraryController extends GetxController {
   late final CatalogService catalog = Get.find();
   late final DownloadService downloads = Get.find();
   late final AccessService access = Get.find();
+  late final PracticedService practiced = Get.find();
 
   final state = ViewState.loading.obs;
   final filters = const LibraryFilters().obs;
@@ -64,6 +67,7 @@ class LibraryController extends GetxController {
     try {
       summary.value = await Get.find<TodayRepository>().librarySummary();
     } catch (_) {}
+    unawaited(practiced.load());
   }
 
   /// Quick filter chips under the search box.
@@ -73,6 +77,8 @@ class LibraryController extends GetxController {
         'mid' => filters.value.lengths.length == 1 && filters.value.lengths.contains(20),
         'free' => filters.value.type == 'free',
         'downloaded' => filters.value.downloadedOnly,
+        'practiced' => filters.value.practice == 'done',
+        'todo' => filters.value.practice == 'todo',
         _ => false,
       };
 
@@ -88,16 +94,20 @@ class LibraryController extends GetxController {
         applyFilters(LibraryFilters(type: chipOn('free') ? 'all' : 'free'));
       case 'downloaded':
         applyFilters(LibraryFilters(downloadedOnly: !chipOn('downloaded')));
+      case 'practiced':
+        applyFilters(LibraryFilters(practice: chipOn('practiced') ? 'all' : 'done'));
+      case 'todo':
+        applyFilters(LibraryFilters(practice: chipOn('todo') ? 'all' : 'todo'));
     }
   }
 
   Set<String> get downloadedIds => downloads.downloadedIds;
 
   List<SessionSummary> get filtered => catalog.filter(
-        lengthBuckets: filters.value.lengths, teacherId: filters.value.teacherId, type: filters.value.type, downloadedOnly: filters.value.downloadedOnly, downloadedIds: downloadedIds);
+        lengthBuckets: filters.value.lengths, teacherId: filters.value.teacherId, type: filters.value.type, downloadedOnly: filters.value.downloadedOnly, downloadedIds: downloadedIds, practice: filters.value.practice, isPracticed: practiced.isDone);
 
   /// "Show N meditations" in the filter sheet, live as choices change.
-  int countFor(LibraryFilters f) => catalog.filter(lengthBuckets: f.lengths, teacherId: f.teacherId, type: f.type, downloadedOnly: f.downloadedOnly, downloadedIds: downloadedIds).length;
+  int countFor(LibraryFilters f) => catalog.filter(lengthBuckets: f.lengths, teacherId: f.teacherId, type: f.type, downloadedOnly: f.downloadedOnly, downloadedIds: downloadedIds, practice: f.practice, isPracticed: practiced.isDone).length;
 
   /// Free users: the free items are "Free for you"; members see them without a label (spec §1.3).
   List<SessionSummary> get freeItems => c?.sessions.where((s) => !s.isPremium).toList() ?? const [];
@@ -105,7 +115,7 @@ class LibraryController extends GetxController {
 
   void applyFilters(LibraryFilters f) {
     filters.value = f;
-    Get.find<AnalyticsService>().track('library_filter_apply', {'filters': [if (f.lengths.isNotEmpty) 'length', if (f.teacherId != null) 'teacher', if (f.type != 'all') 'type', if (f.downloadedOnly) 'downloaded'].join(',')});
+    Get.find<AnalyticsService>().track('library_filter_apply', {'filters': [if (f.lengths.isNotEmpty) 'length', if (f.teacherId != null) 'teacher', if (f.type != 'all') 'type', if (f.downloadedOnly) 'downloaded', if (f.practice != 'all') 'practice'].join(',')});
   }
 
   void resetFilters() => filters.value = const LibraryFilters();

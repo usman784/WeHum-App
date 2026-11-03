@@ -10,9 +10,11 @@ import 'package:meditation/core/data/contracts/repositories.dart';
 import 'package:meditation/core/data/mock/mock_repositories.dart';
 import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/errors/error_code.dart';
+import 'package:meditation/core/services/sync_service.dart';
 import 'package:meditation/core/services/notification_service.dart';
 import 'package:meditation/core/theme/theme_controller.dart';
 import 'package:meditation/features/you/controllers/you_controllers.dart';
+import 'package:meditation/features/you/views/you_pages.dart' show MeditationHistoryPage;
 
 import '../support/test_env.dart';
 
@@ -180,6 +182,87 @@ void main() {
     expect(Get.currentRoute, AppRoutes.splash);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
+  });
+
+  MeditationRecord sit(String id, String? session, {String kind = 'solo', int sec = 600, DateTime? at}) {
+    final start = at ?? DateTime.now().subtract(const Duration(minutes: 30));
+    return MeditationRecord(id: id, kind: kind, sessionId: session, startedAt: start, endedAt: start.add(Duration(seconds: sec)), durationSec: sec, completed: true);
+  }
+
+  testWidgets('54 → Meditations: tapping the lifetime number lists every practiced meditation (free and premium) with its day, live', (t) async {
+    final e = await open(t, AppRoutes.you, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    await t.scrollUntilVisible(find.byKey(const Key('metric-meditations')), 200, scrollable: find.byType(Scrollable).first);
+    await Scrollable.ensureVisible(t.element(find.byKey(const Key('metric-meditations'))), alignment: .5); // clear of the bottom nav
+    await t.pump();
+    await t.tap(find.byKey(const Key('metric-meditations')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.yourMeditations);
+    expect(find.byKey(const Key('history-empty')), findsOneWidget);
+
+    // a premium and a free sit, a silence sit without a meditation, and one that is too short to count
+    final sync = Get.find<SyncService>();
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    await t.runAsync(() async {
+      await sync.record(sit('h1', 's-motd'), waitForServer: false);
+      await sync.record(sit('h2', 's-free1', at: yesterday), waitForServer: false);
+      await sync.record(sit('h3', null, kind: 'silence', at: yesterday.subtract(const Duration(hours: 2))), waitForServer: false);
+      await sync.record(sit('h4', 's-sleep', sec: 60), waitForServer: false);
+      await Future<void>.delayed(const Duration(milliseconds: 900)); // real time: the sends finish and the list debounces (400 ms)
+    });
+    await t.pump(const Duration(milliseconds: 600)); // the list follows the recording by itself
+    await settle(t);
+    expect(find.text('Steady Under Pressure'), findsOneWidget); // premium
+    expect(find.text('Breathing Reset'), findsOneWidget); // free
+    expect(find.text('Silence Room'), findsOneWidget);
+    expect(find.text('Sink Into Sleep'), findsNothing); // too short: not counted, not in the number either
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Yesterday'), findsOneWidget);
+    expect(find.text('3 meditations'), findsOneWidget);
+    expect(find.textContaining('10 min'), findsNWidgets(3));
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('54 You: "Recently practiced" shows the last meditations with their day, appears and updates live, See all opens the full list', (t) async {
+    final e = await open(t, AppRoutes.you, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    expect(find.byKey(const Key('recent-practiced')), findsNothing); // nothing practiced yet
+    final sync = Get.find<SyncService>();
+    await t.runAsync(() async {
+      await sync.record(sit('r1', 's-free1'), waitForServer: false);
+      await Future<void>.delayed(const Duration(milliseconds: 900)); // real time: the send finishes and the block debounces (400 ms)
+    });
+    await settle(t);
+    await t.scrollUntilVisible(find.byKey(const Key('recent-practiced')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.descendant(of: find.byKey(const Key('recent-practiced')), matching: find.text('Breathing Reset')), findsOneWidget);
+    expect(find.textContaining('Today, '), findsOneWidget);
+    await t.runAsync(() async {
+      await sync.record(sit('r2', 's-motd'), waitForServer: false);
+      await Future<void>.delayed(const Duration(milliseconds: 900));
+    });
+    await settle(t);
+    expect(find.descendant(of: find.byKey(const Key('recent-practiced')), matching: find.text('Steady Under Pressure')), findsOneWidget);
+    await Scrollable.ensureVisible(t.element(find.byKey(const Key('recent-see-all'))), alignment: .5);
+    await t.pump();
+    await t.tap(find.byKey(const Key('recent-see-all')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.yourMeditations);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('54 → Meditations: a guest is asked to create an account first', (t) async {
+    final e = await open(t, AppRoutes.yourMeditations);
+    expect(find.byKey(const Key('account-only')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  test('history day labels: Today, Yesterday, weekday and date, year for older years', () {
+    final now = DateTime(2026, 11, 3, 9);
+    expect(MeditationHistoryPage.dayLabel(DateTime(2026, 11, 3), now), 'Today');
+    expect(MeditationHistoryPage.dayLabel(DateTime(2026, 11, 2), now), 'Yesterday');
+    expect(MeditationHistoryPage.dayLabel(DateTime(2026, 10, 30), now), 'Friday, Oct 30');
+    expect(MeditationHistoryPage.dayLabel(DateTime(2025, 12, 31), now), 'Dec 31, 2025');
   });
 
   testWidgets('55 progress: week dots, tabs switch period, data cached for offline', (t) async {

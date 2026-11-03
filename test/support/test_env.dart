@@ -40,6 +40,8 @@ import 'package:meditation/core/services/notification_service.dart';
 import 'package:meditation/core/services/onboarding_store.dart';
 import 'package:meditation/core/services/perf_service.dart';
 import 'package:meditation/core/services/purchase_service.dart';
+import 'package:meditation/core/services/favorites_service.dart';
+import 'package:meditation/core/services/practiced_service.dart';
 import 'package:meditation/core/services/sync_service.dart';
 import 'package:meditation/core/services/time_service.dart';
 import 'package:meditation/core/theme/app_theme.dart';
@@ -133,6 +135,7 @@ class TestEnv {
   late MockTodayRepository today;
   late MockMeRepository me;
   late MockMeditationRepository meditations;
+  late MockFavoritesRepository favoritesRepo;
   late MockCommunityRepository community;
   late MockRecipeRepository recipes;
   late MockComingSoonRepository soon;
@@ -174,6 +177,7 @@ class TestEnv {
     e.today = MockTodayRepository(member: member);
     e.me = MockMeRepository()..profile = MeProfile(id: 'mock-user', firstName: 'Marcus', entitlement: Entitlement(active: member));
     e.meditations = MockMeditationRepository();
+    e.favoritesRepo = MockFavoritesRepository();
     e.community = MockCommunityRepository();
     e.recipes = MockRecipeRepository();
     e.authRepo = MockAuthRepository();
@@ -197,6 +201,7 @@ class TestEnv {
     Get.put<DownloadService>(e.downloads);
     Get.put<LocalMedia>(e.downloads);
     Get.put<MeditationRepository>(e.meditations);
+    Get.put<FavoritesRepository>(e.favoritesRepo);
     Get.put<MeRepository>(e.me);
     Get.put<CommunityRepository>(e.community);
     Get.put<RecipeRepository>(e.recipes);
@@ -216,7 +221,9 @@ class TestEnv {
     Get.put(PresenceService(e.socket));
     Get.put(LobbyService(e.socket, time));
     Get.put(CatalogService(Get.find(), e.db));
-    Get.put(SyncService(Get.find(), e.db, Get.find<CommunityRepository>()));
+    Get.put(PracticedService(Get.find(), e.db, e.access));
+    Get.put(FavoritesService(e.favoritesRepo, e.access));
+    Get.put(SyncService(Get.find(), e.db, Get.find<CommunityRepository>(), Get.find<PracticedService>()));
     Get.put(InboxService(e.me, e.db));
     e.notifications = Get.put<NotificationService>(FakeNotifications(e.me, store, crash)) as FakeNotifications;
     Get.put(AppController(auth: auth, config: Get.find(), access: e.access, catalog: Get.find(), socket: e.socket, sync: Get.find(), notifications: e.notifications, me: e.me, crash: crash, session: store, purchases: purchases)..offlinePolling = false);

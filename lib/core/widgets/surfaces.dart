@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../services/access_service.dart';
 import 'motion.dart';
 import 'painters.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
@@ -145,6 +147,14 @@ class AppBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Members already have premium: the label (and the "lock" it implies) is only for free users.
+    if (kind == BadgeKind.premium && Get.isRegistered<AccessService>()) {
+      return Obx(() => Get.find<AccessService>().isMember ? const SizedBox.shrink() : _build(context));
+    }
+    return _build(context);
+  }
+
+  Widget _build(BuildContext context) {
     final c = context.colors;
     final (text, bg, fg) = switch (kind) {
       BadgeKind.premium => ('PREMIUM', c.emberTint, c.emberText),

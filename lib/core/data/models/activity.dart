@@ -205,6 +205,28 @@ class DailyMessage {
       );
 }
 
+/// One row of the person's meditation history (`GET /v1/meditations`).
+class MeditationLogEntry {
+  const MeditationLogEntry({required this.id, this.sessionId, this.title, required this.kind, required this.startedAt, required this.durationSec, this.completed = false, this.counted = true});
+  final String id, kind;
+  final String? sessionId, title;
+  final DateTime startedAt;
+  final int durationSec;
+  final bool completed, counted;
+
+  int get minutes => (durationSec / 60).round().clamp(1, 1 << 30);
+
+  /// What the row says: the meditation's title, or the kind of sit when there is no meditation behind it.
+  String get label => (title != null && title!.isNotEmpty)
+      ? title!
+      : switch (kind) { 'silence' => 'Silence Room', 'custom' => 'Your own mix', 'group' => 'Group meditation', 'sos' => 'SoS', 'program' => 'Program meditation', _ => 'Meditation' };
+
+  factory MeditationLogEntry.fromJson(Json j) => MeditationLogEntry(
+        id: j['id'] as String, sessionId: asStr(j['sessionId']), title: asStr(j['sessionTitle']), kind: (j['kind'] ?? 'solo') as String,
+        startedAt: DateTime.parse(j['startedAt'] as String), durationSec: asInt(j['durationSec']), completed: j['completed'] == true, counted: j['counted'] != false,
+      );
+}
+
 class Page<T> {
   const Page(this.items, this.nextCursor);
   final List<T> items;

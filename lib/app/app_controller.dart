@@ -22,6 +22,8 @@ import '../core/services/crash_service.dart';
 import '../core/services/download_service.dart';
 import '../core/services/deep_links.dart';
 import '../core/services/inbox_service.dart';
+import '../core/services/favorites_service.dart';
+import '../core/services/practiced_service.dart';
 import '../core/services/logger.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/purchase_service.dart';
@@ -75,6 +77,8 @@ class AppController extends GetxService with WidgetsBindingObserver {
       if (s == SocketState.connected) {
         unawaited(sync.flush());
         unawaited(refreshAccount()); // events sent while the phone was offline are gone: read the account's current state
+        if (Get.isRegistered<PracticedService>()) unawaited(Get.find<PracticedService>().load()); // sits finished on another device meanwhile
+        if (Get.isRegistered<FavoritesService>()) unawaited(Get.find<FavoritesService>().load());
       }
       _watchDisconnected(s != SocketState.connected);
     });
@@ -96,6 +100,8 @@ class AppController extends GetxService with WidgetsBindingObserver {
     await cat;
     access.setFromProfile(await _profileOrNull() ?? auth.profileFallback());
     crash.tag('plan', access.plan);
+    if (Get.isRegistered<PracticedService>()) unawaited(Get.find<PracticedService>().load()); // marks on the library right from the first frame
+    if (Get.isRegistered<FavoritesService>()) unawaited(Get.find<FavoritesService>().load());
     if (b != null && !b.updateRequired && !b.maintenance) {
       unawaited(connectRealtime());
       unawaited(notifications.init().then((_) => notifications.registerDevice()));
@@ -159,6 +165,8 @@ class AppController extends GetxService with WidgetsBindingObserver {
   Future<void> _onResume() async {
     await socket.onForeground();
     unawaited(refreshAccount()); // suspended, deleted or changed access while the app was away
+    if (Get.isRegistered<PracticedService>()) unawaited(Get.find<PracticedService>().load());
+    if (Get.isRegistered<FavoritesService>()) unawaited(Get.find<FavoritesService>().load());
     if (Get.isRegistered<InboxService>()) unawaited(Get.find<InboxService>().load()); // the bell dot follows the server, not what the list showed last time
     unawaited(sync.flush());
     // time zone / DST change while away: tell the server so reminders and pushes are scheduled in the right zone (spec §10)
@@ -207,6 +215,8 @@ class AppController extends GetxService with WidgetsBindingObserver {
     _signingOut = true;
     try {
       access.reset();
+      if (Get.isRegistered<PracticedService>()) await Get.find<PracticedService>().reset();
+      if (Get.isRegistered<FavoritesService>()) Get.find<FavoritesService>().reset();
       await notifications.onSignedOut();
       await auth.resetToGuest(keepAccountHint: reason != 'account_deleted');
       await purchases.signedOut();

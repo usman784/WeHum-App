@@ -9,6 +9,7 @@ import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/countdown_text.dart';
 import '../../core/widgets/painters.dart';
+import '../../core/widgets/sheets.dart';
 import '../../core/widgets/stitch.dart';
 import '../../core/widgets/surfaces.dart';
 import 'package:intl/intl.dart';
@@ -133,6 +134,19 @@ class SilenceSetupPage extends StatelessWidget {
   }
 }
 
+/// "End meditation" asks once: are you sure you want to end early? Yes ends it, No carries on. The 3-second gap after
+/// the opening bell has nothing to lose, so it ends at once.
+Future<void> _askEnd(BuildContext context, SilenceController ctrl) async {
+  if (ctrl.phase.value == SilencePhase.done) return;
+  if (ctrl.settleLeft.value > 0) return ctrl.finish(completed: false);
+  final end = await showAppSheet<bool>(context, title: 'Are you sure you want to end early?', builder: (ctx) => Row(children: [
+        Expanded(child: OutlineButton('No', key: const Key('silence-end-keep'), onPressed: () => Navigator.of(ctx).pop(false))),
+        const SizedBox(width: 10),
+        Expanded(child: PrimaryButton('Yes', key: const Key('silence-end-confirm'), onPressed: () => Navigator.of(ctx).pop(true))),
+      ]));
+  if (end == true) await ctrl.finish(completed: false);
+}
+
 /// 51 Silence Room meditating: breathing cue, remaining time, people with you, next chime. Dims after a few seconds; tap wakes.
 class SilenceRunPage extends StatelessWidget {
   const SilenceRunPage({super.key});
@@ -143,7 +157,7 @@ class SilenceRunPage extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) ctrl.finish(completed: false);
+        if (!didPop) _askEnd(context, ctrl);
       },
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -157,17 +171,18 @@ class SilenceRunPage extends StatelessWidget {
               final next = ctrl.nextChimeAt;
               final people = ctrl.sittingNow;
               final settle = ctrl.settleLeft.value;
-              return AnimatedOpacity(
-                opacity: dim ? .15 : 1, duration: const Duration(milliseconds: 600),
-                child: Padding(
+              // each part fades on its own so the map can stay softly visible while the controls go near-black
+              Widget d(Widget w, {double to = .15}) => AnimatedOpacity(opacity: dim ? to : 1, duration: const Duration(milliseconds: 600), child: w);
+              return Padding(
                   padding: const EdgeInsets.all(Gap.gutterOnboarding),
                   child: Column(children: [
-                    Align(alignment: Alignment.centerRight, child: TextLink('End meditation', key: const Key('silence-end'), onPressed: () => ctrl.finish(completed: false), color: c.textSecondary)),
-                    const Spacer(),
+                    d(Align(alignment: Alignment.centerRight, child: TextLink('End meditation', key: const Key('silence-end'), onPressed: () => _askEnd(context, ctrl), color: c.textSecondary))),
+                    Expanded(child: LayoutBuilder(builder: (_, box) => Center(child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    d(Column(mainAxisSize: MainAxisSize.min, children: [
                     Text('SILENCE ROOM · ${ctrl.openEnded ? 'OPEN' : '${ctrl.minutes.value} MIN'}', style: AppText.overline.copyWith(color: c.textTertiary)),
                     const SizedBox(height: 14),
                     SessionRing(
-                      size: 290,
+                      size: (box.maxHeight - 300).clamp(180.0, 290.0),
                       progress: ctrl.openEnded || ctrl.planned.inSeconds == 0 ? 0 : (ctrl.elapsed.value.inSeconds / ctrl.planned.inSeconds).clamp(0.0, 1.0),
                       people: (people ?? 0).clamp(0, 40),
                       center: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -186,26 +201,29 @@ class SilenceRunPage extends StatelessWidget {
                           key: const Key('silence-with'), style: AppText.bodySmall.copyWith(color: c.textPrimary))),
                       ]),
                     ),
-                    if (!ctrl.live.paused && MediaQuery.sizeOf(context).height > 720) ...[
-                      const SizedBox(height: 12),
-                      SilenceWhereCard(rows: ctrl.whereRows, live: ctrl.countriesLive, compact: true),
+                    ])),
+                    if (!ctrl.live.paused) ...[
+                      const SizedBox(height: 14),
+                      // stays softly visible when the rest of the screen dims: the room's connection with the world
+                      d(to: .6, SilenceWhereCard(rows: ctrl.whereRows, live: ctrl.countriesLive, compact: true)),
+                      if (!ctrl.belts.isEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: d(to: .6, BeltCounts(belts: ctrl.belts))),
                     ],
                     if (next != null && !paused) ...[
                       const SizedBox(height: 6),
-                      Text('Next chime at ${DateFormat('HH:mm').format(next.toLocal())}', key: const Key('next-chime'), style: AppText.caption.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular)),
+                      d(Text('Next chime at ${DateFormat('HH:mm').format(next.toLocal())}', key: const Key('next-chime'), style: AppText.caption.copyWith(color: c.textTertiary, fontFeatures: AppText.tabular))),
                     ],
-                    const Spacer(),
-                    Row(children: [
+                    const SizedBox(height: 14),
+                    ]))))),
+                    d(Row(children: [
                       if (!ctrl.openEnded) Expanded(child: OutlineButton('+${ctrl.extendMin} min', key: const Key('silence-extend'), onPressed: ctrl.extend)),
                       if (!ctrl.openEnded) const SizedBox(width: 10),
                       Expanded(child: PrimaryButton(paused ? 'Resume' : 'Pause', key: const Key('silence-pause'), onPressed: settle > 0 ? null : (paused ? ctrl.resume : ctrl.pause))),
                       const SizedBox(width: 10),
                       Expanded(child: OutlineButton(ctrl.chimeOn.value ? 'Chime on' : 'Chime off', key: const Key('silence-chime'), onPressed: () => ctrl.chimeOn.value = !ctrl.chimeOn.value)),
-                    ]),
+                    ])),
                     const SizedBox(height: 12),
-                    Text('Tap anywhere to brighten the controls. The screen dims in 5 seconds.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary)),
+                    d(Text('Tap anywhere to brighten the controls. The screen dims in 5 seconds.', textAlign: TextAlign.center, style: AppText.caption.copyWith(color: c.textTertiary))),
                   ]),
-                ),
               );
             }),
           ),

@@ -9,6 +9,7 @@ import '../../../core/data/models/activity.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/services/access_service.dart';
 import '../../../core/services/inbox_service.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/buttons.dart';
@@ -70,7 +71,7 @@ class DailyMessagePage extends StatelessWidget {
                       if (ctrl.hasAudioMode) _ModePill(key: const Key('mode-audio'), icon: Icons.graphic_eq_rounded, label: 'Audio mode', on: !ctrl.videoMode.value, onTap: () => ctrl.videoMode.value = false),
                       if (ctrl.hasVideoMode) ...[const SizedBox(width: 8), _ModePill(key: const Key('mode-video'), icon: Icons.videocam_outlined, label: 'Video mode', on: ctrl.videoMode.value, onTap: () => ctrl.videoMode.value = true)],
                       const SizedBox(width: 8),
-                      Flexible(child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(m.isFree ? Icons.lock_open_rounded : Icons.workspace_premium_outlined, size: 14, color: c.emberText), const SizedBox(width: 5), Flexible(child: Text(m.isFree ? 'FREE' : 'PREMIUM', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))]))),
+                      if (m.isFree || !Get.find<AccessService>().isMember) Flexible(child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9), decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(99)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(m.isFree ? Icons.lock_open_rounded : Icons.workspace_premium_outlined, size: 14, color: c.emberText), const SizedBox(width: 5), Flexible(child: Text(m.isFree ? 'FREE' : 'PREMIUM', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)))]))),
                     ]),
                   ),
                 Row(children: [

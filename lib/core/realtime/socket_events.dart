@@ -25,6 +25,7 @@ abstract final class SocketEvents {
   static const gratitudeRemoved = 'gratitude:removed';
   static const entitlementChanged = 'entitlement:changed';
   static const accountChanged = 'account:changed';
+  static const practicedChanged = 'practiced:changed';
   static const inboxNew = 'inbox:new';
   static const configChanged = 'config:changed';
   static const catalogChanged = 'catalog:changed';
@@ -34,7 +35,7 @@ abstract final class SocketEvents {
 
   static const serverToClient = [
     liveAgg, silenceLive, sessionLive, motdStats, lobbyState, groupStart, dedicationNew, dedicationHolding, dedicationRemoved,
-    gratitudeNew, gratitudeRemoved, entitlementChanged, accountChanged, inboxNew, configChanged, catalogChanged, authExpiring, forceLogout, error,
+    gratitudeNew, gratitudeRemoved, entitlementChanged, accountChanged, practicedChanged, inboxNew, configChanged, catalogChanged, authExpiring, forceLogout, error,
   ];
 }
 

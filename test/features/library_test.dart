@@ -8,6 +8,7 @@ import 'package:meditation/core/audio/local_media.dart';
 import 'package:meditation/core/data/models/activity.dart';
 import 'package:meditation/core/services/catalog_service.dart';
 import 'package:meditation/core/services/download_service.dart';
+import 'package:meditation/core/services/practiced_service.dart';
 import 'package:meditation/features/library/controllers/library_controllers.dart';
 import 'package:meditation/features/library/views/session_pages.dart' show SessionDetailController;
 import 'package:meditation/features/player/controllers/player_controller.dart';
@@ -133,6 +134,58 @@ void main() {
     Get.find<LibraryController>().resetFilters();
     await t.pump();
     expect(find.byKey(const Key('filtered-count')), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
+  testWidgets('31 library: practiced meditations are marked and filterable, free ones too, and it follows a sit finished meanwhile', (t) async {
+    final e = await open(t, AppRoutes.library, member: false);
+    final practiced = Get.find<PracticedService>();
+    Future<void> chip(String k) async {
+      await t.ensureVisible(find.byKey(Key('chip-$k'))); // the chip row scrolls sideways
+      await t.pump();
+      await t.tap(find.byKey(Key('chip-$k')));
+      await settle(t);
+    }
+
+    await chip('todo');
+    expect(find.text('6 meditations'), findsOneWidget); // nothing practiced yet: everything is still to do
+    expect(find.text('Breathing Reset'), findsOneWidget);
+    expect(find.text('Practiced'), findsOneWidget); // only the chip, no row mark
+
+    // a free meditation is finished (here: the socket event of another device) while the list is open
+    practiced.onSocket('s-free1');
+    await t.pump();
+    expect(find.text('5 meditations'), findsOneWidget);
+    expect(find.text('Breathing Reset'), findsNothing);
+
+    await chip('practiced');
+    expect(find.text('1 meditations'), findsOneWidget);
+    expect(find.text('Breathing Reset'), findsOneWidget);
+    expect(find.byKey(const Key('practiced-s-free1')), findsOneWidget); // the mark on the row
+    expect(find.text('Sink Into Sleep'), findsNothing);
+
+    // a premium one right after, live
+    practiced.onSocket('s-sleep');
+    await t.pump();
+    expect(find.text('2 meditations'), findsOneWidget);
+    expect(find.byKey(const Key('practiced-s-sleep')), findsOneWidget);
+
+    // the filter sheet has the same choice and counts live
+    await t.tap(find.byKey(const Key('filter-btn')));
+    await settle(t);
+    await t.tap(find.text('Not yet practiced').last);
+    await t.pump();
+    expect(find.text('Show 4 meditations'), findsOneWidget);
+    await t.tap(find.text('Practiced').last);
+    await t.pump();
+    expect(find.text('Show 2 meditations'), findsOneWidget);
+    await t.tap(find.text('All').last); // the PRACTICE group is the last one in the sheet
+    await t.pump();
+    expect(find.text('Show 6 meditations'), findsOneWidget);
+    await t.tap(find.byKey(const Key('show-n')));
+    await settle(t);
+    expect(find.byKey(const Key('filtered-count')), findsNothing); // "All" is no filter
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });
@@ -304,6 +357,25 @@ void main() {
   });
 
   group('58 downloads', () {
+    testWidgets('a free user gets the membership screen, never the downloads or the library', (t) async {
+      final e = await open(t, AppRoutes.downloads, member: false);
+      expect(find.byKey(const Key('members-only')), findsOneWidget);
+      expect(find.byKey(const Key('browse-library')), findsNothing);
+      expect(find.byKey(const Key('storage-card')), findsNothing);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('Library: the Downloads row goes to the paywall for a free user', (t) async {
+      final e = await open(t, AppRoutes.library, member: false);
+      await t.scrollUntilVisible(find.byKey(const Key('downloads-row')), 300, scrollable: find.byType(Scrollable).first);
+      await t.tap(find.byKey(const Key('downloads-row')));
+      await settle(t);
+      expect(Get.currentRoute, AppRoutes.membershipPaywall);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
     testWidgets('empty state, then list with sizes; delete asks first; clear all', (t) async {
       final e = await open(t, AppRoutes.downloads);
       await t.runAsync(() => e.downloads.init());

@@ -111,7 +111,20 @@ class MeditationApi extends ApiBase implements MeditationRepository {
   }
 
   @override
+  Future<Set<String>> practiced() async => {for (final i in asJsonList((await getJson('/v1/meditations/practiced'))['items'])) i['sessionId'] as String};
+
+  @override
   Future<int> kudos(String sessionId) async => asInt((await call('POST', '/v1/sessions/$sessionId/kudos'))['count']);
+}
+
+class FavoritesApi extends ApiBase implements FavoritesRepository {
+  FavoritesApi(super.api);
+  @override
+  Future<List<SessionSummary>> list() async => asJsonList((await getJson('/v1/me/favorites'))['items']).map(SessionSummary.fromJson).toList();
+  @override
+  Future<void> set(String sessionId, {required bool on}) async {
+    await call(on ? 'PUT' : 'DELETE', '/v1/sessions/$sessionId/favorite');
+  }
 }
 
 class MeApi extends ApiBase implements MeRepository {

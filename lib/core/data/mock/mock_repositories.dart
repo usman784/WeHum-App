@@ -193,8 +193,25 @@ class MockMediaRepository implements MediaRepository {
   Future<PreviewUrl> previewUrl(String sessionId) async => const PreviewUrl(url: 'https://example.com/preview.mp3', previewSec: 30, enforced: 'clip', fullDurationSec: 2700);
 }
 
+class MockFavoritesRepository implements FavoritesRepository {
+  /// Newest first.
+  final _ids = <String>[];
+  /// Tests: make every call fail like a lost connection.
+  bool failing = false;
+  @override
+  Future<List<SessionSummary>> list() async => failing ? throw ApiException(ErrorCode.network) : [for (final id in _ids) ...MockData.sessions.where((s) => s.id == id)];
+  @override
+  Future<void> set(String sessionId, {required bool on}) async {
+    if (failing) throw ApiException(ErrorCode.network);
+    _ids.remove(sessionId);
+    if (on) _ids.insert(0, sessionId);
+  }
+}
+
 class MockMeditationRepository implements MeditationRepository {
   final recorded = <MeditationRecord>[];
+  @override
+  Future<Set<String>> practiced() async => {for (final m in recorded) if (m.completed && m.sessionId != null && m.durationSec >= 180) m.sessionId!};
   @override
   Future<MeditationResult> record(MeditationRecord m) async {
     recorded.add(m);
@@ -214,7 +231,10 @@ class MockMeditationRepository implements MeditationRepository {
   @override
   Future<List<MeditationResult>> batch(List<MeditationRecord> items) async => [for (final m in items) await record(m)];
   @override
-  Future<Page<Json>> history({String? cursor}) async => const Page([], null);
+  Future<Page<Json>> history({String? cursor}) async => Page([
+        for (final m in recorded.reversed)
+          {'id': m.id, 'sessionId': m.sessionId, 'sessionTitle': MockData.sessions.where((s) => s.id == m.sessionId).map((s) => s.title).firstOrNull, 'kind': m.kind, 'startedAt': m.startedAt.toUtc().toIso8601String(), 'durationSec': m.durationSec, 'completed': m.completed, 'counted': m.durationSec >= 180}
+      ], null);
 }
 
 class MockMeRepository implements MeRepository {
