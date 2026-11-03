@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/data/contracts/repositories.dart';
 import 'package:meditation/core/data/mock/mock_repositories.dart';
 import 'package:meditation/core/data/models/activity.dart';
+import 'package:meditation/core/data/models/json.dart';
 import 'package:meditation/core/errors/error_code.dart';
 import 'package:meditation/core/services/sync_service.dart';
 import 'package:meditation/core/services/notification_service.dart';
@@ -17,6 +18,14 @@ import 'package:meditation/features/you/controllers/you_controllers.dart';
 import 'package:meditation/features/you/views/you_pages.dart' show MeditationHistoryPage;
 
 import '../support/test_env.dart';
+
+/// History in pages by cursor, like the real API.
+class _PagedMeditations extends MockMeditationRepository {
+  _PagedMeditations(this.pages);
+  final List<Page<Json>> pages;
+  @override
+  Future<Page<Json>> history({String? cursor}) async => pages[cursor == null ? 0 : (cursor == 'p2' ? 1 : 2)];
+}
 
 /// Holds the progress answers until [gate] completes, to see the page while it waits.
 class _GatedMe extends MockMeRepository {
@@ -271,6 +280,26 @@ void main() {
     expect(find.byKey(const Key('account-only')), findsOneWidget);
     await t.pumpWidget(const SizedBox());
     await g.dispose();
+  });
+
+  testWidgets('54 → Meditations: a first page of sits that did not count does not hide the later ones (a short list cannot scroll)', (t) async {
+    final e = await open(t, AppRoutes.you, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    Json row(String id, bool counted) => {'id': id, 'sessionId': 's-motd', 'sessionTitle': 'Steady Under Pressure', 'kind': 'solo', 'startedAt': DateTime.now().subtract(const Duration(hours: 2)).toUtc().toIso8601String(), 'durationSec': 600, 'completed': true, 'counted': counted};
+    final repo = _PagedMeditations([
+      Page([row('a', false), row('b', false)], 'p2'),
+      Page([row('c', false)], 'p3'),
+      Page([row('d', true), row('e', true)], null),
+    ]);
+    Get.replace<MeditationRepository>(repo);
+    Get.toNamed(AppRoutes.yourMeditations);
+    await settle(t);
+    await settle(t);
+    expect(find.byKey(const Key('history-d')), findsOneWidget);
+    expect(find.byKey(const Key('history-e')), findsOneWidget);
+    expect(find.byKey(const Key('history-a')), findsNothing); // not counted
+    expect(find.text('2 meditations'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
   });
 
   testWidgets('54 → Meditations: a guest is asked to create an account first', (t) async {

@@ -68,12 +68,24 @@ class YouController extends GetxController {
     super.onReady();
     load();
     // live: a sit recorded on this phone, or finished on another device
-    if (Get.isRegistered<SyncService>()) _workers.add(debounce(Get.find<SyncService>().byId, (_) => loadRecent(), time: const Duration(milliseconds: 400)));
-    if (Get.isRegistered<PracticedService>()) _workers.add(debounce(Get.find<PracticedService>().revision, (_) => loadRecent(), time: const Duration(milliseconds: 400)));
+    if (Get.isRegistered<SyncService>()) _workers.add(debounce(Get.find<SyncService>().byId, (_) => _sitChanged(), time: const Duration(milliseconds: 400)));
+    if (Get.isRegistered<PracticedService>()) _workers.add(debounce(Get.find<PracticedService>().revision, (_) => _sitChanged(), time: const Duration(milliseconds: 400)));
+  }
+
+  Timer? _statsTimer;
+
+  /// The list follows at once; the totals (meditations, time, streak) are worked out by the server a moment later, so read them again then.
+  void _sitChanged() {
+    loadRecent();
+    _statsTimer?.cancel();
+    _statsTimer = Timer(const Duration(seconds: 3), () {
+      if (!isClosed) load();
+    });
   }
 
   @override
   void onClose() {
+    _statsTimer?.cancel();
     for (final w in _workers) {
       w.dispose();
     }
@@ -640,9 +652,18 @@ class MeditationHistoryController extends GetxController {
       entries.assignAll(counted(p));
       _cursor = p.nextCursor;
       state.value = entries.isEmpty && !hasMore ? ViewState.empty : ViewState.content;
+      unawaited(_fill(gen));
     } catch (e) {
       if (gen != _gen) return;
       if (entries.isEmpty) state.value = ViewState.fromError(e); // a list that is already shown stays on a failed refresh
+    }
+  }
+
+  /// The server's history also holds sits that did not count, so a page can hold few rows of ours: keep reading pages until the
+  /// screen is full (a short list cannot be scrolled, so scrolling alone would never ask for the rest).
+  Future<void> _fill(int gen) async {
+    for (var i = 0; i < 8 && gen == _gen && hasMore && entries.length < 12; i++) {
+      await more();
     }
   }
 
