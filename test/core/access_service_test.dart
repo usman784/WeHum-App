@@ -54,6 +54,17 @@ void main() {
       expect(access.isMember, isFalse);
     });
 
+    test('a revocation learned from a profile read (launch, resume, reconnect) also drops a cached SDK "yes"', () async {
+      access.setFromProfile(profile('u1', e: const Entitlement(active: true, source: 'beta', rev: 1)));
+      access.sdkPremium.value = true; // an old cache
+      access.refreshSdk = () async => false;
+      access.setFromProfile(profile('u1', e: const Entitlement(rev: 2))); // the app was closed when the beta ended
+      expect(access.isMember, isFalse);
+      await pumpEventQueue();
+      expect(access.sdkPremium.value, isFalse);
+      expect(access.isMember, isFalse);
+    });
+
     test('a callback from the SDK in that window is ignored', () async {
       access.setFromProfile(profile('u1', e: const Entitlement(active: true, source: 'beta', rev: 1)));
       access.refreshSdk = () async => false;

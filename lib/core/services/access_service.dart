@@ -72,6 +72,8 @@ class AccessService extends GetxService {
     final lost = serverMember && !_active(p.entitlement);
     entitlement.value = p.entitlement;
     _armExpiry();
+    // launch, resume, reconnect and the poll all learn a revocation here, so a cached store "yes" is re-read like on the live event
+    if (!_active(p.entitlement) && sdkPremium.value) unawaited(reconcileSdk());
     if (lost) _lost();
   }
 
