@@ -69,9 +69,10 @@ class InitialBinding extends Bindings {
     final store = SessionStore(kv);
     Get.put<SessionStore>(store, permanent: true);
     late final AuthService auth;
-    final api = ApiClient(
+    late final ApiClient api;
+    api = ApiClient(
       store,
-      onSignedOut: () => Get.find<AppController>().onForceLogout('token_invalid'),
+      onSignedOut: () => Get.find<AppController>().onForceLogout(api.lastRefreshRejection == 'ACCOUNT_SUSPENDED' ? 'account_suspended' : 'token_invalid'),
       onUpdateRequired: () => Get.offAllNamed(AppRoutes.updateRequired),
       onMaintenance: () => Get.offAllNamed(AppRoutes.maintenance),
       onApiError: (e) => crash.captureApiError(e),
@@ -119,6 +120,8 @@ class InitialBinding extends Bindings {
 
     Get.put(PurchaseService(PurchasesRc(), access, Get.find<AnalyticsService>(), syncEntitlement: () => Get.find<MeRepository>().syncEntitlement()), permanent: true);
 
+    access.onMembershipLost = downloads.purgeIfNotMember; // a beta end date passing on the device removes membership downloads too
+    access.reconcileServer = () => Get.find<AppController>().refreshAccount();
     ever(access.entitlement, (_) => crash.tag('plan', access.plan));
     ever(access.isGuest, (_) => crash.tag('plan', access.plan));
 
@@ -183,6 +186,7 @@ class InitialBinding extends Bindings {
           access.onSocket(e);
           downloads.purgeIfNotMember(); // downloads belong to the membership
         },
+        onAccountChanged: (_) => Get.find<AppController>().refreshAccount(),
       ),
       fenix: true,
     );

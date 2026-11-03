@@ -34,6 +34,8 @@ class FakeRc implements RcClient {
   @override
   Future<bool> isPremium() async => premium;
   @override
+  Future<bool> refreshPremium() async => premium;
+  @override
   void onChange(void Function(bool) cb) => listener = cb;
 }
 
@@ -59,6 +61,8 @@ class _ThrowingRc implements RcClient {
   Future<RestoreOutcome> restore() async => _die('restore');
   @override
   Future<bool> isPremium() async => _die('isPremium');
+  @override
+  Future<bool> refreshPremium() async => _die('refreshPremium');
   @override
   void onChange(void Function(bool) cb) => _die('onChange');
 }

@@ -219,7 +219,7 @@ class TestEnv {
     Get.put(SyncService(Get.find(), e.db, Get.find<CommunityRepository>()));
     Get.put(InboxService(e.me, e.db));
     e.notifications = Get.put<NotificationService>(FakeNotifications(e.me, store, crash)) as FakeNotifications;
-    Get.put(AppController(auth: auth, config: Get.find(), access: e.access, catalog: Get.find(), socket: e.socket, sync: Get.find(), notifications: e.notifications, me: e.me, crash: crash, session: store, purchases: purchases));
+    Get.put(AppController(auth: auth, config: Get.find(), access: e.access, catalog: Get.find(), socket: e.socket, sync: Get.find(), notifications: e.notifications, me: e.me, crash: crash, session: store, purchases: purchases)..offlinePolling = false);
     e.social = FakeSocialAuth();
     Get.put<SocialAuth>(e.social);
     Get.put(AccountService(auth: auth, repo: e.authRepo, social: e.social, access: e.access, purchases: purchases, config: Get.find(), me: e.me, socket: e.socket, notifications: e.notifications, analytics: analytics));

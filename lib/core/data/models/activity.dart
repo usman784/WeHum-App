@@ -213,14 +213,24 @@ class Page<T> {
 
 /// Entitlement as the server sees it (`me.entitlement`).
 class Entitlement {
-  const Entitlement({this.active = false, this.productId, this.periodType, this.expiresAt, this.willRenew = false, this.billingIssue = false, this.isFounding = false});
+  const Entitlement({
+    this.active = false, this.productId, this.periodType, this.expiresAt, this.willRenew = false, this.billingIssue = false, this.isFounding = false,
+    this.source = 'none', this.betaExpiresAt, this.rev = 0,
+  });
   final bool active, willRenew, billingIssue, isFounding;
   final String? productId, periodType;
   final DateTime? expiresAt;
+  /// Where the access comes from: none | paid | beta | paid+beta (beta = free premium for test accounts, set in the CMS).
+  final String source;
+  final DateTime? betaExpiresAt;
+  /// The server's revision of this account's access; a bigger number is newer, so an old read can never replace a new one.
+  final int rev;
   bool get isTrial => periodType == 'trial';
+  bool get isBeta => source == 'beta' || source == 'paid+beta';
   factory Entitlement.fromJson(Json j) => Entitlement(
         active: j['active'] == true, productId: asStr(j['productId']), periodType: asStr(j['periodType']), expiresAt: asDate(j['expiresAt']), willRenew: j['willRenew'] == true,
-        billingIssue: j['billingIssue'] == true, isFounding: j['isFounding'] == true);
+        billingIssue: j['billingIssue'] == true, isFounding: j['isFounding'] == true,
+        source: asStr(j['source']) ?? (j['active'] == true ? 'paid' : 'none'), betaExpiresAt: asDate(j['betaExpiresAt']), rev: (j['rev'] as num?)?.toInt() ?? 0);
 }
 
 class MeProfile {

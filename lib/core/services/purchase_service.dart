@@ -36,6 +36,8 @@ abstract class RcClient {
   Future<RestoreOutcome> restore();
   /// `premium` entitlement active?
   Future<bool> isPremium();
+  /// Like [isPremium] but drops the SDK's cached CustomerInfo first: an external change (a CMS grant or removal) is never pushed into that cache.
+  Future<bool> refreshPremium();
   void onChange(void Function(bool premium) cb);
 }
 
@@ -104,6 +106,11 @@ class PurchasesRc implements RcClient {
   @override
   Future<bool> isPremium() async => (await Purchases.getCustomerInfo()).entitlements.active.containsKey('premium');
   @override
+  Future<bool> refreshPremium() async {
+    await Purchases.invalidateCustomerInfoCache();
+    return isPremium();
+  }
+  @override
   void onChange(void Function(bool premium) cb) => Purchases.addCustomerInfoUpdateListener((i) => cb(i.entitlements.active.containsKey('premium')));
 }
 
@@ -131,20 +138,28 @@ class PurchaseService extends GetxService {
     }
     await _rc.configure(key, userId);
     _configured = true;
-    _rc.onChange((p) => _access.sdkPremium.value = p);
+    _wire();
     _access.sdkPremium.value = await _rc.isPremium();
+  }
+
+  void _wire() {
+    _rc.onChange(_access.onSdk); // ignored while the server's "no" is waiting for a fresh store read
+    _access.refreshSdk = _rc.refreshPremium;
   }
 
   /// After merge or login: the same id keeps purchases attached; RevenueCat transfers per project settings.
   Future<void> logIn(String userId) async {
     if (!_configured) return;
+    final epoch = _access.epoch;
     await _rc.logIn(userId);
-    _access.sdkPremium.value = await _rc.isPremium();
+    final premium = await _rc.isPremium();
+    if (epoch == _access.epoch) _access.sdkPremium.value = premium; // not after another account took over meanwhile
   }
 
   Future<void> signedOut() async {
     if (_configured) await _rc.logOut();
     _access.sdkPremium.value = false;
+    _access.sdkStale.value = false;
   }
 
   bool get available => _configured;
@@ -154,7 +169,7 @@ class PurchaseService extends GetxService {
   Future<void> configureForTest(String userId) async {
     await _rc.configure('test', userId);
     _configured = true;
-    _rc.onChange((p) => _access.sdkPremium.value = p);
+    _wire();
     _access.sdkPremium.value = await _rc.isPremium();
   }
 

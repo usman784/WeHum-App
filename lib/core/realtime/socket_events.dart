@@ -24,6 +24,7 @@ abstract final class SocketEvents {
   static const gratitudeNew = 'gratitude:new';
   static const gratitudeRemoved = 'gratitude:removed';
   static const entitlementChanged = 'entitlement:changed';
+  static const accountChanged = 'account:changed';
   static const inboxNew = 'inbox:new';
   static const configChanged = 'config:changed';
   static const catalogChanged = 'catalog:changed';
@@ -33,7 +34,7 @@ abstract final class SocketEvents {
 
   static const serverToClient = [
     liveAgg, silenceLive, sessionLive, motdStats, lobbyState, groupStart, dedicationNew, dedicationHolding, dedicationRemoved,
-    gratitudeNew, gratitudeRemoved, entitlementChanged, inboxNew, configChanged, catalogChanged, authExpiring, forceLogout, error,
+    gratitudeNew, gratitudeRemoved, entitlementChanged, accountChanged, inboxNew, configChanged, catalogChanged, authExpiring, forceLogout, error,
   ];
 }
 
@@ -147,12 +148,25 @@ class GroupStart {
 }
 
 class EntitlementChanged {
-  const EntitlementChanged({required this.active, this.productId, this.periodType, this.expiresAt, this.billingIssue = false});
+  const EntitlementChanged({
+    required this.active, this.productId, this.periodType, this.expiresAt, this.billingIssue = false,
+    this.source, this.betaExpiresAt, this.rev, this.userId, this.willRenew, this.isFounding,
+  });
   final bool active, billingIssue;
   final String? productId, periodType;
   final DateTime? expiresAt;
+  /// none | paid | beta | paid+beta. Null from an older server.
+  final String? source;
+  final DateTime? betaExpiresAt;
+  /// Server revision of the account's access (bigger = newer). Null from an older server.
+  final int? rev;
+  /// The account this is about, so an event that was already on its way when the user switched account is dropped.
+  final String? userId;
+  final bool? willRenew, isFounding;
   factory EntitlementChanged.fromJson(Map<String, dynamic> j) => EntitlementChanged(
         active: j['active'] == true, productId: j['productId'] as String?, periodType: j['periodType'] as String?,
         expiresAt: j['expiresAt'] == null ? null : DateTime.tryParse(j['expiresAt'] as String)?.toUtc(), billingIssue: j['billingIssue'] == true,
+        source: j['source'] as String?, betaExpiresAt: j['betaExpiresAt'] == null ? null : DateTime.tryParse(j['betaExpiresAt'] as String)?.toUtc(),
+        rev: (j['rev'] as num?)?.toInt(), userId: j['userId'] as String?, willRenew: j['willRenew'] as bool?, isFounding: j['isFounding'] as bool?,
       );
 }

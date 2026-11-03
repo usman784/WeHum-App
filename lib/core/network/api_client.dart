@@ -40,6 +40,8 @@ class ApiClient {
   final SessionStore session;
   final HeaderProvider _headers;
   final void Function()? onSignedOut;
+  /// Error code the server gave when it refused the last refresh (e.g. ACCOUNT_SUSPENDED); read inside [onSignedOut].
+  String? lastRefreshRejection;
   final void Function()? onUpdateRequired;
   final void Function()? onMaintenance;
   /// Called for every failed response with its mapped error (Sentry tags + non-fatals).
@@ -109,6 +111,7 @@ class ApiClient {
         // error keeps the session: the next call tries again (spec §10).
         final rejected = e is StateError || (e is DioException && const [400, 401, 403].contains(e.response?.statusCode));
         if (rejected) {
+          lastRefreshRejection = _codeOf(e);
           await session.clear();
           onSignedOut?.call();
         }
@@ -118,6 +121,14 @@ class ApiClient {
       }
     }();
     return c.future;
+  }
+
+  static String? _codeOf(Object e) {
+    if (e is! DioException) return null;
+    final body = e.response?.data;
+    final err = body is Map ? body['error'] : null;
+    final code = err is Map ? err['code'] : null;
+    return code is String ? code : null;
   }
 
   /// Maps any error to [ApiException] (use in repositories).

@@ -12,6 +12,7 @@ class RealtimeCoordinator extends GetxService {
     required this.refreshCatalog,
     required this.onInbox,
     required this.onEntitlement,
+    this.onAccountChanged,
     this.catalogDebounce = const Duration(seconds: 10),
   });
   final SocketService _socket;
@@ -19,6 +20,8 @@ class RealtimeCoordinator extends GetxService {
   final Future<void> Function() refreshCatalog;
   final void Function(Map<String, dynamic> item) onInbox;
   final void Function(EntitlementChanged e) onEntitlement;
+  /// Something about the account was changed from the CMS (sample data or progress reset): read it again.
+  final void Function(String reason)? onAccountChanged;
   final Duration catalogDebounce;
 
   final entitlement = Rxn<EntitlementChanged>();
@@ -34,6 +37,11 @@ class RealtimeCoordinator extends GetxService {
       onEntitlement(e);
       refreshes++;
       refreshBootstrap(); // entitlement and founding numbers live in bootstrap
+    }));
+    subs.add(_socket.on(SocketEvents.accountChanged, (j) => j).listen((j) {
+      refreshes++;
+      refreshBootstrap();
+      onAccountChanged?.call('${j['reason']}');
     }));
     subs.add(_socket.on(SocketEvents.configChanged, (j) => j).listen((_) {
       refreshes++;

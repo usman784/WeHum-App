@@ -8,6 +8,7 @@ import '../core/realtime/realtime_coordinator.dart';
 import '../core/config/env.dart';
 import '../core/theme/theme_controller.dart';
 import '../core/data/contracts/repositories.dart';
+import '../core/errors/error_code.dart';
 import '../core/data/models/activity.dart';
 import '../core/data/models/bootstrap.dart';
 import '../core/network/session_store.dart';
@@ -51,7 +52,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
   String? _lastTz;
   bool started = false;
   StreamSubscription<Uri>? _links;
-  Worker? _reconnected, _person;
+  Worker? _reconnected, _person, _notice;
 
   @override
   void onInit() {
@@ -61,8 +62,21 @@ class AppController extends GetxService with WidgetsBindingObserver {
     _person = ever(auth.me, (m) {
       if (m != null && Get.isRegistered<OnboardingStore>()) Get.find<OnboardingStore>().adoptName(userId: m.id, serverName: m.firstName);
     });
+    // after a forced sign-out the person is told why, once, on the screen they land on
+    _notice = ever(notice, (m) {
+      if (m == null) return;
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (notice.value != m) return;
+        notice.value = null;
+        Get.snackbar('WeHum', m, duration: const Duration(seconds: 6), snackPosition: SnackPosition.BOTTOM);
+      });
+    });
     _reconnected = ever(socket.state, (s) {
-      if (s == SocketState.connected) unawaited(sync.flush());
+      if (s == SocketState.connected) {
+        unawaited(sync.flush());
+        unawaited(refreshAccount()); // events sent while the phone was offline are gone: read the account's current state
+      }
+      _watchDisconnected(s != SocketState.connected);
     });
   }
 
@@ -144,6 +158,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
 
   Future<void> _onResume() async {
     await socket.onForeground();
+    unawaited(refreshAccount()); // suspended, deleted or changed access while the app was away
     if (Get.isRegistered<InboxService>()) unawaited(Get.find<InboxService>().load()); // the bell dot follows the server, not what the list showed last time
     unawaited(sync.flush());
     // time zone / DST change while away: tell the server so reminders and pushes are scheduled in the right zone (spec §10)
@@ -154,14 +169,63 @@ class AppController extends GetxService with WidgetsBindingObserver {
     } catch (_) {}
   }
 
+  // ───────────── account state
+  Timer? _poll;
+  /// Look at the account every few minutes while the socket is down. Tests switch it off so no timer outlives a test.
+  bool offlinePolling = true;
+  bool _refreshing = false;
+
+  /// Reads the account again and applies it (access, profile). An older answer never replaces a newer event, and an answer for
+  /// a previous account is dropped. A refused read means the account was suspended or removed: sign out the usual way.
+  Future<void> refreshAccount() async {
+    if (_refreshing || !started) return;
+    _refreshing = true;
+    final epoch = access.epoch, id = access.userId;
+    try {
+      final p = await me.me();
+      if (epoch == access.epoch && (id == null || id == p.id)) access.setFromProfile(p);
+    } on ApiException catch (e) {
+      if (e.code == ErrorCode.accountSuspended) await onForceLogout('account_suspended');
+      if (e.code == ErrorCode.gone) await onForceLogout('account_deleted');
+    } catch (_) {/* offline: the next resume / reconnect tries again */} finally {
+      _refreshing = false;
+    }
+  }
+
+  /// While the app is in front but the socket is down, look at the account every few minutes (not aggressively).
+  void _watchDisconnected(bool down) {
+    _poll?.cancel();
+    if (!down || !offlinePolling) return;
+    _poll = Timer.periodic(const Duration(minutes: 3), (_) => unawaited(refreshAccount()));
+  }
+
   // ───────────── server-driven
   /// Socket `force:logout` or an unrecoverable refresh failure: back to a fresh guest, downloads stay (spec §10).
+  /// Everything of the old account is cleared first: tokens, membership, store state and the signed-in screens.
   Future<void> onForceLogout(String reason) async {
-    await notifications.onSignedOut();
-    await auth.resetToGuest(keepAccountHint: reason != 'account_deleted');
-    access.sdkPremium.value = false;
-    Get.offAllNamed(AppRoutes.splash);
+    if (_signingOut) return;
+    _signingOut = true;
+    try {
+      access.reset();
+      await notifications.onSignedOut();
+      await auth.resetToGuest(keepAccountHint: reason != 'account_deleted');
+      await purchases.signedOut();
+      notice.value = _noticeFor(reason);
+      Get.offAllNamed(AppRoutes.splash);
+    } finally {
+      _signingOut = false;
+    }
   }
+
+  bool _signingOut = false;
+  /// What to tell the person after a forced sign-out; the first screen shows it once and clears it.
+  final notice = RxnString();
+  static String? _noticeFor(String reason) => switch (reason) {
+        'account_suspended' => 'This account has been paused. Contact the WeHum team to get access back.',
+        'account_deleted' => 'This account has been removed.',
+        'password_reset' => 'Your password was reset. Please sign in again.',
+        _ => null,
+      };
 
   /// Links that arrive before the first screen exists (a push that cold-started the app, a launch link) wait here.
   bool routed = false;
@@ -207,6 +271,8 @@ class AppController extends GetxService with WidgetsBindingObserver {
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     _links?.cancel();
+    _poll?.cancel();
+    _notice?.dispose();
     _reconnected?.dispose();
     _person?.dispose();
     super.onClose();
