@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/access_service.dart';
+import '../services/practiced_service.dart';
 import 'motion.dart';
 import 'painters.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
@@ -237,5 +238,26 @@ class WeekDots extends StatelessWidget {
           ]),
       ]),
     );
+  }
+}
+
+/// "✓ Practiced" for a meditation the person has finished, live (it appears the moment a sit ends, on any device).
+/// A line under a title by default, or a small pill ([pill]) over a cover.
+class PracticedMark extends StatelessWidget {
+  const PracticedMark(this.sessionId, {super.key, this.pill = false});
+  final String sessionId;
+  final bool pill;
+  @override
+  Widget build(BuildContext context) {
+    if (!Get.isRegistered<PracticedService>()) return const SizedBox.shrink();
+    final svc = Get.find<PracticedService>();
+    final c = context.colors;
+    return Obx(() {
+      if (!svc.isDone(sessionId)) return const SizedBox.shrink();
+      final label = Text(pill ? 'PRACTICED' : 'Practiced', style: (pill ? AppText.overline : AppText.caption).copyWith(color: c.tealText, fontWeight: FontWeight.w600));
+      final row = Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.check_circle_rounded, size: pill ? 13 : 14, color: c.tealText), const SizedBox(width: 4), label]);
+      if (pill) return Container(key: Key('practiced-pill-$sessionId'), padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: c.tealSoft.withValues(alpha: .18), borderRadius: BorderRadius.circular(Radii.pill)), child: row);
+      return Padding(key: Key('practiced-$sessionId'), padding: const EdgeInsets.only(top: 3), child: row);
+    });
   }
 }

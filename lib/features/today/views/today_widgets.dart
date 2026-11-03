@@ -52,6 +52,7 @@ class FreeItemRow extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(s.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
               Text('Raphael · ${s.minutes} min', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
+              PracticedMark(s.id),
             ]),
           ),
           Icon(Icons.play_circle_outline_rounded, color: c.textSecondary),

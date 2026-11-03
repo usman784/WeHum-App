@@ -250,6 +250,29 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('54 You: a "Meditations I practiced" row opens the list; a guest sees it too and is asked to create an account', (t) async {
+    final e = await open(t, AppRoutes.you, account: true, profile: const MeProfile(id: 'u1', firstName: 'Marcus', username: 'marcus.sits', isGuest: false));
+    await t.scrollUntilVisible(find.byKey(const Key('r-practiced')), 200, scrollable: find.byType(Scrollable).first);
+    await Scrollable.ensureVisible(t.element(find.byKey(const Key('r-practiced'))), alignment: .5);
+    await t.pump();
+    expect(find.text('Meditations I practiced'), findsOneWidget);
+    await t.tap(find.byKey(const Key('r-practiced')));
+    await settle(t);
+    expect(Get.currentRoute, AppRoutes.yourMeditations);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+
+    final g = await open(t, AppRoutes.you);
+    await t.scrollUntilVisible(find.byKey(const Key('r-practiced')), 200, scrollable: find.byType(Scrollable).first);
+    await Scrollable.ensureVisible(t.element(find.byKey(const Key('r-practiced'))), alignment: .5);
+    await t.pump();
+    await t.tap(find.byKey(const Key('r-practiced')));
+    await settle(t);
+    expect(find.byKey(const Key('account-only')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await g.dispose();
+  });
+
   testWidgets('54 → Meditations: a guest is asked to create an account first', (t) async {
     final e = await open(t, AppRoutes.yourMeditations);
     expect(find.byKey(const Key('account-only')), findsOneWidget);

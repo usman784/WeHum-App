@@ -156,6 +156,10 @@ class YouPage extends StatelessWidget {
               for (final e in ctrl.recent) HistoryRow(e, showDay: true),
             ]),
           ),
+          AppCard(
+            key: const Key('r-practiced'), onTap: () => Get.toNamed(AppRoutes.yourMeditations),
+            child: const ListRow(title: 'Meditations I practiced', subtitle: 'Every meditation you did, with the date', leading: IconTile(Icons.history_rounded)),
+          ),
           // ── settings & offline
           const _SecHead(Icons.tune_rounded, 'Account, practice settings & offline', 'PREFERENCES'),
           PreferenceRows(access: ctrl.access, challengesOn: ctrl.challengesOn, heartRateOn: ctrl.heartRateOn),

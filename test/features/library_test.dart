@@ -190,6 +190,35 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('31 library "All": a summary of what you practiced, the ✓ mark on the rows, on the meditation page, and tapping the summary lists them', (t) async {
+    final e = await open(t, AppRoutes.library, member: false);
+    expect(find.byKey(const Key('practiced-summary')), findsOneWidget); // the default view, no filter
+    expect(find.text('Practiced 0 of 6 meditations'), findsOneWidget);
+    final practiced = Get.find<PracticedService>();
+    practiced.onSocket('s-free1'); // finished just now (here from another device)
+    await t.pump();
+    expect(find.text('Practiced 1 of 6 meditations'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const Key('free-heading')), 300, scrollable: find.byType(Scrollable).first);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -200));
+    await t.pump();
+    expect(find.byKey(const Key('practiced-s-free1')), findsOneWidget); // marked in the free list
+    expect(find.byKey(const Key('practiced-s-free2')), findsNothing); // the other one is not
+
+    // on the meditation's own page
+    Get.toNamed('/session/s-free1', arguments: {'id': 's-free1'});
+    await settle(t);
+    expect(find.byKey(const Key('practiced-pill-s-free1')), findsOneWidget);
+    Get.back();
+    await settle(t);
+    await t.scrollUntilVisible(find.byKey(const Key('practiced-summary')), -300, scrollable: find.byType(Scrollable).first);
+    await t.tap(find.byKey(const Key('practiced-summary')));
+    await settle(t);
+    expect(find.text('1 meditations'), findsOneWidget);
+    expect(find.text('Breathing Reset'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   test('filters: lengths buckets, teacher, downloaded only', () async {
     Get.reset();
     final e = await TestEnv.create(member: true);

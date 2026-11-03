@@ -5,7 +5,6 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/data/models/content.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/config_service.dart';
-import '../../../core/services/practiced_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
@@ -46,15 +45,7 @@ class SessionRow extends StatelessWidget {
               Text(s.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
               const SizedBox(height: 2),
               Text('${s.isVideo ? 'Video' : (s.isYoutube ? 'Online library' : 'Audio')} · ${s.minutes} min', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-              if (Get.isRegistered<PracticedService>())
-                Obx(() => Get.find<PracticedService>().isDone(s.id)
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 3),
-                        child: Row(key: Key('practiced-${s.id}'), mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.check_circle_rounded, size: 14, color: c.tealText), const SizedBox(width: 4),
-                          Text('Practiced', style: AppText.caption.copyWith(color: c.tealText, fontWeight: FontWeight.w600)),
-                        ]))
-                    : const SizedBox.shrink()),
+              PracticedMark(s.id),
             ]),
           ),
           if (downloaded) Padding(padding: const EdgeInsets.only(right: 6), child: Icon(Icons.download_done_rounded, size: 18, color: c.tealText)),
@@ -108,6 +99,22 @@ class LibraryPage extends StatelessWidget {
                   for (final s in list) SessionRow(s: s, onTap: () => ctrl.open(s), showFree: !member, downloaded: ctrl.downloadedIds.contains(s.id)),
                   if (list.isEmpty) const EmptyState(title: 'No meditations match', body: 'Try changing or resetting the filters.', icon: Icons.filter_alt_off_rounded),
                 ] else ...[
+                  // "All": the whole library's progress at a glance; tap to list only the practiced ones
+                  Obx(() {
+                    final total = cat.sessions.length, done = cat.sessions.where((s) => ctrl.practiced.isDone(s.id)).length;
+                    return AppCard(
+                      key: const Key('practiced-summary'), onTap: () => ctrl.chip('practiced'), padding: const EdgeInsets.all(14),
+                      child: Row(children: [
+                        Icon(Icons.check_circle_rounded, color: c.tealText), const SizedBox(width: 12),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text('Practiced $done of $total meditations', key: const Key('practiced-summary-text'), style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16)),
+                          Text('Meditations you finished carry a ✓ Practiced mark', style: AppText.caption.copyWith(color: c.textSecondary)),
+                        ])),
+                        Icon(Icons.chevron_right_rounded, color: c.textSecondary),
+                      ]),
+                    );
+                  }),
+                  const SizedBox(height: 12),
                   AdaptiveGrid(
                     baseExtent: 100,
                     children: [
