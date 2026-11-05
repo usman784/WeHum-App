@@ -123,16 +123,16 @@ class YouPage extends StatelessWidget {
           ),
           // ── lifetime
           if (!waiting && !guest) const _SecHead(Icons.show_chart_rounded, 'Lifetime volume & practice depth', 'METRICS'),
-          if (!waiting && !guest) Row(children: [
+          if (!waiting && !guest) IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(child: _Metric('MEDITATIONS', '${l?.sits ?? life?.meditations ?? 0}', 'See all, with dates', Icons.self_improvement_rounded, key: const Key('metric-meditations'), onTap: () => Get.toNamed(AppRoutes.yourMeditations))),
             const SizedBox(width: 10),
             Expanded(child: _Metric('TOTAL TIME', _hm(l?.minutes ?? life?.minutes ?? 0), null, Icons.timer_outlined)),
-          ]),
-          if (!waiting && !guest) Row(children: [
+          ])),
+          if (!waiting && !guest) IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(child: _Metric('GROUP MEDITATIONS', '${l?.together ?? life?.together ?? 0}', l == null ? 'Meditated live with others' : 'Meditated live with others (${l.togetherPct}%)', Icons.groups_2_outlined)),
             const SizedBox(width: 10),
             Expanded(child: _Metric('AVG. LENGTH', l == null ? '${life?.average ?? 0}' : l.avgMin.toStringAsFixed(1), 'Minutes per meditation', Icons.donut_large_rounded)),
-          ]),
+          ])),
           if (!waiting && !guest && l?.hrShiftBpm != null)
             AppCard(
               key: const Key('hr-shift'),
