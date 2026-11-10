@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../core/services/location_service.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/data/contracts/repositories.dart';
 import '../../../core/data/local/app_database.dart';
@@ -98,6 +99,8 @@ class TodayController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    // first screen after launch: ask for approximate location (explained first) so the person shows on the live map
+    if (Get.isRegistered<LocationService>()) unawaited(Get.find<LocationService>().promptIfNeeded());
     live.acquireToday();
     live.acquireMotd(_date);
     live.acquireSilence();

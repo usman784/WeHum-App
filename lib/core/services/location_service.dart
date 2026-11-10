@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../data/contracts/repositories.dart';
+import '../widgets/location_prompt.dart';
 
 /// Where the "meditating now" map puts you. The map is country level only (spec: no GPS): we ask for approximate
 /// location once, turn it into a 2-letter country code ON THE PHONE and send only that code. Coordinates never leave
@@ -15,6 +17,24 @@ class LocationService extends GetxService {
 
   DateTime? _lastSync;
   bool _promptedThisSession = false;
+
+  static const _snoozeKey = 'location_snooze_until_v2';
+
+  /// After "Not now" we stay quiet for 3 days (the next meditation / the You toggle can still ask when forced).
+  bool get _snoozed {
+    try {
+      final until = GetStorage().read<int>(_snoozeKey);
+      return until != null && DateTime.now().millisecondsSinceEpoch < until;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _snooze() {
+    try {
+      GetStorage().write(_snoozeKey, DateTime.now().add(const Duration(days: 3)).millisecondsSinceEpoch);
+    } catch (_) {/* no storage: session guard only */}
+  }
 
   Future<LocationPermission> status() => Geolocator.checkPermission();
 
@@ -55,33 +75,36 @@ class LocationService extends GetxService {
   /// At the moment the map needs it: explain first, ask once; after a refusal offer the phone's Settings.
   /// At most once per app session, and never for someone who hides their country.
   Future<void> promptIfNeeded({bool force = false}) async {
-    if (_promptedThisSession && !force) return;
+    if ((_promptedThisSession || _snoozed) && !force) return;
     final p = await status();
     if (granted(p)) return unawaited(sync());
     _promptedThisSession = true;
     if (p == LocationPermission.denied) {
-      if (await _dialog(title: 'Show your country on the map', body: 'WeHum places you on the world map of people meditating now, by country only. We use your approximate location once to find your country. Your exact position is never saved or shared.', ok: 'Allow location and continue', cancel: 'Not now') == true) {
-        await requestOs();
+      final yes = await _dialog(title: 'Join the world map', body: 'See where people are meditating with you right now. We use your approximate location once, only to find your country. Your exact position is never saved or shared.', ok: 'Allow location and continue', cancel: 'Not now');
+      if (yes == true) {
+        // refused (or the phone would not ask again) → offer Settings right away, never a dead end
+        if (!await requestOs()) await _settingsDialog();
       } else {
+        if (yes == false) _snooze(); // only a real "Not now"; a dismissed dialog asks again next launch
         unawaited(sync()); // phone-region fallback
       }
     } else if (p == LocationPermission.deniedForever) {
-      if (await _dialog(title: 'Location is off', body: 'Location is turned off for WeHum, so your country cannot appear on the map. You can turn it on in Settings → WeHum → Location.', ok: 'Open Settings', cancel: 'Not now') == true) {
-        await Geolocator.openAppSettings();
-      } else {
-        unawaited(sync());
-      }
+      await _settingsDialog();
     }
   }
 
-  Future<bool?> _dialog({required String title, required String body, required String ok, required String cancel}) => Get.dialog<bool>(
-        AlertDialog(
-          title: Text(title),
-          content: Text(body),
-          actions: [
-            TextButton(key: const Key('location-not-now'), onPressed: () => Get.back(result: false), child: Text(cancel)),
-            TextButton(key: const Key('location-allow'), onPressed: () => Get.back(result: true), child: Text(ok)),
-          ],
-        ),
+  Future<void> _settingsDialog() async {
+    final yes = await _dialog(title: 'Location is off', body: 'Turn location on for WeHum in Settings so your country can light up on the map.', ok: 'Open Settings', cancel: 'Not now', icon: Icons.location_off_outlined);
+    if (yes == true) {
+      await Geolocator.openAppSettings();
+    } else {
+      if (yes == false) _snooze();
+      unawaited(sync());
+    }
+  }
+
+  Future<bool?> _dialog({required String title, required String body, required String ok, required String cancel, IconData icon = Icons.public_rounded}) => Get.dialog<bool>(
+        LocationPromptCard(title: title, body: body, ok: ok, cancel: cancel, icon: icon, onOk: () => Get.back(result: true), onCancel: () => Get.back(result: false)),
+        barrierColor: Colors.black.withValues(alpha: .72),
       );
 }
