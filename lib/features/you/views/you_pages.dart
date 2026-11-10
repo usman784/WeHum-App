@@ -85,17 +85,6 @@ class YouPage extends StatelessWidget {
               ],
             ]),
           ),
-          if (guest)
-            AppCard(
-              key: const Key('guest-card'),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Save your progress', style: AppText.navTitle.copyWith(color: c.textPrimary)),
-                const SizedBox(height: 4),
-                Text('Create an account to see your meditations, streaks and minutes. What you meditate now is kept for you.', key: const Key('guest-progress-note'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 12),
-                Row(children: [Expanded(child: PrimaryButton('Save progress', onPressed: () => Get.toNamed(ctrl.access.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser))), const SizedBox(width: 10), Expanded(child: OutlineButton('Log in', onPressed: () => Get.toNamed(AppRoutes.logIn)))]),
-              ]),
-            ),
           // ── progress and metrics: accounts only (a guest's meditations are kept and appear once they sign up)
           if (waiting) ...[
             const _SecHead(Icons.event_available_outlined, 'Practice ritual & forgiving streaks', 'PROTOCOL'),
@@ -741,7 +730,7 @@ class HelpPage extends StatelessWidget {
         ListRow(title: 'Watch the intro again', onTap: () => Get.toNamed(AppRoutes.intro1Welcome, arguments: {'replay': true})),
         ListRow(title: 'Restore purchase', onTap: () => Get.toNamed(AppRoutes.restorePurchase)),
         ListRow(title: 'Questions & answers', onTap: () => open(AppLinks.faq)),
-        ListRow(title: 'Contact support', onTap: () => open(AppLinks.support)),
+        const ListRow(title: 'Contact support', onTap: AppLinks.emailSupport),
         ListRow(title: 'Terms of use', onTap: () => open(AppLinks.terms)),
         ListRow(title: 'Privacy policy', onTap: () => open(AppLinks.privacy)),
         const SizedBox(height: 24),

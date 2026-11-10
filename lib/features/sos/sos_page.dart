@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/motion.dart';
 import '../../core/widgets/flex_scroll.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../app/routes/app_routes.dart';
 import '../../core/config/app_links.dart';
 import '../../core/data/models/content.dart';
@@ -51,10 +50,10 @@ class SosController extends GetxController {
       kind: 'sos', title: t.feeling, subtitle: 'SoS · Raphael', sessionId: t.sessionId, coverUrl: t.cover?.url, target: PlaySession(t.sessionId), durationSec: t.durationSec));
   }
 
-  Future<void> book() async {
+  /// The booking link is not ready yet: say so instead of opening a placeholder page.
+  void book() {
     Get.find<AnalyticsService>().track('sos_book_tap');
-    final url = (sos.help['url'] as String?) ?? AppLinks.booking;
-    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    Get.snackbar('WeHum', 'The booking link is coming soon. For now, use Contact us.', snackPosition: SnackPosition.BOTTOM);
   }
 }
 
@@ -76,8 +75,6 @@ class SosPage extends StatelessWidget {
                   Container(width: 7, height: 7, decoration: BoxDecoration(color: c.success, shape: BoxShape.circle)),
                   const SizedBox(width: 8),
                   Expanded(child: Text('IMMEDIATE AUDIO DISPATCH', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.overline.copyWith(color: c.success, fontSize: 10.5))),
-                  const SizedBox(width: 8),
-                  GestureDetector(behavior: HitTestBehavior.opaque, onTap: () => Get.toNamed(AppRoutes.crisisDirectory), child: SizedBox(height: 48, child: Row(children: [Text('Crisis directory', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700)), const SizedBox(width: 4), Icon(Icons.arrow_downward_rounded, size: 14, color: c.emberText)]))),
                 ]),
                 const SizedBox(height: 14),
                 Text(s.title, key: const Key('sos-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
@@ -122,22 +119,6 @@ class SosPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 AppCard(
-                  key: const Key('sos-crisis'), onTap: () => Get.toNamed(AppRoutes.crisisDirectory),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Icon(Icons.support_agent_rounded, color: c.dangerText),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text('Need immediate human support?', style: AppText.navTitle.copyWith(color: c.textPrimary))),
-                      Icon(Icons.chevron_right_rounded, color: c.textSecondary),
-                    ]),
-                    const SizedBox(height: 6),
-                    Text('If you are in crisis, you are not alone. Professional help is free, confidential and available 24/7.', style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                    const SizedBox(height: 8),
-                    Text('Open the crisis directory', style: AppText.caption.copyWith(color: c.emberText, fontWeight: FontWeight.w700)),
-                  ]),
-                ),
-                const SizedBox(height: 12),
-                AppCard(
                   key: const Key('sos-help'),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text((help['title'] as String?) ?? 'Need more help?', style: AppText.title.copyWith(color: c.textPrimary)),
@@ -146,9 +127,9 @@ class SosPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text((help['body'] as String?) ?? 'You can contact us and book a personal session with Raphael.', style: AppText.body.copyWith(color: c.textBody)),
                     const SizedBox(height: 14),
-                    PrimaryButton('Book a personal session', onPressed: ctrl.book),
+                    PrimaryButton('Book a personal session', sub: 'Link coming soon', onPressed: ctrl.book),
                     const SizedBox(height: 8),
-                    OutlineButton('Contact us', onPressed: () => launchUrl(Uri.parse(AppLinks.support), mode: LaunchMode.externalApplication)),
+                    const OutlineButton('Contact us', key: Key('sos-contact'), onPressed: AppLinks.emailSupport),
                   ]),
                 ),
               ]));
