@@ -63,6 +63,20 @@ void main() {
     await e.dispose();
   });
 
+  testWidgets('free Today: a guest sees the log-in card above the offer, a free account does not', (t) async {
+    final g = await openToday(t, member: false);
+    expect(find.byKey(const Key('signin-promo')), findsOneWidget);
+    expect(find.byKey(const Key('signin-promo-login')), findsOneWidget);
+    expect(find.byKey(const Key('try-free')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await g.dispose();
+    final a = await openToday(t, member: false, account: true);
+    expect(find.byKey(const Key('signin-promo')), findsNothing);
+    expect(find.byKey(const Key('try-free')), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    await a.dispose();
+  });
+
   testWidgets('22 member Today: greeting, hero, lengths, program, presence, note, streak, accelerators', (t) async {
     final e = await openToday(t, account: true);
     expect(find.byKey(const Key('greeting')), findsOneWidget);
@@ -183,6 +197,8 @@ void main() {
   testWidgets('24 free Today: Free for you → See all opens the Library with the Free filter on, listing only the free meditations', (t) async {
     final e = await openToday(t, member: false);
     await t.scrollUntilVisible(find.byKey(const Key('free-see-all')), 300, scrollable: find.byType(Scrollable).first);
+    await t.ensureVisible(find.byKey(const Key('free-see-all'))); // the guest's log-in card pushes it down
+    await t.pump();
     await t.tap(find.byKey(const Key('free-see-all')));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.library);

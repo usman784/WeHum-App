@@ -285,6 +285,10 @@ class TodayFreePage extends StatelessWidget {
             Text(DateFormatX.today(), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
             Text(greetingFor(DateTime.now(), ctrl.name), key: const Key('greeting'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 16),
+            if (ctrl.access.isGuest.value) ...[
+              SignInPromo(onLogIn: () => Get.toNamed(AppRoutes.logIn), onCreate: () => Get.toNamed(AppRoutes.saveYourProgressFreeUser)),
+              const SizedBox(height: 16),
+            ],
             if (d?.motd != null)
               HeroImageCard(
                 key: const Key('locked-motd'), image: d!.motd!.cover?.url, height: 300, onTap: () => openPaywall('today_free'),
