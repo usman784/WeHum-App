@@ -57,6 +57,8 @@ void main() {
     expect(find.byKey(const Key('greeting')), findsOneWidget);
     expect(find.byKey(const Key('streak-card')), findsNothing);
     expect(find.byKey(const Key('progress-card')), findsNothing);
+    expect(find.byKey(const Key('signin-promo')), findsOneWidget); // the log-in ask, on Home
+    expect(find.byKey(const Key('signin-promo-login')), findsOneWidget);
     await t.pumpWidget(const SizedBox());
     await e.dispose();
   });
@@ -64,6 +66,7 @@ void main() {
   testWidgets('22 member Today: greeting, hero, lengths, program, presence, note, streak, accelerators', (t) async {
     final e = await openToday(t, account: true);
     expect(find.byKey(const Key('greeting')), findsOneWidget);
+    expect(find.byKey(const Key('signin-promo')), findsNothing); // an account is never asked to log in
     expect(find.textContaining('Marcus'), findsWidgets);
     expect(find.text('Steady Under Pressure'), findsOneWidget);
     expect(find.text('10 min'), findsOneWidget);
@@ -131,11 +134,15 @@ void main() {
 
   testWidgets('Wait in the lobby → lobby; hero tap → MOTD room', (t) async {
     final e = await openToday(t);
+    await t.ensureVisible(find.byKey(const Key('wait-group'))); // the guest's log-in card pushes it down
+    await t.pump();
     await t.tap(find.byKey(const Key('wait-group')));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.groupMeditationLobby);
     Get.back<void>();
     await settle(t);
+    await t.ensureVisible(find.text('Steady Under Pressure'));
+    await t.pump();
     await t.tap(find.text('Steady Under Pressure'));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.motdRoom);

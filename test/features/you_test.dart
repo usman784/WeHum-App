@@ -62,10 +62,10 @@ Future<void> tapSave(WidgetTester t) async {
 }
 
 void main() {
-  testWidgets('54 You as a guest: the Save progress card, and no progress or metrics at all', (t) async {
+  testWidgets('54 You as a guest: no log-in card here (it lives on Home), and no progress or metrics at all', (t) async {
     final e = await open(t, AppRoutes.you);
-    expect(find.byKey(const Key('guest-card')), findsOneWidget); // the mock profile is a guest
-    expect(find.byKey(const Key('guest-progress-note')), findsOneWidget);
+    expect(find.byKey(const Key('guest-card')), findsNothing); // the mock profile is a guest; the log-in ask is on Home only
+    expect(find.byKey(const Key('signin-promo')), findsNothing);
     for (final k in ['streak-block', 'week-chart', 'week-minutes', 'hr-shift', 'r-milestones']) {
       expect(find.byKey(Key(k)), findsNothing, reason: k);
     }
@@ -332,7 +332,6 @@ void main() {
 
   testWidgets('56 edit profile is for accounts only: a guest sees no Edit link and the screen asks for an account', (t) async {
     final e = await open(t, AppRoutes.you);
-    expect(find.byKey(const Key('guest-card')), findsOneWidget);
     expect(find.byKey(const Key('you-edit')), findsNothing);
     Get.toNamed(AppRoutes.editProfile); // a deep link or a stale route
     await settle(t);

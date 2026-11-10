@@ -43,7 +43,6 @@ void main() {
     Get.offAllNamed(AppRoutes.you);
     await settle(t, 5000); // shot 1: guest You tab
     expect(find.byKey(const Key('you-edit')), findsNothing);
-    expect(find.byKey(const Key('guest-card')), findsOneWidget);
     Get.toNamed(AppRoutes.editProfile);
     await settle(t, 5000); // shot 2: account-only
     expect(find.byKey(const Key('account-only')), findsOneWidget);

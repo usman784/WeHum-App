@@ -55,11 +55,17 @@ class TodayPage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(DateFormatX.today(), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 16),
+                  if (ctrl.access.isGuest.value) ...[
+                    SignInPromo(
+                      onLogIn: () => Get.toNamed(AppRoutes.logIn),
+                      onCreate: () => Get.toNamed(ctrl.access.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser)),
+                    const SizedBox(height: 16),
+                  ],
                   if (d?.motd != null) _MotdHero(ctrl: ctrl) else const _NoMotd(),
                   if (!belts.isEmpty) ...[const SizedBox(height: 16), HeatmapCard(belts: belts, onExplore: () => Get.toNamed(AppRoutes.worldMapWorldVibration))],
                   if (d?.dailyMessage != null) ...[const SizedBox(height: 12), _NoteCard(m: d!.dailyMessage!)],
                   const SizedBox(height: 12),
-                  if (ctrl.access.isGuest.value) const SizedBox.shrink() // no progress before an account
+                  if (ctrl.access.isGuest.value) const SizedBox.shrink() // no progress before an account (the log-in card is above)
                   else if (streak != null) _StreakCard(streak: streak, minutes: d?.progress.minutes ?? 0) else _ProgressCard(p: d?.progress ?? const WeekProgress()),
                   if (d?.program != null && ConfigService.shipped('programs')) ...[const SizedBox(height: 12), _ProgramCard(card: d!.program)],
                   const SizedBox(height: 22),
