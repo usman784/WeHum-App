@@ -410,6 +410,8 @@ void main() {
       await t.runAsync(() => e.downloads.init());
       await t.pump();
       expect(find.text('No downloads yet'), findsOneWidget);
+      expect(find.byKey(const Key('storage-card')), findsNothing); // no "Local storage" count on this screen
+      expect(find.text('Local storage'), findsNothing);
       await t.runAsync(() async {
         await e.downloads.start(const DownloadKey('s-deep'), title: 'The Long Meditation');
         await e.downloads.start(const DownloadKey('s-sleep'), title: 'Sink Into Sleep');
@@ -419,7 +421,7 @@ void main() {
       });
       await settle(t);
       expect(find.text('The Long Meditation'), findsOneWidget);
-      expect(find.text('2.0 KB'.replaceFirst('2.0 KB', '2 KB')), findsOneWidget);
+      expect(find.text('1 KB'), findsNWidgets(2)); // each row shows its own size; there is no total card
       await t.tap(find.byKey(const Key('clear-all')));
       await settle(t);
       expect(find.text('Delete all downloads?'), findsOneWidget);

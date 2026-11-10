@@ -13,7 +13,6 @@ import '../../../core/realtime/live_service.dart';
 import '../../../core/realtime/socket_events.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/catalog_service.dart';
-import '../../../core/services/config_service.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/download_service.dart';
@@ -218,10 +217,6 @@ class DownloadsPage extends StatelessWidget {
       body: Obx(() {
         final items = dl.items.toList();
         final cat = Get.find<CatalogService>().catalog.value;
-        final quotaMb = Get.isRegistered<ConfigService>() ? (Get.find<ConfigService>().current.value?.downloadQuotaMb ?? 2400) : 2400;
-        final quota = quotaMb * 1024 * 1024;
-        final used = dl.usedBytes;
-        final done = items.where((d) => d.status == 'done').length;
         // grouped by discipline (theme), the same names as the Library
         final groups = <String, List<Download>>{};
         for (final d in items) {
@@ -231,35 +226,6 @@ class DownloadsPage extends StatelessWidget {
         }
         final store = Get.find<OnboardingStore>();
         return ListView(padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.gutter, 24), children: [
-          AppCard(
-            key: const Key('storage-card'), padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Icon(Icons.cloud_download_outlined, size: 20, color: c.emberText),
-                const SizedBox(width: 8),
-                Expanded(child: Text('Local storage', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 17))),
-                Text(used > quota * .9 ? 'FULL SOON' : 'OPTIMAL', style: AppText.overline.copyWith(color: used > quota * .9 ? c.dangerText : c.success, fontSize: 10)),
-              ]),
-              const SizedBox(height: 12),
-              Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-                Text(formatBytes(used), key: const Key('used'), style: AppText.display.copyWith(color: c.textPrimary, fontSize: 30, fontFeatures: AppText.tabular)),
-                const SizedBox(width: 6),
-                Text('USED', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10)),
-                const Spacer(),
-                Flexible(child: Text('${formatBytes(quota)} limit', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.caption.copyWith(color: c.textSecondary))),
-              ]),
-              const SizedBox(height: 12),
-              AppProgressBar(quota == 0 ? 0 : used / quota),
-              const SizedBox(height: 10),
-              Row(children: [
-                Container(width: 6, height: 6, decoration: BoxDecoration(color: c.ember, shape: BoxShape.circle)),
-                const SizedBox(width: 6),
-                Expanded(child: Text('$done ${done == 1 ? 'session' : 'sessions'} saved', style: AppText.caption.copyWith(color: c.textSecondary))),
-                Text('${formatBytes((quota - used).clamp(0, quota))} free', style: AppText.caption.copyWith(color: c.textSecondary)),
-              ]),
-            ]),
-          ),
-          const SizedBox(height: 12),
           StatefulBuilder(builder: (ctx, set) => AppCard(
                 child: Row(children: [
                   Icon(Icons.wifi_rounded, color: c.emberText),
