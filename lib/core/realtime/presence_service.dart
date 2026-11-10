@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import '../services/location_service.dart';
 import 'socket_events.dart';
 import 'socket_service.dart';
 
@@ -20,6 +21,8 @@ class PresenceService extends GetxService {
   /// [mode] solo | group | silence. Free YouTube playback of non-catalog items must not call this.
   Future<void> start({required String meditationId, String? sessionId, required String kind, int? lengthMin, String mode = 'solo'}) async {
     await stop();
+    // the map needs your country: explain + ask once per session (not awaited, the sit never waits for a dialog)
+    if (Get.isRegistered<LocationService>()) unawaited(Get.find<LocationService>().promptIfNeeded());
     active.value = meditationId;
     _socket.keepAlive = true;
     _startPayload = {'meditationId': meditationId, if (sessionId != null) 'sessionId': sessionId, 'kind': kind, if (lengthMin != null) 'lengthMin': lengthMin, 'mode': mode};

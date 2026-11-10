@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:meditation/core/widgets/surfaces.dart';
 import 'package:meditation/app/routes/app_routes.dart';
 import 'package:meditation/core/services/analytics_service.dart';
+import 'package:meditation/core/services/location_service.dart';
 import 'package:meditation/core/services/purchase_service.dart';
 import 'package:meditation/features/onboarding/controllers/onboarding_controllers.dart';
 
@@ -184,6 +185,41 @@ void main() {
     await e.dispose();
   });
 
+  group('location permission', () {
+    testWidgets('explains first, one button says Allow location and continue, the OS ask runs only on it, then start', (t) async {
+      phone(t);
+      final e = await TestEnv.create();
+      final loc = _FakeLocation(e.me)..result = true;
+      Get.put<LocationService>(loc);
+      await t.pumpWidget(e.app(initial: AppRoutes.setup4Location));
+      await settle(t);
+      expect(find.byKey(const Key('location-title')), findsOneWidget);
+      expect(loc.asked, 0); // nothing is asked just by opening the screen
+      await t.tap(find.text('Allow location and continue'));
+      await settle(t);
+      expect(loc.asked, 1);
+      expect(Get.currentRoute, AppRoutes.howDoYouWantToStart);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+
+    testWidgets('Not now never asks the OS, still continues (phone region fallback)', (t) async {
+      phone(t);
+      final e = await TestEnv.create();
+      final loc = _FakeLocation(e.me);
+      Get.put<LocationService>(loc);
+      await t.pumpWidget(e.app(initial: AppRoutes.setup4Location));
+      await settle(t);
+      await t.tap(find.text('Not now'));
+      await settle(t);
+      expect(loc.asked, 0);
+      expect(loc.synced, 1);
+      expect(Get.currentRoute, AppRoutes.howDoYouWantToStart);
+      await t.pumpWidget(const SizedBox());
+      await e.dispose();
+    });
+  });
+
   group('reminder permission', () {
     testWidgets('Allow: asks the OS, saves name + time on the server, schedules the local fallback, goes to start', (t) async {
     phone(t);
@@ -198,7 +234,7 @@ void main() {
       expect(e.me.profile.reminderTime, '07:00');
       expect(e.me.profile.reminderEnabled, true);
       expect(e.prefs.map['notification_choice'], 'granted');
-      expect(Get.currentRoute, AppRoutes.howDoYouWantToStart);
+      expect(Get.currentRoute, AppRoutes.setup4Location);
       await e.dispose();
     });
 
@@ -213,7 +249,7 @@ void main() {
       expect(e.prefs.map['notification_choice'], 'denied');
       expect(e.notifications.calls.where((c) => c.startsWith('daily')), isEmpty);
       expect(e.me.profile.reminderEnabled, false);
-      expect(Get.currentRoute, AppRoutes.howDoYouWantToStart);
+      expect(Get.currentRoute, AppRoutes.setup4Location);
       await t.pumpWidget(const SizedBox());
       await e.dispose();
 
@@ -287,4 +323,18 @@ void main() {
       await e.dispose();
     });
   });
+}
+
+class _FakeLocation extends LocationService {
+  _FakeLocation(super.me);
+  bool result = false;
+  int asked = 0, synced = 0;
+  @override
+  Future<bool> requestOs() async {
+    asked++;
+    return result;
+  }
+
+  @override
+  Future<void> sync({bool force = false}) async => synced++;
 }

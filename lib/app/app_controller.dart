@@ -3,6 +3,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
+import '../core/services/location_service.dart';
 import '../core/services/onboarding_store.dart';
 import '../core/realtime/realtime_coordinator.dart';
 import '../core/config/env.dart';
@@ -76,6 +77,7 @@ class AppController extends GetxService with WidgetsBindingObserver {
     _reconnected = ever(socket.state, (s) {
       if (s == SocketState.connected) {
         unawaited(sync.flush());
+    if (Get.isRegistered<LocationService>()) unawaited(Get.find<LocationService>().sync(force: true)); // country for the map; silent, throttled
         unawaited(refreshAccount()); // events sent while the phone was offline are gone: read the account's current state
         if (Get.isRegistered<PracticedService>()) unawaited(Get.find<PracticedService>().load()); // sits finished on another device meanwhile
         if (Get.isRegistered<FavoritesService>()) unawaited(Get.find<FavoritesService>().load());

@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const intro4TrainingNotTherapy = '/intro/4'; // 05
   static const setup1YourName = '/setup/name'; // 06
   static const setup2MeditationReminder = '/setup/time'; // 07
+  static const setup4Location = '/setup/location';
   static const setup3Reminder = '/setup/permission'; // 08
   static const howDoYouWantToStart = '/start'; // 09
   static const purchaseStates = '/purchase/status'; // 11

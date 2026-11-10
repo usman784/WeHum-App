@@ -14,6 +14,7 @@ import '../../../core/data/models/activity.dart';
 import '../../../core/data/models/json.dart';
 import '../../../core/data/models/stitch.dart';
 import '../../../core/services/config_service.dart';
+import '../../../core/services/location_service.dart';
 import '../../../core/errors/error_code.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/session_store.dart';
@@ -490,6 +491,7 @@ class PrivacyController extends GetxController {
   Future<void> setShowCountry(bool v) async {
     try {
       profile.value = await _me.patch({'showCountry': v});
+      if (v && Get.isRegistered<LocationService>()) unawaited(Get.find<LocationService>().promptIfNeeded(force: true));
     } catch (_) {}
   }
 

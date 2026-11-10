@@ -13,6 +13,7 @@ import '../../../core/realtime/live_service.dart';
 import '../../../core/services/access_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/config_service.dart';
+import '../../../core/services/location_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/onboarding_store.dart';
 import '../../../core/services/perf_service.dart';
@@ -349,6 +350,26 @@ class ReminderPermissionController extends GetxController {
     analytics.track('reminder_set', {'time': store.reminderTime, 'enabled': granted});
     if (granted) await Get.find<NotificationService>().scheduleDailyReminder(store.reminderTime, name: store.name);
     busy.value = false;
+    Get.toNamed(AppRoutes.setup4Location);
+  }
+}
+
+/// 08b Location: our own explanation first, the OS dialog only on the button; "Not now" and "Don't allow" both continue
+/// (the phone's region is used so the person still counts on the map; Settings is offered later, never right after a no).
+class LocationPermissionController extends GetxController {
+  final busy = false.obs;
+
+  Future<void> allow() async {
+    busy.value = true;
+    final ok = await Get.find<LocationService>().requestOs();
+    Get.find<AnalyticsService>().track('location_permission', {'result': ok ? 'granted' : 'denied'});
+    busy.value = false;
+    Get.toNamed(AppRoutes.howDoYouWantToStart);
+  }
+
+  void later() {
+    Get.find<AnalyticsService>().track('location_permission', {'result': 'skipped'});
+    unawaited(Get.find<LocationService>().sync(force: true));
     Get.toNamed(AppRoutes.howDoYouWantToStart);
   }
 }

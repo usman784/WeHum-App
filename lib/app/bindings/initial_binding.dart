@@ -43,6 +43,7 @@ import '../../core/services/favorites_service.dart';
 import '../../core/services/practiced_service.dart';
 import '../../core/services/connectivity_service.dart';
 import '../../core/services/crash_service.dart';
+import '../../core/services/location_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/onboarding_store.dart';
 import '../../core/services/perf_service.dart';
@@ -155,6 +156,7 @@ class InitialBinding extends Bindings {
     Get.lazyPut<PracticedService>(() => PracticedService(Get.find(), Get.find<AppDatabase>(), access), fenix: true);
     Get.lazyPut<FavoritesService>(() => FavoritesService(Get.find(), access), fenix: true);
     Get.lazyPut<SyncService>(() => SyncService(Get.find(), Get.find<AppDatabase>(), Get.find<CommunityRepository>(), Get.find<PracticedService>()), fenix: true);
+    Get.lazyPut<LocationService>(() => LocationService(Get.find()), fenix: true);
     Get.lazyPut<NotificationService>(
       () => NotificationService(Get.find(), store, crash, onOpenLink: (l, {notificationId}) => Get.find<AppController>().openLink(l, notificationId: notificationId))
         ..onSignedOutHook = () {

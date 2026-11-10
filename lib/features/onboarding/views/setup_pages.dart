@@ -235,6 +235,34 @@ class ReminderPermissionPage extends StatelessWidget {
 }
 
 
+/// 08b Setup 3 · Location: explains the map first; the button opens the phone's own dialog. "Not now" still continues.
+class LocationPermissionPage extends StatelessWidget {
+  const LocationPermissionPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = Get.put(LocationPermissionController());
+    final c = context.colors;
+    return OnboardingFrame(
+      showBack: true, step: 3, onSkip: ctrl.later, skipLabel: 'Not now',
+      cta: 'Allow location and continue', onCta: ctrl.allow,
+      child: Obx(() => ctrl.busy.value
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const SizedBox(height: 12),
+              Text('Meditate with the world.', key: const Key('location-title'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
+              const SizedBox(height: 10),
+              Text('Next, your phone will ask if ${brandName()} may use your location. This is what we use it for:', style: AppText.bodyLarge.copyWith(color: c.textSecondary)),
+              const SizedBox(height: 20),
+              const _Use(Icons.public_rounded, 'Your country on the map', 'You light up your country on the world map while you meditate.'),
+              const _Use(Icons.lock_outline_rounded, 'Approximate and private', 'We read it once, keep only the country, and never save or share your exact position.'),
+              const _Use(Icons.toggle_on_outlined, 'Always your choice', 'Turn it off any time in You → Count me in live presence, or in your phone’s Settings.'),
+              const SizedBox(height: 8),
+              Text('${brandName()} works without location too. We then use your phone’s region setting.', key: const Key('location-note'), style: AppText.bodySmall.copyWith(color: c.textTertiary)),
+            ]))),
+    );
+  }
+}
+
 class _Use extends StatelessWidget {
   const _Use(this.icon, this.title, this.body);
   final IconData icon;

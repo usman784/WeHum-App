@@ -52,6 +52,7 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.intro4TrainingNotTherapy, page: () => const IntroPage(4)),
     GetPage(name: AppRoutes.setup1YourName, page: () => const NamePage()),
     GetPage(name: AppRoutes.setup2MeditationReminder, page: () => const TimePage()),
+    GetPage(name: AppRoutes.setup4Location, page: () => const LocationPermissionPage()),
     GetPage(name: AppRoutes.setup3Reminder, page: () => const ReminderPermissionPage()),
     GetPage(name: AppRoutes.howDoYouWantToStart, page: () => const StartPage()),
     GetPage(name: AppRoutes.purchaseStates, page: () => const PurchaseStatusPage()),
