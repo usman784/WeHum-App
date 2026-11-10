@@ -6,7 +6,6 @@ import '../../../core/data/models/content.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/tokens.dart';
-import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/motion.dart';
 import '../../../core/widgets/surfaces.dart';
 
@@ -138,17 +137,18 @@ class HeroActions extends StatelessWidget {
   }
 }
 
-/// Home card for someone who is not logged in: the one place that asks them to log in or create an account.
-/// Drifting glows, a pulsing badge and a breathing button halo; all still when the phone asks for reduced motion.
+/// Slim banner for someone who is not logged in: the one place that asks them to log in or create an account
+/// (the Log in screen has the Create account link). A colour ring turns around the border, soft glows drift
+/// inside, the badge pulses; all still when the phone asks for reduced motion.
 class SignInPromo extends StatefulWidget {
-  const SignInPromo({super.key, required this.onLogIn, required this.onCreate});
-  final VoidCallback onLogIn, onCreate;
+  const SignInPromo({super.key, required this.onLogIn});
+  final VoidCallback onLogIn;
   @override
   State<SignInPromo> createState() => _SignInPromoState();
 }
 
 class _SignInPromoState extends State<SignInPromo> with SingleTickerProviderStateMixin {
-  late final AnimationController _a = AnimationController(vsync: this, duration: const Duration(seconds: 6));
+  late final AnimationController _a = AnimationController(vsync: this, duration: const Duration(seconds: 5));
 
   @override
   void didChangeDependencies() {
@@ -173,50 +173,59 @@ class _SignInPromoState extends State<SignInPromo> with SingleTickerProviderStat
       animation: _a,
       builder: (context, _) {
         final t = _a.value * 2 * math.pi;
-        final breathe = (math.sin(t) + 1) / 2; // 0..1, once per loop
-        return Container(
-          key: const Key('signin-promo'),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Radii.cardLarge),
-            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [c.emberDeep, c.surface]),
-            border: Border.all(color: c.ember.withValues(alpha: .35 + .25 * breathe)),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(children: [
-            Positioned(right: -50 + 24 * math.sin(t), top: -50 + 16 * math.cos(t), child: _glow(c.ember.withValues(alpha: .28), 200)),
-            Positioned(left: -60 + 20 * math.cos(t), bottom: -70 + 14 * math.sin(t), child: _glow(c.teal.withValues(alpha: .22), 190)),
-            Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  SizedBox(
-                    width: 48, height: 48,
-                    child: Stack(alignment: Alignment.center, children: [
-                      Container(width: 40 + 8 * breathe, height: 40 + 8 * breathe, decoration: BoxDecoration(shape: BoxShape.circle, color: c.ember.withValues(alpha: .22 * (1 - breathe)))),
-                      Container(width: 40, height: 40, decoration: BoxDecoration(shape: BoxShape.circle, color: c.ember), child: Icon(Icons.lock_open_rounded, size: 22, color: c.onEmber)),
+        final breathe = (math.sin(t) + 1) / 2;
+        return Pressable(
+          child: Semantics(
+            button: true, label: 'You are not logged in. Save your progress. Log in or create an account',
+            child: Container(
+              key: const Key('signin-promo'),
+              padding: const EdgeInsets.all(1.6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: SweepGradient(transform: GradientRotation(t), colors: [c.ember, c.lilacText, c.teal, c.ember]),
+                boxShadow: [BoxShadow(color: c.ember.withValues(alpha: .16 + .2 * breathe), blurRadius: 18 + 8 * breathe, spreadRadius: -2)],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18.4),
+                child: Material(
+                  color: c.surface,
+                  child: InkWell(
+                    onTap: widget.onLogIn,
+                    child: Stack(children: [
+                      Positioned(left: -30 + 150 * (0.5 + 0.5 * math.sin(t)), top: -40, child: _glow(c.ember.withValues(alpha: .30), 120)),
+                      Positioned(right: -30 + 60 * (0.5 + 0.5 * math.cos(t)), bottom: -50, child: _glow(c.lilacText.withValues(alpha: .22), 120)),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                        child: Row(children: [
+                          SizedBox(
+                            width: 46, height: 46,
+                            child: Stack(alignment: Alignment.center, children: [
+                              Container(width: 34 + 12 * breathe, height: 34 + 12 * breathe, decoration: BoxDecoration(shape: BoxShape.circle, color: c.ember.withValues(alpha: .32 * (1 - breathe)))),
+                              Container(width: 34, height: 34, decoration: BoxDecoration(shape: BoxShape.circle, color: c.ember), child: Icon(Icons.person_rounded, size: 19, color: c.onEmber)),
+                            ]),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                              Text('Save your progress', style: AppText.navTitle.copyWith(color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+                              const SizedBox(height: 2),
+                              Text('Log in or create an account', key: const Key('signin-promo-note'), style: AppText.caption.copyWith(color: c.textSecondary, fontSize: 12.5)),
+                            ]),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            key: const Key('signin-promo-login'), width: 42, height: 42,
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: c.ember, boxShadow: [BoxShadow(color: c.ember.withValues(alpha: .25 + .35 * breathe), blurRadius: 8 + 10 * breathe)]),
+                            child: Icon(Icons.arrow_forward_rounded, size: 22, color: c.onEmber),
+                          ),
+                        ]),
+                      ),
                     ]),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text('YOU’RE NOT LOGGED IN', style: AppText.overline.copyWith(color: c.emberText, fontSize: 10.5))),
-                ]),
-                const SizedBox(height: 14),
-                Text('Keep your practice with you', style: AppText.title.copyWith(color: c.textPrimary, fontSize: 22, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                Text('Log in to save your streaks and minutes, and pick up on any phone.', key: const Key('signin-promo-note'), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
-                const SizedBox(height: 16),
-                Row(children: [
-                  Expanded(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(99), boxShadow: [BoxShadow(color: c.ember.withValues(alpha: .15 + .3 * breathe), blurRadius: 10 + 12 * breathe)]),
-                      child: PrimaryButton('Log in', key: const Key('signin-promo-login'), onPressed: widget.onLogIn),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(child: OutlineButton('Create account', key: const Key('signin-promo-create'), onPressed: widget.onCreate)),
-                ]),
-              ]),
+                ),
+              ),
             ),
-          ]),
+          ),
         );
       },
     );

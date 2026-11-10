@@ -231,6 +231,8 @@ void main() {
   testWidgets('free Today: tapping the free item opens the free player with the YouTube id', (t) async {
     final e = await openToday(t, member: false);
     await t.scrollUntilVisible(find.byKey(const Key('free-pick')), 300, scrollable: find.byType(Scrollable).first);
+    await t.ensureVisible(find.byKey(const Key('free-pick')));
+    await t.pump();
     await t.tap(find.byKey(const Key('free-pick')));
     await settle(t);
     expect(Get.currentRoute, AppRoutes.freePlayer);

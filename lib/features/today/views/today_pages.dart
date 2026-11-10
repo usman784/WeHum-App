@@ -56,9 +56,7 @@ class TodayPage extends StatelessWidget {
                   Text(DateFormatX.today(), style: AppText.bodySmall.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 16),
                   if (ctrl.access.isGuest.value) ...[
-                    SignInPromo(
-                      onLogIn: () => Get.toNamed(AppRoutes.logIn),
-                      onCreate: () => Get.toNamed(ctrl.access.isMember ? AppRoutes.saveYourProgressOptional : AppRoutes.saveYourProgressFreeUser)),
+                    SignInPromo(onLogIn: () => Get.toNamed(AppRoutes.logIn)),
                     const SizedBox(height: 16),
                   ],
                   if (d?.motd != null) _MotdHero(ctrl: ctrl) else const _NoMotd(),
@@ -286,7 +284,7 @@ class TodayFreePage extends StatelessWidget {
             Text(greetingFor(DateTime.now(), ctrl.name), key: const Key('greeting'), style: AppText.heroTitle.copyWith(color: c.textPrimary)),
             const SizedBox(height: 16),
             if (ctrl.access.isGuest.value) ...[
-              SignInPromo(onLogIn: () => Get.toNamed(AppRoutes.logIn), onCreate: () => Get.toNamed(AppRoutes.saveYourProgressFreeUser)),
+              SignInPromo(onLogIn: () => Get.toNamed(AppRoutes.logIn)),
               const SizedBox(height: 16),
             ],
             if (d?.motd != null)

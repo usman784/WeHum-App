@@ -41,12 +41,6 @@ void main() {
     Get.back<void>();
     await settle(t, 1500);
 
-    await t.tap(find.byKey(const Key('signin-promo-create')));
-    await settle(t, 3000);
-    await b.takeScreenshot('4_create_account_from_home');
-    Get.back<void>();
-    await settle(t, 1500);
-
     Get.offAllNamed(AppRoutes.you);
     await settle(t, 5000);
     expect(find.byKey(const Key('signin-promo')), findsNothing);
