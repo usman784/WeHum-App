@@ -187,7 +187,7 @@ void main() {
   });
 
   group('app lifecycle', () {
-    test('disconnects 30 s after background, reconnects on foreground', () {
+    test('goes offline at once in the background, reconnects on foreground', () {
       fakeAsync((fa) {
         final t = FakeTransport();
         final s = svc(t);
@@ -196,9 +196,7 @@ void main() {
         s.joinRoom('today');
         fa.flushMicrotasks();
         s.onBackground();
-        fa.elapse(const Duration(seconds: 29));
-        expect(t.disposed, false);
-        fa.elapse(const Duration(seconds: 2));
+        fa.elapse(const Duration(milliseconds: 1)); // no grace: the timer fires on the next tick
         expect(t.disposed, true);
         expect(s.state.value, SocketState.disconnected);
         final s2 = s;
@@ -219,6 +217,24 @@ void main() {
         fa.elapse(const Duration(minutes: 5));
         expect(t.disposed, false);
         expect(s.connected, true);
+      });
+    });
+  });
+
+  group('background + meditation', () {
+    test('a sit that ends while the app is in the background takes the socket offline then', () {
+      fakeAsync((fa) {
+        final t = FakeTransport();
+        final s = svc(t);
+        s.connect();
+        t.serverConnects();
+        s.keepAlive = true;
+        s.onBackground();
+        fa.elapse(const Duration(seconds: 5));
+        expect(t.disposed, false); // meditating: stays up
+        s.keepAlive = false; // the sit ended
+        fa.elapse(const Duration(milliseconds: 1));
+        expect(t.disposed, true);
       });
     });
   });

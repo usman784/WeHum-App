@@ -18,7 +18,7 @@ class SocketService extends GetxService {
     this.onForceLogout,
     this.onTimeSync,
     this.pausedAfter = const Duration(seconds: 10),
-    this.backgroundGrace = const Duration(seconds: 30),
+    this.backgroundGrace = Duration.zero, // in the background = offline at once (a playing meditation keeps it up)
     this.maxRooms = 4,
   }) : _factory = transportFactory;
 
@@ -183,11 +183,15 @@ class SocketService extends GetxService {
       _bgPaused = false;
       connect();
     }
+    if (!v && _inBackground) onBackground(); // the sit ended while the app is away: go offline now
   }
+
+  bool _inBackground = false;
 
   bool _bgPaused = false;
 
   void onBackground() {
+    _inBackground = true;
     _bgTimer?.cancel();
     if (_keepAlive) return;
     _bgTimer = Timer(backgroundGrace, () async {
@@ -198,6 +202,7 @@ class SocketService extends GetxService {
   }
 
   Future<void> onForeground() async {
+    _inBackground = false;
     _bgTimer?.cancel();
     if (_bgPaused || (_t == null && _roomRefs.isNotEmpty)) {
       _bgPaused = false;
