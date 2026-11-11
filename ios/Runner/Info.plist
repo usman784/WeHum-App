@@ -58,6 +58,8 @@
 		<true/>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>WeHum uses your approximate location once, only to find your country and light it up on the world map of people meditating now. Your exact position is never saved or shared.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>WeHum uses your approximate location once, only to find your country for the world map of people meditating now. It is never used in the background and your exact position is never saved or shared.</string>
 		<key>NSHealthShareUsageDescription</key>
 		<string>WeHum reads your heart rate from Apple Health only for the time of a meditation, to show how your body settled. Only the average and the change are saved to your account.</string>
 		<key>NSHealthUpdateUsageDescription</key>
