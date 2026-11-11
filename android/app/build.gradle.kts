@@ -33,14 +33,6 @@ android {
 
     buildFeatures { resValues = true }
 
-    // Bundle ids (README): prod app.wehum.meditation, staging …staging, dev …dev
-    flavorDimensions += "env"
-    productFlavors {
-        create("dev") { dimension = "env"; applicationIdSuffix = ".dev"; resValue("string", "app_name", "WeHum Dev") }
-        create("staging") { dimension = "env"; applicationIdSuffix = ".staging"; resValue("string", "app_name", "WeHum Staging") }
-        create("prod") { dimension = "env"; resValue("string", "app_name", "WeHum") }
-    }
-
     signingConfigs {
         create("release") {
             if (keyProps.containsKey("storeFile")) {
@@ -52,10 +44,31 @@ android {
         }
     }
 
+    // Bundle ids (README): prod app.wehum.meditation, staging …staging, dev …dev
+    flavorDimensions += "env"
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "WeHum Dev")
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        create("staging") {
+            dimension = "env"
+            applicationIdSuffix = ".staging"
+            resValue("string", "app_name", "WeHum Staging")
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        create("prod") {
+            dimension = "env"
+            resValue("string", "app_name", "WeHum")
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
     buildTypes {
         release {
-            // Real key from android/key.properties (never committed); falls back to debug so local release runs work.
-            signingConfig = if (keyProps.containsKey("storeFile")) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            // Prod requires android/key.properties; dev/staging retain debug signing.
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

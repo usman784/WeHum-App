@@ -2,7 +2,7 @@
 
 ## Versions
 
-The version lives in `pubspec.yaml` (`version: <name>+<build>`, now `1.0.2+5`). Every release gets a git tag `v<name>+<build>` and a section here. Patch = fixes and small changes, minor = new screens or features, major = a breaking change to the API contract. The CMS and backend carry the same tag on the commit that was current on the release day; see the **Needs** line to know which of them a build expects.
+The version lives in `pubspec.yaml` (`version: <name>+<build>`, now `1.0.2+7`). Every release gets a git tag `v<name>+<build>` and a section here. Patch = fixes and small changes, minor = new screens or features, major = a breaking change to the API contract. The CMS and backend carry the same tag on the commit that was current on the release day; see the **Needs** line to know which of them a build expects.
 
 ### Unreleased (after 1.0.2+5)
 - Meditation summary: swipeable share preview with four looks; Share and Done are pinned in view.
@@ -48,3 +48,15 @@ The version lives in `pubspec.yaml` (`version: <name>+<build>`, now `1.0.2+5`). 
 ## Oct 12 — Stitch redesign
 - What changed: `WeHum_App_Spec.md` §0.2, screen list §12b, phases §14b. Map to backend and CMS: `../stitch-export/SCREEN_MAP.md`.
 - Design files: `design/stitch/screens/` (PNG) and `design/stitch/source/` (HTML) for the 29 built screens; `design/screens/` + `design/source/` are the earlier 74-screen canvas, kept for screens Stitch does not redraw.
+
+## Android production bundle
+
+Production release signing reads `android/key.properties`, which points to `android/wehum-prod.jks`. The credentials are also saved in `android/keystore-credentials.txt`. All three files are ignored by Git; keep a secure backup for future releases. Dev and staging releases keep debug signing.
+
+From `app/`, run:
+
+```sh
+flutter build appbundle --release --flavor prod --dart-define-from-file=env/prod.json
+```
+
+The signed bundle is written to `build/app/outputs/bundle/prodRelease/app-prod-release.aab`. Its package ID is `app.wehum.meditation`; its version comes from `pubspec.yaml`.
