@@ -251,7 +251,15 @@ class DownloadsPage extends StatelessWidget {
                 child: ListRow(
                   title: d.title.isEmpty ? d.sessionId : d.title, subtitle: d.status == 'done' ? formatBytes(d.bytes) : (dl.errors['${d.sessionId}#${d.variant}'] ?? '${d.status[0].toUpperCase()}${d.status.substring(1)}${d.status == 'running' ? ' ${((dl.progress['${d.sessionId}#${d.variant}'] ?? 0) * 100).round()}%' : ''}'),
                   leading: IconTile(d.status == 'done' ? Icons.download_done_rounded : Icons.downloading_rounded), showChevron: d.status == 'done',
-                  trailing: d.status == 'failed' || d.status == 'paused' ? TextLink('Retry', onPressed: () => dl.start(DownloadKey(d.sessionId, d.variant), title: d.title)) : null,
+                  trailing: d.status == 'failed' || d.status == 'paused' ? TextLink('Retry', onPressed: () async {
+                    try {
+                      await dl.start(DownloadKey(d.sessionId, d.variant), title: d.title);
+                    } on WifiRequired {
+                      Get.snackbar('WeHum', 'Wi-Fi only is on. Connect to Wi-Fi to download, or turn it off above.', snackPosition: SnackPosition.BOTTOM);
+                    } on NotEnoughSpace {
+                      Get.snackbar('WeHum', 'Not enough space on this phone.', snackPosition: SnackPosition.BOTTOM);
+                    }
+                  }) : null,
                   onTap: d.status == 'done' ? () => _play(d.sessionId, d.variant) : null,
                 ),
               ),

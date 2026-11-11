@@ -28,6 +28,7 @@ class FakeEngine implements DownloadEngine {
       await f.writeAsBytes(List.filled(100, 1));
       for (var i = 0; i < 100; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 5));
+        onProgress?.call(i, 100);
         if (cancel?.isCancelled ?? false) throw DioException(requestOptions: RequestOptions(path: url), type: DioExceptionType.cancel);
       }
     }
@@ -140,6 +141,23 @@ void main() {
     await free.start(const DownloadKey('s-b'), title: 'B');
     await until(() => free.isDownloaded('s-b'));
     expect(free.isDownloaded('s-b'), true);
+  });
+
+  test('Wi-Fi only: a running download pauses when Wi-Fi drops, and Retry on mobile data is refused', () async {
+    var wifi = true;
+    engine.slow = true;
+    final s = DownloadService(db: db, media: media, engine: engine, root: dir, access: access, analytics: analytics, wifiOnly: () => true, onWifi: () async => wifi, wifiCheckEvery: const Duration(milliseconds: 20));
+    await s.start(const DownloadKey('s-a'), title: 'A');
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    wifi = false; // the person turns Wi-Fi off while it downloads
+    await until(() => s.items.any((d) => d.sessionId == 's-a' && d.status == 'paused'));
+    expect(s.isDownloaded('s-a'), false);
+    expect(s.errors['s-a#0'], contains('Wi-Fi'));
+    await expectLater(s.start(const DownloadKey('s-a'), title: 'A'), throwsA(isA<WifiRequired>())); // Retry on mobile data
+    wifi = true;
+    engine.slow = false;
+    await s.start(const DownloadKey('s-a'), title: 'A'); // back on Wi-Fi: resumes
+    await until(() => s.isDownloaded('s-a'));
   });
 
   test('MOTD downloads are per variant', () async {

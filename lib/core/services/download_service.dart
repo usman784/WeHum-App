@@ -25,7 +25,7 @@ class DownloadKey {
 /// Offline downloads (spec §10, §12 #58): files per variant in the app's documents folder, index in drift,
 /// resumable, signed URL re-requested when it expires, auto-removed 7 days after the membership ends.
 class DownloadService extends GetxService implements LocalMedia {
-  DownloadService({required AppDatabase db, required MediaRepository media, required DownloadEngine engine, required Directory root, required AccessService access, AnalyticsService? analytics, StorageProbe? storage, this.maxRetries = 2, this.wifiOnly, this.onWifi})
+  DownloadService({required AppDatabase db, required MediaRepository media, required DownloadEngine engine, required Directory root, required AccessService access, AnalyticsService? analytics, StorageProbe? storage, this.maxRetries = 2, this.wifiOnly, this.onWifi, this.wifiCheckEvery = const Duration(seconds: 2)})
       : _db = db, _media = media, _engine = engine, _root = root, _access = access, _analytics = analytics, _storage = storage ?? const NoStorageProbe();
   final AppDatabase _db;
   final MediaRepository _media;
@@ -38,6 +38,7 @@ class DownloadService extends GetxService implements LocalMedia {
   /// Settings switch and link check; both null = no restriction (tests).
   final bool Function()? wifiOnly;
   final Future<bool> Function()? onWifi;
+  final Duration wifiCheckEvery;
 
   final items = <Download>[].obs;
   final progress = <String, double>{}.obs; // "id#variant" → 0..1
@@ -113,8 +114,8 @@ class DownloadService extends GetxService implements LocalMedia {
     final k = _k(key.id, key.variant);
     if (_cancels.containsKey(k)) return;
     errors.remove(k);
-    if ((wifiOnly?.call() ?? false) && !(await (onWifi?.call() ?? Future.value(true)))) {
-      errors[k] = 'Wi-Fi only is on. Connect to Wi-Fi to download.';
+    if (await _blockedByMobileData()) {
+      errors[k] = _wifiMsg;
       throw WifiRequired();
     }
     final free = await _storage.freeBytes();
@@ -131,18 +132,40 @@ class DownloadService extends GetxService implements LocalMedia {
     unawaited(_run(key, path, title));
   }
 
+  static const _wifiMsg = 'Wi-Fi only is on. Connect to Wi-Fi to download.';
+
+  /// Wi-Fi only is on and the phone is not on Wi-Fi (mobile data, or no link at all).
+  Future<bool> _blockedByMobileData() async => (wifiOnly?.call() ?? false) && !(await (onWifi?.call() ?? Future.value(true)));
+
+  /// A download already running is paused (partial file kept) the moment Wi-Fi goes away, so it never continues on mobile data.
+  Future<void> _pauseIfMobile(DownloadKey key) async {
+    if (!_cancels.containsKey(_k(key.id, key.variant)) || !await _blockedByMobileData()) return;
+    errors[_k(key.id, key.variant)] = '$_wifiMsg Paused; tap Retry on Wi-Fi.';
+    await pause(key);
+  }
+
   Future<void> _run(DownloadKey key, String path, String title) async {
     final k = _k(key.id, key.variant);
     var attempts = 0;
+    var lastCheck = DateTime.now();
+    final token = _cancels[k];
     try {
       while (true) {
+        if (attempts > 0 && await _blockedByMobileData()) { // a retry after a drop must not go out over mobile data
+          await _pauseIfMobile(key);
+          return;
+        }
         final have = await File(path).exists() ? await File(path).length() : 0;
         final url = await _media.playUrl(key.target, download: true, fresh: attempts > 0);
         final u = url.url ?? url.hlsUrl;
         if (u == null) throw ApiException(ErrorCode.notFound);
         try {
-          final total = await _engine.download(u, path, resumeFrom: have, cancel: _cancels[k], onProgress: (r, t) {
+          final total = await _engine.download(u, path, resumeFrom: have, cancel: token, onProgress: (r, t) {
             if (t > 0) progress[k] = r / t;
+            if (DateTime.now().difference(lastCheck) >= wifiCheckEvery) {
+              lastCheck = DateTime.now();
+              unawaited(_pauseIfMobile(key));
+            }
             _db.upsertDownload(DownloadsCompanion(sessionId: Value(key.id), variant: Value(key.variant), bytes: Value(r), totalBytes: Value(t), status: const Value('running'), createdAt: Value(DateTime.now())));
           });
           await _db.upsertDownload(DownloadsCompanion(sessionId: Value(key.id), variant: Value(key.variant), title: Value(title), filePath: Value(path), bytes: Value(total), totalBytes: Value(total), expiresAt: Value(url.expiresAt), status: const Value('done'), createdAt: Value(DateTime.now())));
@@ -164,7 +187,7 @@ class DownloadService extends GetxService implements LocalMedia {
     } catch (_) {
       await _fail(key, 'Download failed. Try again later.');
     } finally {
-      _cancels.remove(k);
+      if (identical(_cancels[k], token)) _cancels.remove(k); // a Retry may already own a new token
     }
   }
 
@@ -177,7 +200,7 @@ class DownloadService extends GetxService implements LocalMedia {
 
   /// Pause keeps the partial file; [start] again resumes from its size.
   Future<void> pause(DownloadKey key) async {
-    _cancels[_k(key.id, key.variant)]?.cancel();
+    _cancels.remove(_k(key.id, key.variant))?.cancel(); // freed at once so Retry can start again
     await _db.upsertDownload(DownloadsCompanion(sessionId: Value(key.id), variant: Value(key.variant), status: const Value('paused'), createdAt: Value(DateTime.now())));
     await _reload();
   }
