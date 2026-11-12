@@ -257,11 +257,11 @@ class Entitlement {
 
 class MeProfile {
   const MeProfile({
-    required this.id, this.firstName, this.lastName, this.bio, this.username, this.avatarUrl, this.usernameNextChangeAt, this.email, this.isGuest = true, this.providers = const [], this.country, this.timezone, this.theme = 'system',
+    required this.id, this.firstName, this.lastName, this.bio, this.username, this.avatarUrl, this.usernameNextChangeAt, this.email, this.isGuest = true, this.providers = const [], this.country, this.city, this.timezone, this.theme = 'system',
     this.reminderEnabled = true, this.reminderTime = '07:00', this.groupWarning = false, this.dailyMessagePush = true, this.showCountry = true, this.entitlement = const Entitlement(),
   });
   final String id;
-  final String? firstName, lastName, username, avatarUrl, email, country, timezone;
+  final String? firstName, lastName, username, avatarUrl, email, country, city, timezone;
   /// Short text about the person, 200 characters at most.
   final String? bio;
   /// A username can change once every 7 days: when the next change is allowed (null = now).
@@ -277,7 +277,7 @@ class MeProfile {
     return MeProfile(
         id: j['id'] as String, firstName: asStr(j['firstName']), lastName: asStr(j['lastName']), bio: asStr(j['bio']), username: asStr(j['username']), avatarUrl: asStr(j['avatarUrl']),
         usernameNextChangeAt: DateTime.tryParse(asStr(j['usernameNextChangeAt']) ?? '')?.toLocal(), email: asStr(j['email']), isGuest: j['isGuest'] != false,
-        providers: [for (final p in ((j['providers'] as List?) ?? const [])) '$p'], country: asStr(j['country']), timezone: asStr(j['timezone']), theme: (j['theme'] ?? 'system') as String,
+        providers: [for (final p in ((j['providers'] as List?) ?? const [])) '$p'], country: asStr(j['country']), city: asStr(j['city']), timezone: asStr(j['timezone']), theme: (j['theme'] ?? 'system') as String,
         reminderEnabled: r['enabled'] != false, reminderTime: (r['time'] ?? '07:00') as String, groupWarning: j['groupWarning'] == true, dailyMessagePush: j['dailyMessagePush'] != false,
         showCountry: j['showCountry'] != false, entitlement: Entitlement.fromJson(asJson(j['entitlement'])));
   }

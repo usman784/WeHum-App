@@ -588,7 +588,7 @@ class PrivacyPage extends StatelessWidget {
     final ctrl = Get.put(PrivacyController());
     const matrix = [
       (Icons.timer_outlined, 'Practice history', 'Your meditations, minutes and streak. Kept on our servers, linked to your account, so they follow you to a new phone.', 'ACCOUNT'),
-      (Icons.groups_outlined, 'Collective presence', 'Only your country, and only while you meditate. No GPS, no device fingerprint. Switch it off below.', 'EPHEMERAL'),
+      (Icons.groups_outlined, 'Collective presence', 'Your country and your city (a position rounded to about 10 km, never your exact location), only while you are online or meditating. No GPS track, no device fingerprint. Switch it off below.', 'EPHEMERAL'),
       (Icons.volunteer_activism_outlined, 'Dedications', 'Your first name and, if you chose it, your city. You can strip both from every past post here.', 'YOU DECIDE'),
       (Icons.favorite_border_rounded, 'Heart rate (optional)', 'Read on your phone from Apple Health or Health Connect. Only one number per meditation leaves the phone, and only if you allow it.', 'DEVICE ONLY'),
     ];
@@ -640,7 +640,7 @@ class PrivacyPage extends StatelessWidget {
             const SizedBox(height: 8),
             AppCard(
               padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-              child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country to “meditating now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
+              child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Count me in live presence', style: AppText.bodyLarge.copyWith(color: c.textPrimary)), Text('Adds your country and city to “meditating now” numbers', style: AppText.caption.copyWith(color: c.textSecondary))])), AppToggle(key: const Key('sw-presence'), value: ctrl.showCountry, onChanged: ctrl.setShowCountry, label: 'Count me in live presence')]),
             ),
           ]),
           AppCard(
