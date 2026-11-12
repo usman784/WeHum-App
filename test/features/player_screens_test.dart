@@ -263,6 +263,22 @@ void main() {
     });
   });
 
+  testWidgets('45 a meditation that did not count (dragged to the end, under three minutes) still shows Share and Done, no dedicate button', (t) async {
+    phone(t);
+    final e = await TestEnv.create(onboardingDone: true);
+    final rec = MeditationRecord(id: 'm-s', kind: 'motd', sessionId: sid, startedAt: DateTime.utc(2026, 10, 7, 8), endedAt: DateTime.utc(2026, 10, 7, 8, 0, 40), durationSec: 40, completed: true);
+    await t.pumpWidget(e.app());
+    await settle(t);
+    Get.toNamed(AppRoutes.meditationCompletePayoff, arguments: CompleteArgs(player: motd(), record: rec, counted: false));
+    await settle(t);
+    await settle(t);
+    expect(find.byKey(const Key('share-sit')), findsOneWidget);
+    expect(find.byKey(const Key('complete-done')), findsOneWidget);
+    expect(find.byKey(const Key('dedicate-btn')), findsNothing);
+    await t.pumpWidget(const SizedBox());
+    await e.dispose();
+  });
+
   testWidgets('45 a guest sees this meditation only: no week, total or streak, and a note to create an account', (t) async {
     phone(t);
     t.view.physicalSize = const Size(1170, 4800); // the whole payoff is built

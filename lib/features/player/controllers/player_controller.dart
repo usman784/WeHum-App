@@ -460,8 +460,10 @@ class PlayerController extends GetxController {
     if (rec != null && args.record) {
       unawaited(_sync.record(rec, waitForServer: false)); // outbox first; the payoff never waits on the network
     }
-    if (counts && args.record) {
-      _nav.toComplete(CompleteArgs(player: args, record: rec, counted: true, hr: hr));
+    // A meditation that played to its end always gets the payoff with Share, even when it did not count (dragged to the end);
+    // only an early stop under the threshold goes quietly back.
+    if (args.record && (counts || completed)) {
+      _nav.toComplete(CompleteArgs(player: args, record: rec, counted: counts, hr: hr));
     } else {
       _nav.back();
     }

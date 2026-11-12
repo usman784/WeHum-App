@@ -406,6 +406,22 @@ void main() {
     expect(r.meditations.recorded.single.hrDeltaBpm, -9);
   });
 
+  test('a guided meditation that finishes without three minutes of listening (dragged to the end) still opens the payoff with Share, not counted', () async {
+    var now = DateTime.utc(2026, 10, 7, 8);
+    final r = Rig(motd(), now: () => now);
+    r.ctrl.onInit();
+    await r.flush();
+    await r.flush();
+    now = now.add(const Duration(seconds: 40)); // far less than the 3 minutes that count
+    r.engine.setStatus(EngineStatus.completed);
+    await r.flush();
+    await r.flush();
+    await r.flush();
+    expect(r.nav.events, ['complete']);
+    expect(r.nav.complete!.counted, false);
+    expect(r.nav.complete!.record!.completed, true);
+  });
+
   test('heart rate: a sit that does not count never asks for readings and releases the sensor', () async {
     final heart = FakeHeart(null);
     final r = Rig(motd(), heart: heart);
