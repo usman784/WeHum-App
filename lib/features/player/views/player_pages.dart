@@ -221,7 +221,7 @@ class PlayerPage extends StatelessWidget {
                   _TogetherPill(people: people, countries: t?.countries ?? 0, quiet: quiet, meditatedToday: live.agg.value?.meditatedToday ?? 0, paused: live.paused),
                   if (ctrl.heartOn) HeartPill(live: ctrl.heartLive),
                   // The world heat map and who is sitting where: in every meditation, solo or in a group (not while the live numbers are paused).
-                  if (!live.paused) HeatmapCard(belts: Belts(americas: belts['americas'] ?? 0, emea: belts['emea'] ?? 0, apac: belts['apac'] ?? 0), quiet: quiet),
+                  if (!live.paused) HeatmapCard(belts: Belts(americas: belts['americas'] ?? 0, emea: belts['emea'] ?? 0, apac: belts['apac'] ?? 0), hot: live.agg.value?.where ?? const {}, cities: live.agg.value?.cities ?? const [], quiet: quiet),
                   Column(children: [
                     Row(children: [
                       Icon(Icons.radio_button_checked_rounded, size: 18, color: c.emberText),

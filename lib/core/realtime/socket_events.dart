@@ -1,3 +1,4 @@
+import '../data/models/stitch.dart';
 import '../data/models/json.dart' show countryCounts;
 /// Socket event names and payloads — mirror of backend `src/realtime/socket-events.ts` (backend spec §7.2).
 abstract final class SocketEvents {
@@ -57,10 +58,13 @@ class Ack {
 int _i(dynamic v) => (v as num?)?.toInt() ?? 0;
 
 class LiveAgg {
-  const LiveAgg({required this.total, required this.countries, required this.top, this.todayTop = const [], required this.quiet, required this.meditatedToday, required this.vibration, required this.at, this.belts = const {}});
+  const LiveAgg({required this.total, required this.countries, required this.top, this.todayTop = const [], required this.quiet, required this.meditatedToday, required this.vibration, required this.at, this.belts = const {}, this.cities = const []});
   final int total, countries, meditatedToday, vibration, at;
   /// americas / emea / apac → people now.
   final Map<String, int> belts;
+
+  /// Cities with people meditating now (3+ each).
+  final List<MapCity> cities;
   final bool quiet;
   final List<({String country, int n})> top;
 
@@ -84,6 +88,7 @@ class LiveAgg {
         vibration: _i(j['vibration']), at: _i(j['at']), belts: {for (final e in ((j['belts'] as Map?) ?? const {}).entries) '${e.key}': _i(e.value)},
         top: [for (final t in ((j['top'] as List?) ?? const [])) (country: (t as Map)['c'] as String, n: _i(t['n']))],
         todayTop: [for (final t in ((j['todayTop'] as List?) ?? const [])) (country: (t as Map)['c'] as String, n: _i(t['n']))],
+        cities: [for (final t in ((j['cities'] as List?) ?? const [])) MapCity(country: (t as Map)['c'] as String, name: '${t['name']}', lat: (t['lat'] as num).toDouble(), lng: (t['lng'] as num).toDouble(), n: _i(t['n']))],
       );
 }
 

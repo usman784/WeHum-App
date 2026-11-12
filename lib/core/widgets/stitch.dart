@@ -214,8 +214,13 @@ class LiveStrip extends StatelessWidget {
 /// [onExplore] null: no "Explore map" (inside a meditation, leaving for the map would abandon it).
 /// [quiet]: few people are sitting, so no small numbers as if it were a crowd: the map stays, the counts become a calm line.
 class HeatmapCard extends StatelessWidget {
-  const HeatmapCard({super.key, required this.belts, this.onExplore, this.quiet = false});
+  const HeatmapCard({super.key, required this.belts, this.hot = const {}, this.cities = const [], this.onExplore, this.quiet = false});
   final Belts belts;
+
+  /// Country → people (live now and today) and the live cities: when present the card draws the real map with them,
+  /// otherwise only the three region glows (an older server).
+  final Map<String, int> hot;
+  final List<MapCity> cities;
   final VoidCallback? onExplore;
   final bool quiet;
   @override
@@ -240,7 +245,9 @@ class HeatmapCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           child: Container(
             color: c.bgDeep, padding: const EdgeInsets.all(8),
-            child: AspectRatio(aspectRatio: 400 / 180, child: CustomPaint(painter: _HeatPainter(c, belts.americas / max, belts.emea / max, belts.apac / max))),
+            child: hot.isNotEmpty || cities.isNotEmpty
+                ? AspectRatio(aspectRatio: 400 / 180, child: WorldDotMap(hot: hot, cities: cities, height: 180))
+                : AspectRatio(aspectRatio: 400 / 180, child: CustomPaint(painter: _HeatPainter(c, belts.americas / max, belts.emea / max, belts.apac / max))),
           ),
         ),
         const SizedBox(height: 14),

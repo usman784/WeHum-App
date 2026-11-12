@@ -78,6 +78,7 @@ class WorldController extends GetxController {
   int get vibration => agg?.vibration ?? 0;
   String get vibrationWord => vibration >= 66 ? 'Strong' : (vibration >= 33 ? 'Rising' : 'Quiet');
   Map<String, int> get hot => agg?.where ?? const {};
+  List<MapCity> get cities => agg?.cities ?? const [];
 
   void openInfo() => Get.find<AnalyticsService>().track('vibration_info_open');
 }

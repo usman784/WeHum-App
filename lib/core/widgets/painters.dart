@@ -1,3 +1,4 @@
+import '../data/models/stitch.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
@@ -236,8 +237,11 @@ class _CoverPainter extends CustomPainter {
 
 /// Dotted world map from country aggregates (no GPS). [hot] maps ISO-2 → people.
 class WorldDotMap extends StatelessWidget {
-  const WorldDotMap({super.key, this.hot = const {}, this.height = 180});
+  const WorldDotMap({super.key, this.hot = const {}, this.cities = const [], this.height = 180});
   final Map<String, int> hot;
+
+  /// Live cities (3+ people each): one dot per city, bigger with more people.
+  final List<MapCity> cities;
   final double height;
 
   /// Approximate centroid (lon, lat) of countries that commonly appear; unknown codes are skipped.
@@ -253,14 +257,15 @@ class WorldDotMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return ExcludeSemantics(child: SizedBox(height: height, width: double.infinity, child: CustomPaint(painter: _MapPainter(c.track, c.ember, hot))));
+    return ExcludeSemantics(child: SizedBox(height: height, width: double.infinity, child: CustomPaint(painter: _MapPainter(c.track, c.ember, hot, cities, c.success))));
   }
 }
 
 class _MapPainter extends CustomPainter {
-  _MapPainter(this.base, this.hotColor, this.hot);
-  final Color base, hotColor;
+  _MapPainter(this.base, this.hotColor, this.hot, this.cities, this.cityColor);
+  final Color base, hotColor, cityColor;
   final Map<String, int> hot;
+  final List<MapCity> cities;
 
   /// Coarse land mask on a 36×18 grid (10° cells), row 0 = 80°N. '#' = land.
   static const _land = [
@@ -301,10 +306,17 @@ class _MapPainter extends CustomPainter {
       canvas.drawCircle(o, rr * 2, Paint()..color = hotColor.withValues(alpha: .18));
       canvas.drawCircle(o, rr, Paint()..color = hotColor);
     });
+    final maxCity = cities.isEmpty ? 1 : cities.map((e) => e.n).reduce(math.max);
+    for (final city in cities) {
+      final o = Offset((city.lng + 180) / 360 * s.width, (80 - city.lat) / 160 * s.height);
+      final rr = 2.4 + 3.2 * math.sqrt(city.n / maxCity);
+      canvas.drawCircle(o, rr * 1.9, Paint()..color = cityColor.withValues(alpha: .22));
+      canvas.drawCircle(o, rr, Paint()..color = cityColor);
+    }
   }
 
   @override
-  bool shouldRepaint(_MapPainter o) => o.hot != hot || o.base != base;
+  bool shouldRepaint(_MapPainter o) => o.hot != hot || o.base != base || o.cities != cities;
 }
 
 /// Gradient bar + marker (0–100) + info button (World Vibration).

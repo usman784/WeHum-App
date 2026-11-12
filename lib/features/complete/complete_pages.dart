@@ -87,7 +87,7 @@ class CompletePage extends StatelessWidget {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(children: [Expanded(child: Text('SYNCHRONOUS NETWORK', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 10))), Icon(Icons.public_rounded, size: 14, color: c.success), const SizedBox(width: 4), Text('Global active', style: AppText.caption.copyWith(color: c.success, fontWeight: FontWeight.w600))]),
                         const SizedBox(height: 8),
-                        WorldDotMap(hot: ctrl.hot, height: 110),
+                        WorldDotMap(hot: ctrl.hot, cities: ctrl.live.paused ? const [] : (ctrl.live.agg.value?.cities ?? const []), height: 110),
                         if (!ctrl.belts.isEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: KeyedSubtree(key: const Key('complete-belts'), child: BeltCounts(belts: ctrl.belts))),
                         if (ctrl.minutesToday > 0) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${groupedInt(ctrl.minutesToday)} minutes meditated by everyone today', key: const Key('complete-collective'), style: AppText.caption.copyWith(color: c.textSecondary, fontFeatures: AppText.tabular))),
                       ]),

@@ -5,6 +5,14 @@ import 'json.dart';
 /// backend never breaks the app: missing data simply hides the card that needs it.
 
 /// People now, grouped into the three belts the designs show next to the live count.
+/// A city on a live map: people meditating there now (position rounded to ~10 km by the server; only cities with 3+ people).
+class MapCity {
+  const MapCity({required this.country, required this.name, required this.lat, required this.lng, required this.n});
+  final String country, name;
+  final double lat, lng;
+  final int n;
+}
+
 class Belts {
   const Belts({this.americas = 0, this.emea = 0, this.apac = 0});
   final int americas, emea, apac;

@@ -213,7 +213,7 @@ class WorldPage extends StatelessWidget {
                 Text('LIVE COARSE HEATMAP', style: AppText.overline.copyWith(color: c.textSecondary, fontSize: 9.5)),
               ]),
               const SizedBox(height: 12),
-              WorldDotMap(hot: ctrl.paused ? const {} : ctrl.hot, height: 190),
+              WorldDotMap(hot: ctrl.paused ? const {} : ctrl.hot, cities: ctrl.paused ? const [] : ctrl.cities, height: 190),
             ]),
           ),
           PrimaryButton('Join the global meditation', icon: Icons.play_circle_outline_rounded, onPressed: () => Get.toNamed(AppRoutes.motdRoom)),

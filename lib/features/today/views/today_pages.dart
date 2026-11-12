@@ -60,7 +60,7 @@ class TodayPage extends StatelessWidget {
                     const SizedBox(height: 16),
                   ],
                   if (d?.motd != null) _MotdHero(ctrl: ctrl) else const _NoMotd(),
-                  if (!belts.isEmpty) ...[const SizedBox(height: 16), HeatmapCard(belts: belts, onExplore: () => Get.toNamed(AppRoutes.worldMapWorldVibration))],
+                  if (!belts.isEmpty) ...[const SizedBox(height: 16), HeatmapCard(belts: belts, hot: ctrl.live.paused ? const {} : (ctrl.live.agg.value?.where ?? const {}), cities: ctrl.live.paused ? const [] : (ctrl.live.agg.value?.cities ?? const []), onExplore: () => Get.toNamed(AppRoutes.worldMapWorldVibration))],
                   if (d?.dailyMessage != null) ...[const SizedBox(height: 12), _NoteCard(m: d!.dailyMessage!)],
                   const SizedBox(height: 12),
                   if (ctrl.access.isGuest.value) const SizedBox.shrink() // no progress before an account (the log-in card is above)

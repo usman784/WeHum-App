@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:meditation/core/data/models/activity.dart';
+import 'package:meditation/core/realtime/socket_events.dart';
 import 'package:meditation/core/services/location_service.dart';
 
 void main() {
@@ -22,5 +23,14 @@ void main() {
   test('the profile reads the city', () {
     expect(MeProfile.fromJson({'id': 'u', 'city': 'Lahore', 'country': 'PK'}).city, 'Lahore');
     expect(MeProfile.fromJson({'id': 'u'}).city, isNull);
+  });
+
+  test('the live feed carries cities for the maps; an older server without them still parses', () {
+    final a = LiveAgg.fromJson({'total': 9, 'countries': 2, 'quiet': false, 'meditatedToday': 9, 'vibration': 3, 'at': 1, 'top': [{'c': 'PK', 'n': 9}],
+      'cities': [{'c': 'PK', 'name': 'Lahore', 'lat': 31.5, 'lng': 74.4, 'n': 4}]});
+    expect(a.cities.single.name, 'Lahore');
+    expect(a.cities.single.lat, 31.5);
+    expect(a.cities.single.n, 4);
+    expect(LiveAgg.fromJson({'total': 0, 'countries': 0, 'quiet': true, 'meditatedToday': 0, 'vibration': 0, 'at': 1}).cities, isEmpty);
   });
 }
