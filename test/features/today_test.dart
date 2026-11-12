@@ -96,6 +96,9 @@ void main() {
     expect(find.text('105 min this week'), findsOneWidget);
     expect(find.text('1 meditation to reach weekly goal'), findsOneWidget);
     await t.scrollUntilVisible(find.byKey(const Key('continue-last')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Meditate anytime'), findsOneWidget);
+    expect(find.text('Quick accelerators'), findsNothing);
+    expect(find.text('ON DEMAND'), findsNothing);
     expect(find.byKey(const Key('silence-row')), findsOneWidget);
     expect(find.textContaining('89 people meditating in silence'), findsOneWidget);
     expect(find.textContaining('6 min left'), findsOneWidget);
