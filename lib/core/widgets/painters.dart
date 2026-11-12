@@ -463,3 +463,16 @@ class _SessionRingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SessionRingPainter o) => o.progress != progress || o.k != k || o.t != t || o.people != people;
 }
+
+/// The dotted world silhouette on any canvas: the Dashboard-style land mask, so every map in the app shows the same,
+/// recognisable world (one America, one Africa) instead of hand-drawn shapes.
+void paintWorldLand(Canvas canvas, Size s, Color color, {double dot = .34}) {
+  const land = _MapPainter._land;
+  final cw = s.width / 36, ch = s.height / land.length;
+  final p = Paint()..color = color;
+  for (var r = 0; r < land.length; r++) {
+    for (var c = 0; c < 36 && c < land[r].length; c++) {
+      if (land[r][c] == '#') canvas.drawCircle(Offset(c * cw + cw / 2, r * ch + ch / 2), math.min(cw, ch) * dot, p);
+    }
+  }
+}

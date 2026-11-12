@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../theme/tokens.dart';
 import 'motion.dart';
+import 'painters.dart';
 import 'surfaces.dart';
 
 /// Pieces shared by the Stitch screens: streak strip, belt counts, stat tiles, section labels.
@@ -266,33 +267,17 @@ class _HeatPainter extends CustomPainter {
     for (final x in [100.0, 200.0, 300.0]) {
       canvas.drawLine(Offset(x, 0), Offset(x, 180), grid);
     }
-    Path blob(List<double> pts) {
-      final path = Path()..moveTo(pts[0], pts[1]);
-      for (var i = 2; i + 1 < pts.length; i += 2) {
-        path.lineTo(pts[i], pts[i + 1]);
-      }
-      return path..close();
-    }
-    final fill = Paint()..color = c.surfaceAlt.withValues(alpha: .9);
-    final edge = Paint()..style = PaintingStyle.stroke..strokeWidth = 1..color = c.border;
-    for (final b in [
-      blob([65, 30, 95, 34, 110, 55, 100, 78, 90, 95, 105, 110, 120, 125, 112, 145, 105, 160, 95, 135, 80, 115, 70, 92, 60, 70]),
-      blob([180, 35, 225, 25, 285, 30, 325, 65, 300, 82, 285, 95, 250, 90, 235, 90, 225, 112, 215, 135, 200, 118, 185, 100, 170, 75]),
-      blob([305, 75, 340, 70, 365, 90, 365, 110, 345, 135, 320, 145, 305, 135, 295, 125]),
-    ]) {
-      canvas.drawPath(b, fill);
-      canvas.drawPath(b, edge);
-    }
+    paintWorldLand(canvas, const Size(400, 180), c.textTertiary.withValues(alpha: .38));
     void glow(double cx, double cy, double r, Color col, double k) {
       if (k <= 0) return;
       final rect = Rect.fromCircle(center: Offset(cx, cy), radius: r);
       canvas.drawCircle(Offset(cx, cy), r, Paint()..shader = RadialGradient(colors: [col.withValues(alpha: .25 + .5 * k), col.withValues(alpha: 0)]).createShader(rect));
     }
-    glow(110, 82, 38, c.success, a);
-    glow(210, 62, 32, const Color(0xFFFFB59A), e);
-    glow(300, 80, 42, c.success, p);
+    glow(100, 62, 40, c.success, a); // the Americas
+    glow(228, 62, 34, const Color(0xFFFFB59A), e); // Europe, Middle East, Africa
+    glow(318, 64, 40, c.success, p); // Asia and the Pacific
     final dot = Paint();
-    for (final d in [(95.0, 70.0, c.success, a), (125.0, 92.0, c.success, a), (205.0, 56.0, const Color(0xFFFFB59A), e), (222.0, 70.0, c.success, e), (292.0, 76.0, c.success, p), (315.0, 88.0, const Color(0xFFFFB59A), p)]) {
+    for (final d in [(88.0, 52.0, c.success, a), (112.0, 84.0, c.success, a), (222.0, 46.0, const Color(0xFFFFB59A), e), (232.0, 78.0, c.success, e), (312.0, 56.0, c.success, p), (332.0, 92.0, const Color(0xFFFFB59A), p)]) {
       if (d.$4 > 0) canvas.drawCircle(Offset(d.$1, d.$2), 2.2, dot..color = d.$3);
     }
   }
